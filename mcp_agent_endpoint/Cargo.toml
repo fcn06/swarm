@@ -1,0 +1,31 @@
+[package]
+name = "mcp_agent_endpoint"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+llm_api = { workspace = true }
+mcp_agent_backbone = { workspace = true }
+configuration = { workspace = true }
+
+reqwest = { workspace = true }
+tokio = { workspace = true }
+serde = { version = "1.0", features = ["derive"] } # Ensure derive feature is enabled
+serde_json = { workspace = true }
+rustls = { workspace = true }
+dotenv = { workspace = true }
+anyhow = { workspace = true }
+rmcp = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+rand = { workspace = true }
+futures = { workspace = true }
+tower = { workspace = true }
+axum = { workspace = true }
+chrono = { workspace = true }
+tower-http = { workspace = true }
+uuid = { workspace = true }
+log = { workspace = true }
+
+toml = { workspace = true }
+env_logger= { workspace = true }

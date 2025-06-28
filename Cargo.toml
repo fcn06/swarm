@@ -1,0 +1,63 @@
+[workspace.package]
+name = "swarm"
+version = "0.1.0"
+edition = "2024"
+description = "Minimalist Agent Framework"
+keywords = ["agent", "ai", "mcp","framework"]
+
+
+[workspace]
+resolver = "2"
+#members = [ "configuration","llm_api","mcp_agent_backbone","mcp_agent_endpoint","a2a_agent_backbone"]
+members = [ "configuration","llm_api","mcp_agent_backbone","mcp_agent_endpoint","a2a_agent_backbone","a2a_planner_backbone"]
+
+# https://github.com/EmilLindfors/a2a-rs/blob/master/a2a-agents/src/lib.rs
+
+[workspace.dependencies]
+llm_api = { path = "./llm_api" }
+mcp_agent_backbone = { path = "./mcp_agent_backbone" }
+configuration = { path = "./configuration" }
+mcp_agent_endpoint = { path = "./mcp_agent_endpoint" }
+a2a_agent_backbone = { path = "./a2a_agent_backbone" }
+
+a2a_planner_backbone = { path = "./a2a_planner_backbone" }
+
+rmcp= { git = "https://github.com/modelcontextprotocol/rust-sdk.git", features = ["client", "transport-sse-client", "transport-child-process", "tower","reqwest"] }
+# It is better to pin a revision number because this crate is evolving rapidly with singificant number of breaking changes
+#a2a-rs= { git = "https://github.com/EmilLindfors/a2a-rs.git", features = ["full"] , rev = "3ec043fb28d3e53ca0ec6773ff449755f4aeffcc" }
+a2a-rs= { git = "https://github.com/EmilLindfors/a2a-rs.git", features = ["full"]  }
+
+
+reqwest = { version = "0.12", features = ["json","rustls-tls"] }
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+rustls="0.23"
+dotenv = "0.15"
+anyhow = "1.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+rand = "0.9"
+futures = "0.3"
+tower = "0.5"
+
+axum = "0.8"
+chrono = { version = "0.4.24", features = ["serde"] }
+tower-http = { version = "0.6.0", features = ["cors"] }
+uuid = { version = "1", features = ["v4","serde"] }
+log = "0.4"
+env_logger="0.11"
+toml = "0.8"
+
+base64 = "0.22"
+url = { version = "2.4", features = ["serde"] }
+
+async-trait = { version = "0.1"}
+clap = { version = "4.5", features = ["derive"] }
+
+
+[profile.dev]
+opt-level = 0
+
+[profile.release]
+opt-level = 3

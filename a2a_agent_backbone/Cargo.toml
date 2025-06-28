@@ -1,0 +1,104 @@
+[package]
+name = "a2a_agent_backbone"
+version = "0.1.0"
+edition = "2024"
+
+#https://github.com/EmilLindfors/a2a-rs/blob/master/a2a-agents/src/reimbursement_agent/handler.rs
+
+#[lib]
+#crate-type = ["dylib", "rlib"]
+
+[dependencies]
+llm_api = { workspace = true }
+configuration = { workspace = true }
+mcp_agent_backbone={ workspace = true }
+anyhow={ workspace = true }
+dotenv={ workspace = true }
+
+
+rustls = { workspace = true }
+a2a-rs= { workspace = true }
+
+clap = { version = "4.4", features = ["derive"] }
+log = { workspace = true }
+toml = { workspace = true }
+env_logger= { workspace = true }
+
+# Required dependencies
+lazy_static = "1.4"  # Used for static request ID storage in message_handler
+regex = "1.10"  # Used for text parsing in improved handler
+
+# Optional AI integration (for future use)
+# reqwest = { version = "0.11", features = ["json", "rustls-tls"], default-features = false, optional = true }
+
+
+# Core dependencies
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+#thiserror = "1.0"
+thiserror = "2"
+
+uuid = { version = "1.4", features = ["v4", "serde"] }
+#base64 = "0.21"
+base64 = "0.22"
+
+url = { version = "2.4", features = ["serde"] }
+#bon = "2.3"
+bon = "3"
+
+# Database - optional
+sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "chrono", "uuid", "json"], optional = true }
+
+# Async foundation - optional
+tokio = { version = "1.32", features = ["rt", "rt-multi-thread", "macros", "net", "io-util", "sync", "time"], optional = true }
+async-trait = { version = "0.1", optional = true }
+futures = { version = "0.3", optional = true }
+
+# HTTP client - optional
+reqwest = { version = "0.11", features = ["json", "rustls-tls"], default-features = false, optional = true }
+
+# WebSocket - optional
+tokio-tungstenite = { version = "0.20", features = ["rustls", "connect", "stream", "handshake"], default-features = false, optional = true }
+
+# HTTP server - optional
+axum = { version = "0.8", optional = true }
+
+# Authentication - optional
+jsonwebtoken = { version = "9.3", optional = true }
+#oauth2 = { version = "4.4", optional = true }
+#openidconnect = { version = "3.5", optional = true }
+oauth2 = { version = "5", optional = true }
+openidconnect = { version = "4", optional = true }
+
+# Logging - optional
+tracing = { version = "0.1", optional = true }
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"], optional = true }
+
+
+[features]
+default = ["server", "tracing"]
+client = ["dep:tokio", "dep:async-trait", "dep:futures"]
+http-client = ["client", "dep:reqwest"]
+ws-client = ["client", "dep:tokio-tungstenite"]
+server = ["dep:tokio", "dep:async-trait", "dep:futures"]
+http-server = ["server", "dep:axum"]
+tracing = ["dep:tracing", "dep:tracing-subscriber"]
+ws-server = ["server", "dep:tokio-tungstenite"]
+auth = ["dep:jsonwebtoken", "dep:oauth2", "dep:openidconnect", "dep:reqwest"]
+sqlx-storage = ["server", "dep:sqlx"]
+sqlite = ["sqlx-storage", "sqlx/sqlite"]
+postgres = ["sqlx-storage", "sqlx/postgres"]
+mysql = ["sqlx-storage", "sqlx/mysql"]
+full = ["http-client", "ws-client", "http-server", "ws-server", "tracing", "auth", "sqlite", "postgres"]
+
+
+
+[[bin]]
+name = "simple_agent_server"
+path = "bin/simple_agent_server.rs"
+
+
+[[bin]]
+name = "simple_a2a_client"
+path = "bin/simple_a2a_client.rs"

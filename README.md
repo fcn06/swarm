@@ -78,11 +78,13 @@ I am interested in any comments and suggestions.
 
 ## Nota Bene
 
-I am heavily using two crates that are in active development.\
-\For mcp propocol :
-\https://github.com/modelcontextprotocol/rust-sdk
-\For a2a protocol :
-\https://github.com/EmilLindfors/a2a-rs
+I am heavily using two crates that are in active development. \
+\
+For mcp propocol : \
+https://github.com/modelcontextprotocol/rust-sdk \
+\
+For a2a protocol : \
+https://github.com/EmilLindfors/a2a-rs \ 
 \
 \
 I may have to point out in Cargo.toml a specific commit , in case there are too many breaking changes

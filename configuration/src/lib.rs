@@ -64,11 +64,37 @@ impl AgentMcpConfig {
     }
 }
 
+
+///////////////////////////////////////////////////////////////
+// SIMPLE AGENT REFERENCE IMPLEMENTATION
+///////////////////////////////////////////////////////////////
+
+// Agent info provider implementation
+//#[derive(Clone)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AgentA2aClientInfo {
-    name: String,
-    url: String,
+pub struct SimpleAgentReference {
+    pub name: String,
+    pub url: String,
 }
+
+impl SimpleAgentReference {
+    pub fn new(name: String, url: String) -> anyhow::Result<SimpleAgentReference> {
+        // Create the agent card
+        Ok(SimpleAgentReference {
+            name: name,
+            url: url,
+        })
+    }
+}
+
+impl SimpleAgentReference {
+    pub async fn get_agent_reference(&self) -> anyhow::Result<SimpleAgentReference> {
+        Ok(self.clone())
+    }
+}
+
+
+
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct AgentPlannerConfig {
@@ -76,7 +102,7 @@ pub struct AgentPlannerConfig {
     pub agent_planner_system_prompt: String,
     pub agent_planner_model_id: String,
     pub agent_planner_discovery_url: Option<String>, // future use
-    pub agent_planner_agents_url: Vec<String>,       //  the agents to connect to
+    pub agent_planner_agents_references:Vec<SimpleAgentReference>,
 }
 
 impl AgentPlannerConfig {

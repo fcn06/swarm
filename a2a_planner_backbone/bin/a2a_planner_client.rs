@@ -10,8 +10,7 @@ use a2a_planner_backbone::PlannerAgentConfig;
 
 
 use configuration::AgentPlannerConfig;
-
-use a2a_agent_backbone::a2a_agent_initialization::a2a_agent_config::SimpleAgentReference;
+use configuration::SimpleAgentReference;
 
 use a2a_rs::domain::{Message, Part};
 
@@ -49,18 +48,14 @@ async fn main() -> anyhow::Result<()> {
     // Set model to be used
     let model_id = a2a_agent_planner_config.agent_planner_model_id;
 
-    // Mock configuration
+    // Set model to be used
+    let agents_references = a2a_agent_planner_config.agent_planner_agents_references;
+
     let config = PlannerAgentConfig {
         model_id: model_id, // Or your preferred model
-        agent_configs: vec![
-            SimpleAgentReference::new(
-                "agent_search".to_string(),
-                "http://localhost:8080".to_string(),
-            )?,
-            //SimpleAgentReference::new("agent_compute".to_string(),"http://localhost:8082".to_string())? ,
-            //SimpleAgentReference::new("agent_generic".to_string(),"http://localhost:8083".to_string())?,
-        ],
+        agent_configs: agents_references,
     };
+
 
     // Initialize the Planner Agent
     let mut planner_agent = PlannerAgent::new(config).await?;

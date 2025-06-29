@@ -46,30 +46,3 @@ pub async fn setup_project_a2a(
     })
 }
 
-///////////////////////////////////////////////////////////////
-// SIMPLE AGENT REFERENCE IMPLEMENTATION
-///////////////////////////////////////////////////////////////
-
-// Agent info provider implementation
-//#[derive(Clone)]
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SimpleAgentReference {
-    pub name: String,
-    pub url: String,
-}
-
-impl SimpleAgentReference {
-    pub fn new(name: String, url: String) -> anyhow::Result<SimpleAgentReference> {
-        // Create the agent card
-        Ok(SimpleAgentReference {
-            name: name,
-            url: url,
-        })
-    }
-}
-
-impl SimpleAgentReference {
-    pub async fn get_agent_reference(&self) -> anyhow::Result<SimpleAgentReference> {
-        Ok(self.clone())
-    }
-}

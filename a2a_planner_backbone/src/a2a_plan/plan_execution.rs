@@ -29,6 +29,9 @@ impl A2AClient {
         // create a client to remopte agent
         let client = HttpClient::new(uri.clone());
 
+        // check formatting, for testing purpose
+        //println!("{}",format!("{}/skills",uri));
+
         // Get skills from remote agents
         let http_client = reqwest::Client::new();
         let response = http_client

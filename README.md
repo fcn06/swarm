@@ -18,16 +18,17 @@ LLM_API_URL=your_api_base_url # e.g., https://api.groq.com/openai/v1/chat/comple
 ```
 While any OpenAI compatible API can be used, Groq is a personal preference due to its speed.
 
-It is recommended to have an `mcp_server` running to allow the agents to interact with external services or information sources. The `mcp_server` project is typically a separate but complementary component.
+It is recommended to have an `mcp_server` running to allow the agents to interact with external services or information sources. \
+The `mcp_server` project is typically a separate but complementary component.
 
 ## Running Components
 
 You can execute various components of the swarm using `cargo run`:
 
-*   **A2A Agent Server:**
+*   **A2A Agent Server:** ( You can create multiple agents , each one linked to a different config file)
 ```
 bash
-    cargo run --bin simple_agent_server
+    cargo run --bin simple_agent_server -- --config-file "configuration/agent_a2a_config.toml"
     
 ```
 *   **Planner:**
@@ -77,9 +78,11 @@ I am interested in any comments and suggestions.
 
 ## Nota Bene
 
-I am heavily using two crates that are in active development.
-For mcp propocol :
-https://github.com/modelcontextprotocol/rust-sdk
-For a2a protocol :
-https://github.com/EmilLindfors/a2a-rs
+I am heavily using two crates that are in active development.\
+\For mcp propocol :
+\https://github.com/modelcontextprotocol/rust-sdk
+\For a2a protocol :
+\https://github.com/EmilLindfors/a2a-rs
+\
+\
 I may have to point out in Cargo.toml a specific commit , in case there are too many breaking changes

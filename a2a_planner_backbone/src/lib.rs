@@ -1,4 +1,5 @@
-use a2a_agent_backbone::a2a_agent_initialization::a2a_agent_config::SimpleAgentReference;
+use configuration::SimpleAgentReference;
+
 use serde::{Serialize,Deserialize};
 
 pub mod a2a_agent_logic;

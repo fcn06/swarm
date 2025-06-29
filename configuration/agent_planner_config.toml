@@ -1,6 +1,18 @@
 agent_planner_name="planner"
+# future use
 agent_planner_system_prompt="You are a helpful planner agent"
 agent_planner_model_id="qwen/qwen3-32b"
+# future use
 agent_planner_discovery_url="http://127.0.0.1:4000/"
-# put a nested Struct with name and url
-agent_planner_agents_url = [ "http://127.0.0.1:8081/", "http://127.0.0.1:8082/", "http://127.0.0.1:8083/" ]
+
+[[agent_planner_agents_references]]
+name = "agent_search"
+url = "http://127.0.0.1:8080"
+
+#[[agent_planner_agents_references]]
+#name = "weather_agent"
+#url = "http://127.0.0.1:8082"
+
+#[[agent_planner_agents_references]]
+#name = "customer_agent"
+#url = "http://127.0.0.1:8083"

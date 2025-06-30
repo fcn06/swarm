@@ -23,7 +23,14 @@ The `mcp_server` project is typically a separate but complementary component.
 
 ## Running Components
 
-You can execute various components of the swarm using `cargo run`:
+You first need to compile the workspace
+```
+bash
+    cargo build 
+    
+```
+
+Then You can execute various components of the swarm using `cargo run`:
 
 *   **A2A Agent Server:** ( You can create multiple agents , each one linked to a different config file)
 ```

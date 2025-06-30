@@ -9,7 +9,8 @@ crate-type = ["dylib", "rlib"]
 
 [dependencies]
 reqwest = { workspace = true }
-serde = { version = "1.0", features = ["derive"] } # Ensure derive feature is enabled
+#serde = { version = "1.0", features = ["derive"] } # Ensure derive feature is enabled
+serde = { workspace = true }
 serde_json = { workspace = true }
 anyhow = { workspace = true }
 

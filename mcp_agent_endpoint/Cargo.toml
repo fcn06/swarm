@@ -10,7 +10,6 @@ configuration = { workspace = true }
 
 reqwest = { workspace = true }
 tokio = { workspace = true }
-#serde = { version = "1.0", features = ["derive"] } # Ensure derive feature is enabled
 serde = { workspace = true }
 serde_json = { workspace = true }
 rustls = { workspace = true }
@@ -29,4 +28,4 @@ uuid = { workspace = true }
 log = { workspace = true }
 
 toml = { workspace = true }
-env_logger= { workspace = true }
+#env_logger= { workspace = true }

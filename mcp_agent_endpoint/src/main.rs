@@ -18,8 +18,8 @@ pub struct AppState {
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     // Initialize logging (e.g., using tracing or env_logger)
-    // tracing_subscriber::fmt::init(); // Example using tracing_subscriber
-    env_logger::init(); // Example using env_logger
+     tracing_subscriber::fmt::init(); // Example using tracing_subscriber
+    //env_logger::init(); // Example using env_logger
 
     info!("Starting MCP Agent...");
 

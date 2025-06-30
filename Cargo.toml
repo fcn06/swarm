@@ -8,10 +8,8 @@ keywords = ["agent", "ai", "mcp","framework"]
 
 [workspace]
 resolver = "2"
-#members = [ "configuration","llm_api","mcp_agent_backbone","mcp_agent_endpoint","a2a_agent_backbone"]
 members = [ "configuration","llm_api","mcp_agent_backbone","mcp_agent_endpoint","a2a_agent_backbone","a2a_planner_backbone"]
 
-# https://github.com/EmilLindfors/a2a-rs/blob/master/a2a-agents/src/lib.rs
 
 [workspace.dependencies]
 llm_api = { path = "./llm_api" }
@@ -40,6 +38,15 @@ rand = "0.9"
 futures = "0.3"
 tower = "0.5"
 
+jsonwebtoken = { version = "9.3" }
+oauth2 = { version = "5" }
+openidconnect = { version = "4" }
+
+tokio-tungstenite = { version = "0.27", features = ["rustls", "connect", "stream", "handshake"], default-features = false }
+lazy_static = "1.4"  # Used for static request ID storage in message_handler
+regex = "1.10"  # Used for text parsing in improved handler
+
+
 axum = "0.8"
 chrono = { version = "0.4.24", features = ["serde"] }
 tower-http = { version = "0.6.0", features = ["cors"] }
@@ -53,7 +60,9 @@ url = { version = "2.4", features = ["serde"] }
 
 async-trait = { version = "0.1"}
 clap = { version = "4.5", features = ["derive"] }
-
+sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "chrono", "uuid", "json"] }
+bon = "3"
+thiserror = "2"
 
 [profile.dev]
 opt-level = 0

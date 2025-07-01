@@ -9,25 +9,45 @@ crate-type = ["dylib", "rlib"]
 [dependencies]
 llm_api = { workspace = true }
 configuration = { workspace = true }
+rmcp = { workspace = true }
 
-reqwest = { workspace = true }
-tokio = { workspace = true }
-serde = { workspace=true } 
-serde_json = { workspace = true }
+
+log = "0.4.27"
+
+
+
 rustls = { workspace = true }
 dotenv = { workspace = true }
-anyhow = { workspace = true }
-rmcp = { workspace = true }
-tracing = { workspace = true }
-tracing-subscriber = { workspace = true }
-rand = { workspace = true }
-futures = { workspace = true }
+
 tower = { workspace = true }
-axum = { workspace = true }
-chrono = { workspace = true }
-tower-http = { workspace = true }
-uuid = { workspace = true }
-log = { workspace = true }
 
 toml = { workspace = true }
-#env_logger= { workspace = true }
+
+tokio = { version = "1", features = [
+    "macros",
+    "rt",
+    "rt-multi-thread",
+    "io-std",
+    "signal",
+] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+anyhow = "1.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = [
+    "env-filter",
+    "std",
+    "fmt",
+] }
+futures = "0.3"
+rand = { version = "0.9", features = ["std"] }
+axum = { version = "0.8", features = ["macros"] }
+schemars = { version = "0.8", optional = true }
+reqwest = { version = "0.12", features = ["json"] }
+chrono = "0.4"
+uuid = { version = "1.6", features = ["v4", "serde"] }
+serde_urlencoded = "0.7"
+askama = { version = "0.14" }
+tower-http = { version = "0.6", features = ["cors"] }
+hyper = { version = "1" }
+hyper-util = { version = "0", features = ["server"] }

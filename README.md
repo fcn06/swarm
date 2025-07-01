@@ -23,7 +23,7 @@ The `mcp_server` project is typically a separate but complementary component.
 
 ## Running Components
 
-You first need to compile the workspace
+You first need to compile the workspace (before you execute cargo run. This will force update Cargo.lock)
 ```
 bash
     cargo build 

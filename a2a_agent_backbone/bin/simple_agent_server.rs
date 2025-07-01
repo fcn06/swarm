@@ -1,8 +1,4 @@
-use a2a_agent_backbone::a2a_agent_logic::config::AuthConfig;
-use a2a_agent_backbone::a2a_agent_logic::config::ServerConfig;
-use a2a_agent_backbone::a2a_agent_logic::config::StorageConfig;
 use a2a_agent_backbone::a2a_agent_logic::server::SimpleAgentServer;
-
 use a2a_agent_backbone::a2a_agent_initialization::a2a_agent_config::setup_project_a2a;
 use configuration::AgentA2aConfig;
 

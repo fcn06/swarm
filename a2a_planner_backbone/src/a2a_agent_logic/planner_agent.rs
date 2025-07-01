@@ -4,17 +4,16 @@ use std::collections::{HashMap, HashSet, VecDeque};
 use uuid::Uuid;
 
 // Assuming llm_api crate is available and has these
-use llm_api::chat::{ChatCompletionRequest, ChatCompletionResponse, call_chat_completions};
+use llm_api::chat::{ChatCompletionRequest, call_chat_completions};
 
 use crate::PlannerAgentConfig;
 use crate::a2a_plan::plan_definition::{
-    ExecutionPlan, ExecutionResult, Plan, PlanResponse, PlanStatus, TaskDefinition,
+    ExecutionPlan, ExecutionResult, Plan, PlanResponse, PlanStatus, 
 };
 use crate::a2a_plan::plan_execution::A2AClient;
 
 // to update
-use a2a_rs::domain::{Message, Part, Role, TaskState};
-use a2a_rs::services::AgentInfoProvider;
+use a2a_rs::domain::{Message, Part, TaskState};
 
 /// Agent that will be in charge of the planning definition and execution
 /// He will have access to various a2a resources for this purpose
@@ -123,7 +122,7 @@ impl PlannerAgent {
                 );
 
                 // Attempt to execute the plan
-                let execution_outcome = self.execute_plan(&mut plan).await;
+                let _execution_outcome = self.execute_plan(&mut plan).await;
 
                 // Attempt to summarize results regardless of execution outcome
                 match self.summarize_results(&mut plan).await {
@@ -236,7 +235,7 @@ impl PlannerAgent {
         );
         // sometime the Json is sent between '''json''' , like in python and this needs to be avoided
 
-        let messages = vec![Message::user_text(
+        let _messages = vec![Message::user_text(
             prompt.clone().to_string(),
             Uuid::new_v4().to_string(),
         )];
@@ -330,7 +329,7 @@ impl PlannerAgent {
 
         let mut completed_tasks: HashSet<String> = HashSet::new();
         let mut task_queue: VecDeque<String> = VecDeque::new(); // Tasks ready to execute
-        let mut executing_plans: HashMap<String, ExecutionPlan> = HashMap::new();
+        let  executing_plans: HashMap<String, ExecutionPlan> = HashMap::new();
 
         // Initial population of the queue with tasks that have no dependencies
         for task_def in &plan.tasks_definition {
@@ -564,7 +563,7 @@ impl PlannerAgent {
         // A more complete solution would store task results in the Plan struct or a related structure.
 
         // Sort tasks by their original definition order for a consistent summary
-        let mut sorted_tasks_defs = plan.tasks_definition.clone();
+        let  sorted_tasks_defs = plan.tasks_definition.clone();
         // Assuming TaskDefinition has a way to maintain original order or we use the order from plan.tasks_definition directly
         // For now, let's just iterate through tasks_definition as is.
 
@@ -604,7 +603,7 @@ impl PlannerAgent {
             context.push_str("The plan is still in progress. Provide a brief update based on the plan summary and tasks.");
         }
 
-        let messages = vec![Message::user_text(
+        let _messages = vec![Message::user_text(
             context.clone().to_string(),
             Uuid::new_v4().to_string(),
         )];

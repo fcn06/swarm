@@ -6,7 +6,7 @@
 //! For production agents, you typically want to implement your own message handler
 //! and compose it with the storage implementations directly.
 
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc};
 
 use async_trait::async_trait;
 

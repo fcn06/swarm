@@ -137,3 +137,28 @@ pub async fn call_chat_completions(
 
     Ok(response_body)
 }
+
+pub async fn call_chat_completions_v2(
+    client: &Client,
+    request_payload: &ChatCompletionRequest,
+    api_url:String,
+) -> Result<ChatCompletionResponse, reqwest::Error> {
+    let api_key = env::var("LLM_API_KEY").expect("LLM_API_KEY must be set");
+    
+    let response = client
+        .post(api_url)
+        .bearer_auth(api_key)
+        .header("Content-Type", "application/json; charset=utf-8")
+        .json(request_payload)
+        .send()
+        .await?;
+
+    // Check for HTTP errors first
+    response.error_for_status_ref()?;
+
+    // Then deserialize the successful response
+    let response_body = response.json::<ChatCompletionResponse>().await?;
+
+    Ok(response_body)
+}
+

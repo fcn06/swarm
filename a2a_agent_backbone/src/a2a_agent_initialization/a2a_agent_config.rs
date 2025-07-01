@@ -4,14 +4,6 @@ use mcp_agent_backbone::mcp_initialization::mcp_agent_config::{
     RuntimeMcpConfigProject, setup_project_mcp,
 };
 
-use a2a_rs::{
-    domain::{A2AError, AgentCapabilities, AgentCard, AgentSkill},
-    services::server::AgentInfoProvider,
-};
-
-use async_trait::async_trait;
-use serde::{Deserialize, Serialize};
-
 #[derive(Debug, Clone)]
 pub struct RuntimeA2aConfigProject {
     pub agent_a2a_config: AgentA2aConfig,

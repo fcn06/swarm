@@ -1,13 +1,11 @@
 use a2a_rs::{
     HttpClient,
-    domain::{A2AError, Message, Part, Task, TaskState,AgentSkill},
+    domain::{ Message, Part,AgentSkill},
     services::AsyncA2AClient,
 };
 use anyhow::Result;
 
 use std::sync::Arc;
-use serde_json::Value;
-
 
 /////////////////////////////////////////////////////////
 // Client to connect to a2a server
@@ -61,7 +59,7 @@ impl A2AClient {
 
     /// Execute a task on the A2A server agent.
     /// In a real scenario, this would make an API call to the agent.
-    pub async fn execute_task(&self, task_description: &str, skill_to_use: &str) -> Result<String> {
+    pub async fn execute_task(&self, task_description: &str, _skill_to_use: &str) -> Result<String> {
         ////////////////////////////////////////////////////////////////////////////////
         // EXAMPLE OF REAL WORLD TASK EXECUTION
 
@@ -79,7 +77,7 @@ impl A2AClient {
             .client
             .send_task_message(&task_id, &message, None, Some(50))
             .await?;
-        /// Response of send_task_message is  :Result<Task, A2AError>;
+        // Response of send_task_message is  :Result<Task, A2AError>;
         // Simulate potential failure for demonstration
         // if task_description.contains("fail") {
         //     bail!("Simulated task failure");

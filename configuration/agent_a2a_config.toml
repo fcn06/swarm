@@ -8,6 +8,7 @@ agent_a2a_skill_name="All_requests about Weather and Customer"
 agent_a2a_skill_description="Helps with all types of requests."
 agent_model_id="qwen/qwen3-32b"
 #agent_model_id="gemini-2.0-flash"
+#agent_a2a_llm_url // future use
 agent_a2a_mcp_config_path="configuration/agent_mcp_config.toml"
 agent_a2a_version="1.0.0"
 agent_a2a_description="An agent that can process requests related to weather, customer information or web search"

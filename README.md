@@ -10,13 +10,18 @@ The overall architecture of the agentic swarm, illustrating the interaction betw
 
 ## Getting Started
 
-To run components of the swarm, you will need to configure access to an OpenAI compatible chat completion API. Create a `.env` file in the project root with the following structure:
+To run components of the swarm, you will need to configure access to an OpenAI compatible chat completion API.  \
+
+Create a `.env` file in the project root with the following structure: \
+\
+For groq
 ```
 dotenv
 LLM_API_KEY=your_api_key
 LLM_API_URL=your_api_base_url # e.g., https://api.groq.com/openai/v1/chat/completions
 ```
-While any OpenAI compatible API can be used, Groq is a personal preference due to its speed.
+
+While any OpenAI compatible API can be used, Groq is a personal preference due to its speed. ALong with the model : qwen/qwen3-32b
 
 It is recommended to have an `mcp_server` running to allow the agents to interact with external services or information sources. \
 The `mcp_server` project is typically a separate but complementary component.

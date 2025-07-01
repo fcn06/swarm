@@ -230,7 +230,8 @@ impl PlannerAgent {
                 }}]
             }}
 
-            RETURN ONLY THE SIMPLE JSON REPRESENTING THE PLAN ON THE SAME FORMAT AS ABOVE.",
+            RETURN ONLY THE SIMPLE JSON REPRESENTING THE PLAN ON THE SAME FORMAT AS ABOVE. 
+            DO NOT INCLUDE MARKDOWN CODE BLOCK FORMATTING.",
 
             skills_description, self.extract_text_from_message(request).await
         );
@@ -670,6 +671,15 @@ impl PlannerAgent {
     async fn remove_think_tags(&self, result: String) -> anyhow::Result<String> {
         let mut cleaned_result = String::new();
         let mut in_think_tag = false;
+
+        // in case llm returns json markdown
+        let result_clean= if result.contains("```json") {
+            let result_1=result.replace("```json", "");
+            result_1.replace("```", "")
+        } else {result};
+        let result=result_clean;
+
+        // in case LLM return <think> and </think> tags
         for line in result.lines() {
             if line.contains("<think>") {
                 in_think_tag = true;

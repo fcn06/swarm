@@ -3,7 +3,6 @@ name = "a2a_agent_backbone"
 version = "0.1.0"
 edition = "2024"
 
-#https://github.com/EmilLindfors/a2a-rs/blob/master/a2a-agents/src/reimbursement_agent/handler.rs
 
 #[lib]
 #crate-type = ["dylib", "rlib"]

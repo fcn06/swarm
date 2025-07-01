@@ -29,6 +29,7 @@ async-trait = { workspace = true }
 futures = { workspace = true }
 clap = { workspace = true }
 
+
 [[bin]]
 name = "planner_agent"
 path = "bin/a2a_planner_client.rs"

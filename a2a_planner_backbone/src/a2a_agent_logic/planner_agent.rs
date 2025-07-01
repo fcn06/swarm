@@ -230,8 +230,7 @@ impl PlannerAgent {
                 }}]
             }}
 
-            RETURN ONLY THE SIMPLE JSON REPRESENTING THE PLAN ON THE SAME FORMAT AS ABOVE. 
-            DO NOT INCLUDE MARKDOWN CODE BLOCK FORMATTING.",
+            RETURN ONLY THE SIMPLE JSON REPRESENTING THE PLAN ON THE SAME FORMAT AS ABOVE.",
 
             skills_description, self.extract_text_from_message(request).await
         );

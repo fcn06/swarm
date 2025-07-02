@@ -2,6 +2,7 @@ agent_planner_name="planner"
 # future use
 agent_planner_system_prompt="You are a helpful planner agent"
 agent_planner_model_id="qwen/qwen3-32b"
+agent_planner_llm_url="https://api.groq.com/openai/v1/chat/completions"
 #agent_planner_model_id="gemini-2.0-flash"
 #agent_planner_llm_url // future use
 # future use

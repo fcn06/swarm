@@ -20,7 +20,8 @@ LLM_API_KEY=your_api_key
 LLM_API_URL=your_api_base_url # e.g., https://api.groq.com/openai/v1/chat/completions
 ```
 \
-Groq is a personal preference due to its speed. ALong with the model : qwen/qwen3-32b 
+Groq is a personal preference due to its speed. ALong with the model : qwen/qwen3-32b \
+\
 It is tested also on Gemini ( with LLM_API_URL= https://generativelanguage.googleapis.com/v1beta/openai/chat/completions)
 \
 

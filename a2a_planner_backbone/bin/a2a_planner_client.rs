@@ -1,5 +1,5 @@
 use a2a_planner_backbone::a2a_agent_logic::planner_agent::PlannerAgent;
-use a2a_planner_backbone::PlannerAgentConfig;
+use a2a_planner_backbone::PlannerAgentDefinition;
 
 
 use configuration::AgentPlannerConfig;
@@ -38,12 +38,15 @@ async fn main() -> anyhow::Result<()> {
 
     // Set model to be used
     let model_id = a2a_agent_planner_config.agent_planner_model_id;
+    // Set llm_url to be used
+    let llm_url = a2a_agent_planner_config.agent_planner_llm_url;
 
     // Set model to be used
     let agents_references = a2a_agent_planner_config.agent_planner_agents_references;
 
-    let config = PlannerAgentConfig {
+    let config = PlannerAgentDefinition {
         model_id: model_id, // Or your preferred model
+        llm_url: llm_url,
         agent_configs: agents_references,
     };
 

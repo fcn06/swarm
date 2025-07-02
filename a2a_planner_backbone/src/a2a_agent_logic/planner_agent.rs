@@ -5,8 +5,9 @@ use uuid::Uuid;
 
 // Assuming llm_api crate is available and has these
 use llm_api::chat::{ChatCompletionRequest, call_chat_completions};
+use llm_api::chat::call_chat_completions_v2;
 
-use crate::PlannerAgentConfig;
+use crate::PlannerAgentDefinition;
 use crate::a2a_plan::plan_definition::{
     ExecutionPlan, ExecutionResult, Plan, PlanResponse, PlanStatus, 
 };
@@ -18,12 +19,12 @@ use a2a_rs::domain::{Message, Part, TaskState};
 /// Agent that will be in charge of the planning definition and execution
 /// He will have access to various a2a resources for this purpose
 pub struct PlannerAgent {
-    config: PlannerAgentConfig,
+    config: PlannerAgentDefinition,
     client_agents: HashMap<String, A2AClient>,
 }
 
 impl PlannerAgent {
-    pub async fn new(config: PlannerAgentConfig) -> Result<Self> {
+    pub async fn new(config: PlannerAgentDefinition) -> Result<Self> {
         let mut client_agents = HashMap::new();
 
         println!("PlannerAgent: Connecting to A2a server agents...");
@@ -264,9 +265,13 @@ impl PlannerAgent {
         // The llm_api crate is expected to handle the API key, e.g., via environment variables
         // Assuming 'self.llm_client' is initialized elsewhere with a concrete implementation
         // For now, we'll call the function directly assuming it handles client creation/management
-        let llm_response = call_chat_completions(&http_client, &llm_request_payload)
-            .await
-            .context("LLM API request failed during plan creation")?;
+        //let llm_response = call_chat_completions(&http_client, &llm_request_payload)
+        //    .await
+        //    .context("LLM API request failed during plan creation")?;
+
+        let llm_response = call_chat_completions_v2(&http_client, &llm_request_payload,self.config.llm_url.clone())
+        .await
+        .context("LLM API request failed during plan creation")?;
 
         let response_content = llm_response
             .choices
@@ -428,7 +433,7 @@ impl PlannerAgent {
                         };
 
                         let http_client = reqwest::Client::new();
-                        task_result = call_chat_completions(&http_client, &llm_request_payload)
+                        task_result = call_chat_completions_v2(&http_client, &llm_request_payload,self.config.llm_url.clone())
                             .await
                             .context("LLM API request failed during reflective task execution")?
                             .choices
@@ -627,7 +632,7 @@ impl PlannerAgent {
         };
 
         // Assuming call_chat_completions handles client internally or uses provided config
-        let llm_response = call_chat_completions(&http_client, &llm_request_payload)
+        let llm_response = call_chat_completions_v2(&http_client, &llm_request_payload,self.config.llm_url.clone())
             .await
             .context("LLM API request for summary failed")?;
 

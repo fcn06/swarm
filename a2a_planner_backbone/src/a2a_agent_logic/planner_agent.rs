@@ -75,32 +75,26 @@ impl PlannerAgent {
     async fn get_available_skills_description(&self) -> String {
         let mut description = "Available agent skills:".to_string();
         if self.client_agents.is_empty() {
-            description.push_str(
-                "- No A2a agents connected.
-",
-            );
+            description.push_str("- No A2a agents connected.\n",);
         } else {
             for (name, agent) in &self.client_agents {
                 description.push_str(&format!("- Agent '{}':", name));
                 // Access skills directly from the A2AClient struct
                 let skills = agent.get_skills();
                 
-                // for testing purpose
-                println!("PlannerAgent: Agent '{}' has skills: {}", name, skills[0].id);
-
                 if skills.is_empty() {
                     description.push_str(" No specific skills listed.");
                 } else {
                     for skill in skills {
-                        description.push_str(&format!(" - {}", skill.id));
+                        description.push_str(&format!(" skill.id : {} -- skill.description : {} \n", skill.id,skill.description.clone()));
                     }
                 }
-                description.push_str(
-                    "
-",
-                ); // Add newline for next agent
+                //description.push_str("\n");// Add newline for next agent
+                // For testing purpose
+                //println!("PlannerAgent: Agent '{}' has skills: {}", name, description);
             }
         }
+        
         description
     }
 

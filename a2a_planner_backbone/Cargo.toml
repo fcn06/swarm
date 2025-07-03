@@ -20,7 +20,7 @@ reqwest = { workspace = true }
 chrono = { workspace = true }
 uuid = { workspace = true }
 
-base64={ workspace = true }
+base64= { workspace = true }
 url = { workspace = true }
 dotenv = { workspace = true }
 
@@ -28,8 +28,12 @@ dotenv = { workspace = true }
 async-trait = { workspace = true }
 futures = { workspace = true }
 clap = { workspace = true }
-
+axum = { workspace = true } # Added axum dependency
 
 [[bin]]
 name = "planner_agent"
 path = "bin/a2a_planner_client.rs"
+
+#[[bin]]
+#name = "planner_server"
+#path = "bin/planner_server.rs"

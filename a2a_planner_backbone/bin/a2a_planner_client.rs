@@ -58,11 +58,12 @@ async fn main() -> anyhow::Result<()> {
     let message_id_1 = uuid::Uuid::new_v4().to_string();
     let user_req_1 = Message::user_text(args.user_query, message_id_1);
 
-    println!("--- Sending User Request 1 ---");
+    //println!("--- Sending User Request 1 ---");
     let result_1 = planner_agent.handle_user_request(user_req_1).await;
-    println!("--- Final Execution Result 1 ---");
-    println!("Request ID: {}", result_1.request_id);
-    println!("Success: {}", result_1.success);
+    
+    //println!("--- Final Execution Result 1 ---");
+    //println!("Request ID: {}", result_1.request_id);
+    //println!("Success: {}", result_1.success);
     println!("Output:{:?}", result_1.output);
 
     Ok(())

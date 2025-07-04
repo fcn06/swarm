@@ -12,20 +12,16 @@ The overall architecture of the agentic swarm, illustrating the interaction betw
 
 To run components of the swarm, you will need to configure access to an OpenAI compatible chat completion API. \
 
-Create a `.env` file in the project root with the following structure: \
-\
-For groq
-```
-LLM_API_KEY=your_api_key
-LLM_API_URL=your_api_base_url # e.g., https://api.groq.com/openai/v1/chat/completions
-```
 \
 Groq is a personal preference due to its speed. ALong with the model : qwen/qwen3-32b \
+https://api.groq.com/openai/v1/chat/completions \
 \
-It is tested also on Gemini ( with LLM_API_URL= https://generativelanguage.googleapis.com/v1beta/openai/chat/completions)
+It is tested also on Gemini \
+https://generativelanguage.googleapis.com/v1beta/openai/chat/completions \
 \
 
 It is recommended to have an `mcp_server` running to allow the agents to interact with external services or information sources. \
+\
 The `mcp_server` project is typically a separate but complementary component.
 
 ## Running Components
@@ -33,7 +29,7 @@ The `mcp_server` project is typically a separate but complementary component.
 You first need to compile the workspace (before you execute cargo run. This will force update Cargo.lock)
 ```
 bash
-    cargo build 
+    cargo build --release
     
 ```
 
@@ -43,13 +39,17 @@ Then You can execute various components of the swarm using `cargo run`:
 ```
 bash
     cargo run --bin simple_agent_server -- --config-file "configuration/agent_a2a_config.toml"
+    or
+    LLM_API_KEY=<YOUR-API-KEY> ./target/release/simple_agent_server --config-file "configuration/agent_a2a_config.toml"
     
 ```
 *   **Planner:**
 ```
 bash
     cargo run --bin planner_agent -- --user-query "What is the weather in Boston ?"
-    
+    or
+    LLM_API_KEY=<YOUR-API-KEY> ./target/release/planner_agent  --user-query "What is the weather in Boston ?"
+
 ```
 Replace `"What is the weather in Boston ?"` with your desired user query.
 

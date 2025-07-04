@@ -26,8 +26,7 @@ pub struct RuntimeMcpConfigProject {
     pub model_id: String,
 }
 
-// https://github.com/modelcontextprotocol/rust-sdk/blob/main/examples/simple-chat-client/src/chat.rs
-// make some tests to see if this can handle recursive calls
+// todo make existence of a mcp server conditional
 
 // Define available tools
 pub async fn setup_project_mcp(

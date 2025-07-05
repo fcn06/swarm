@@ -41,13 +41,20 @@ To enable your agents to think and communicate, you'll need access to an OpenAI-
 * Our recommendation for speed: [Groq](https://api.groq.com/openai/v1/chat/completions) (we've had great success with the qwen/qwen3-32b model).  
 * Also tested with: [Gemini](https://generativelanguage.googleapis.com/v1beta/openai/chat/completions).
 
-You'll also benefit from having an mcp\_server running. This separate, complementary project allows your MCP agents to connect to external services. (While not part of *this* crate, it's a key piece for practical agent interactions\!)
+You'll also benefit from having an mcp\_server running. 
+
+Here is a separate complementary project may be used to start your testing :
+
+* Test MCP Server : [https://github.com/fcn06/mcp_server](https://github.com/fcn06/mcp_server) 
+
+
 
 ### **Installation & Building**
 
 First, compile the workspace to ensure all dependencies are in sync:
-
-cargo build \--release
+```bash
+cargo build --release
+```
 
 ### **Running Components**
 

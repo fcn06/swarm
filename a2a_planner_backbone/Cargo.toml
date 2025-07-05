@@ -30,6 +30,11 @@ futures = { workspace = true }
 clap = { workspace = true }
 axum = { workspace = true } # Added axum dependency
 
+# Logging - optional
+tracing = { workspace = true}
+tracing-subscriber = { workspace = true }
+
+
 [[bin]]
 name = "planner_agent"
 path = "bin/a2a_planner_client.rs"

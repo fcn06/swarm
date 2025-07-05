@@ -9,39 +9,46 @@ use a2a_agent_backbone::a2a_agent_logic::config::{AuthConfig, ServerConfig, Stor
 use a2a_agent_backbone::a2a_agent_initialization::a2a_agent_config::RuntimeA2aConfigProject;
 
 use super::planner_handler::SimplePlannerAgentHandler;
-use crate::a2a_planner_agent_logic::planner_agent::PlannerAgent;
+use crate::a2a_agent_logic::planner_agent::PlannerAgent;
 use crate::PlannerAgentDefinition;
+use configuration::AgentPlannerConfig;
 
 /// Modern A2A server setup using ReimbursementHandler
 //pub struct ReimbursementServer {
 pub struct SimplePlannerAgentServer {
-    config: ServerConfig,
-    runtime_config: RuntimeA2aConfigProject,
+    agent_planner_config: AgentPlannerConfig,
+    planner_agent: PlannerAgent,
 }
 
 impl SimplePlannerAgentServer {
     /// Create a new modern reimbursement server with default config
-    pub fn new(runtime_config: RuntimeA2aConfigProject) -> Self {
-        let config = ServerConfig::new(
-            runtime_config.agent_a2a_config.agent_a2a_host.clone(),
-            runtime_config
-                .agent_a2a_config
-                .agent_a2a_http_port
-                .clone()
-                .parse::<u16>()
-                .unwrap(),
-            runtime_config
-                .agent_a2a_config
-                .agent_a2a_ws_port
-                .clone()
-                .parse::<u16>()
-                .unwrap(),
-        );
+    pub async fn new(a2a_agent_planner_config: AgentPlannerConfig) -> anyhow::Result<Self> {
 
-        Self {
-            config,
-            runtime_config,
-        }
+        // load a2a config file and initialize appropriateruntime
+        let agent_planner_config = AgentPlannerConfig::load_agent_config("configuration/agent_planner_config.toml")
+            .expect("No planner configuration file");
+
+        // Set model to be used
+        let model_id = agent_planner_config.agent_planner_model_id.clone();
+        // Set llm_url to be used
+        let llm_url = agent_planner_config.agent_planner_llm_url.clone();
+
+        // Set model to be used
+        let agents_references = agent_planner_config.agent_planner_agents_references.clone();
+
+        let config = PlannerAgentDefinition {
+            model_id: model_id, // Or your preferred model
+            llm_url: llm_url,
+            agent_configs: agents_references,
+        };
+
+        // Initialize the Planner Agent
+        let  planner_agent = PlannerAgent::new(config).await?;
+
+        Ok(Self {
+            agent_planner_config:agent_planner_config,
+            planner_agent:planner_agent,
+        })
     }
 
     /// Create in-memory storage
@@ -53,28 +60,9 @@ impl SimplePlannerAgentServer {
 
     /// Start the HTTP server
     pub async fn start_http(&self) -> Result<(), Box<dyn std::error::Error>> {
-        match &self.config.storage {
-            StorageConfig::InMemory => {
-                let storage = self.create_in_memory_storage();
-                self.start_http_server(storage).await
-            }
-            #[cfg(feature = "sqlx-storage")]
-            StorageConfig::Sqlx {
-                url,
-                max_connections,
-                enable_logging,
-            } => {
-                let storage = self
-                    .create_sqlx_storage(url, *max_connections, *enable_logging)
-                    .await?;
-                self.start_http_server(storage).await
-            }
-            #[cfg(not(feature = "sqlx-storage"))]
-            StorageConfig::Sqlx { .. } => {
-                Err("SQLx storage requested but 'sqlx' feature is not enabled.".into())
-            }
-            
-        }
+        
+        let storage = self.create_in_memory_storage();
+        self.start_http_server(storage).await
     }
 
     /// Start HTTP server
@@ -87,14 +75,9 @@ impl SimplePlannerAgentServer {
         // does not use the one from start_http()
         let storage = self.create_in_memory_storage();
 
-        // Load planner agent configuration
-        let planner_config = PlannerAgentDefinition::load_from_default_path().await?;
-        // Initialize PlannerAgent
-        let planner_agent = PlannerAgent::new(planner_config).await?;
-
         // Create message handler
         let message_handler =
-            SimplePlannerAgentHandler::with_storage(self.runtime_config.clone(), storage.clone(), planner_agent);
+            SimplePlannerAgentHandler::with_storage(storage.clone(), self.agent_planner_config.clone(),self.planner_agent.clone());
         self.start_with_handler(message_handler, storage).await
     }
 
@@ -117,103 +100,40 @@ impl SimplePlannerAgentServer {
 
         //////////////////////////////////////////////////////////////////
 
-        let agent_a2a_config = self.runtime_config.agent_a2a_config.clone();
+        let agent_planner_config = self.agent_planner_config.clone();
 
         let agent_info = SimpleAgentInfo::new(
-            agent_a2a_config.agent_a2a_name,
-            format!("http://{}:{}", agent_a2a_config.agent_a2a_host, agent_a2a_config.agent_a2a_http_port),
-        )
-        .with_description(agent_a2a_config.agent_a2a_description)
-        //.with_provider(
-        //    "Example Organization".to_string(),
-        //    "https://example.org".to_string(),
-        //)
-        .with_documentation_url(agent_a2a_config.agent_a2a_doc_url.expect("NO DOC URL"))
-        .with_streaming()
-        .add_comprehensive_skill(
-            agent_a2a_config.agent_a2a_skill_id,
-            agent_a2a_config.agent_a2a_skill_name,
-            Some(agent_a2a_config.agent_a2a_skill_description),
-            Some(agent_a2a_config.agent_a2a_tags),
-            Some(agent_a2a_config.agent_a2a_examples),
-            Some(vec!["text".to_string(), "data".to_string()]),
-            Some(vec!["text".to_string(), "data".to_string()]),
+            agent_planner_config.agent_planner_name.clone(),
+            format!("http://{}:{}", agent_planner_config.agent_planner_host, agent_planner_config.agent_planner_http_port),
         );
 
         //////////////////////////////////////////////////////////////////
 
-        let agent_a2a_config = self.runtime_config.agent_a2a_config.clone();
         // Create HTTP server
-        let bind_address = format!("{}:{}", agent_a2a_config.agent_a2a_host, agent_a2a_config.agent_a2a_http_port);
+        let bind_address = format!("{}:{}", agent_planner_config.agent_planner_host, agent_planner_config.agent_planner_http_port);
 
         println!(
             "🌐 Starting HTTP a2a agent server {} on {}:{}",
-            agent_a2a_config.agent_a2a_name,agent_a2a_config.agent_a2a_host, agent_a2a_config.agent_a2a_http_port
+            agent_planner_config.agent_planner_name,agent_planner_config.agent_planner_host, agent_planner_config.agent_planner_http_port
         );
         println!(
             "📋 Agent card: http://{}:{}/agent-card",
-            agent_a2a_config.agent_a2a_host, agent_a2a_config.agent_a2a_http_port
+            agent_planner_config.agent_planner_host, agent_planner_config.agent_planner_http_port
         );
         println!(
             "🛠️  Skills: http://{}:{}/skills",
-            agent_a2a_config.agent_a2a_host, agent_a2a_config.agent_a2a_http_port
+            agent_planner_config.agent_planner_host, agent_planner_config.agent_planner_http_port
         );
 
-        match &self.config.storage {
-            StorageConfig::InMemory => println!("💾 Storage: In-memory (non-persistent)"),
-            StorageConfig::Sqlx { url, .. } => println!("💾 Storage: SQLx ({})", url),
-        }
+        println!("💾 Storage: In-memory (non-persistent)");
+        println!("🔓 Authentication: None (public access)");
+         // Create server without authentication
+         let server = HttpServer::new(processor, agent_info, bind_address);
+         server
+             .start()
+             .await
+             .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
 
-        match &self.config.auth {
-            AuthConfig::None => {
-                println!("🔓 Authentication: None (public access)");
-
-                // Create server without authentication
-                let server = HttpServer::new(processor, agent_info, bind_address);
-                server
-                    .start()
-                    .await
-                    .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
-            }
-            AuthConfig::BearerToken { tokens, format } => {
-                println!(
-                    "🔐 Authentication: Bearer token ({} token(s){})",
-                    tokens.len(),
-                    format
-                        .as_ref()
-                        .map(|f| format!(", format: {}", f))
-                        .unwrap_or_default()
-                );
-
-                let authenticator = BearerTokenAuthenticator::new(tokens.clone());
-                let server =
-                    HttpServer::with_auth(processor, agent_info, bind_address, authenticator);
-                server
-                    .start()
-                    .await
-                    .map_err(|e| Box<dyn std::error::Error>::from(e))
-            }
-            AuthConfig::ApiKey {
-                keys,
-                location,
-                name,
-            } => {
-                println!(
-                    "🔐 Authentication: API key ({} {}, {} key(s))",
-                    location,
-                    name,
-                    keys.len()
-                );
-                println!("⚠️  API key authentication not yet supported, using no authentication");
-
-                // Create server without authentication
-                let server = HttpServer::new(processor, agent_info, bind_address);
-                server
-                    .start()
-                    .await
-                    .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
-            }
-        }
     }
 
     /// Start the WebSocket server (simplified for now)

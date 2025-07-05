@@ -25,12 +25,13 @@ use a2a_rs::{
 };
 
 use a2a_agent_backbone::a2a_agent_initialization::a2a_agent_config::RuntimeA2aConfigProject;
-use crate::a2a_planner_agent_logic::planner_agent::PlannerAgent;
+use crate::a2a_agent_logic::planner_agent::PlannerAgent;
 use crate::a2a_plan::plan_definition::ExecutionResult;
 
 
 use llm_api::chat::Message as Message_Llm;
-
+//use crate::PlannerAgentDefinition;
+use configuration::AgentPlannerConfig;
 
 /// Simple agent handler that coordinates all business capability traits
 /// by delegating to InMemoryTaskStorage which implements the actual functionality.
@@ -48,32 +49,32 @@ use llm_api::chat::Message as Message_Llm;
 ///
 #[derive(Clone)]
 pub struct SimplePlannerAgentHandler {
-    pub a2a_runtime_config_project: RuntimeA2aConfigProject,
     /// Task storage that implements all the business capabilities
     storage: Arc<InMemoryTaskStorage>,
+    config:AgentPlannerConfig,
     planner_agent: Arc<Mutex<PlannerAgent>>,
 }
 
 impl SimplePlannerAgentHandler {
     /// Create a new simple agent handler
-    pub fn new(a2a_runtime_config_project: RuntimeA2aConfigProject, planner_agent: PlannerAgent) -> Self {
+    pub fn new(storage: InMemoryTaskStorage, config:AgentPlannerConfig, planner_agent: PlannerAgent) -> Self {
         println!("Creating SimplePlannerAgentHandler");
         Self {
-            a2a_runtime_config_project: a2a_runtime_config_project,
             storage: Arc::new(InMemoryTaskStorage::new()),
+            config:config,
             planner_agent: Arc::new(Mutex::new(planner_agent)),
         }
     }
 
     /// Create with a custom storage implementation
     pub fn with_storage(
-        a2a_runtime_config_project: RuntimeA2aConfigProject,
         storage: InMemoryTaskStorage,
+        config:AgentPlannerConfig,
         planner_agent: PlannerAgent,
     ) -> Self {
         Self {
-            a2a_runtime_config_project: a2a_runtime_config_project,
             storage: Arc::new(storage),
+            config:config,
             planner_agent: Arc::new(Mutex::new(planner_agent)),
         }
     }

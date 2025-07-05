@@ -1,5 +1,8 @@
 agent_planner_name="planner"
 # future use
+agent_planner_host="127.0.0.1"
+agent_planner_http_port="9080"
+agent_planner_ws_port="9081"
 agent_planner_system_prompt="You are a helpful planner agent"
 #agent_planner_model_id="qwen/qwen3-32b"
 #agent_planner_llm_url="https://api.groq.com/openai/v1/chat/completions"

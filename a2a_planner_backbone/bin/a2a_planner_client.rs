@@ -1,4 +1,4 @@
-use a2a_planner_backbone::a2a_planner_agent_logic::planner_agent::PlannerAgent;
+use a2a_planner_backbone::a2a_agent_logic::planner_agent::PlannerAgent;
 use a2a_planner_backbone::PlannerAgentDefinition;
 
 

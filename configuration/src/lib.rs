@@ -99,6 +99,9 @@ impl SimpleAgentReference {
 #[derive(Deserialize, Debug, Clone)]
 pub struct AgentPlannerConfig {
     pub agent_planner_name: String,
+    pub agent_planner_host: String,
+    pub agent_planner_http_port: String,
+    pub agent_planner_ws_port: String,
     pub agent_planner_system_prompt: String,
     pub agent_planner_model_id: String,
     pub agent_planner_llm_url: String,

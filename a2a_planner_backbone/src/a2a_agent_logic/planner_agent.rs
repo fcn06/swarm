@@ -18,6 +18,7 @@ use a2a_rs::domain::{Message, Part, TaskState};
 
 /// Agent that will be in charge of the planning definition and execution
 /// He will have access to various a2a resources for this purpose
+#[derive(Clone)]
 pub struct PlannerAgent {
     config: PlannerAgentDefinition,
     client_agents: HashMap<String, A2AClient>,

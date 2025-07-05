@@ -9,7 +9,8 @@ use a2a_agent_backbone::a2a_agent_logic::config::{AuthConfig, ServerConfig, Stor
 use a2a_agent_backbone::a2a_agent_initialization::a2a_agent_config::RuntimeA2aConfigProject;
 
 use super::planner_handler::SimplePlannerAgentHandler;
-
+use crate::a2a_planner_agent_logic::planner_agent::PlannerAgent;
+use crate::PlannerAgentDefinition;
 
 /// Modern A2A server setup using ReimbursementHandler
 //pub struct ReimbursementServer {
@@ -86,9 +87,14 @@ impl SimplePlannerAgentServer {
         // does not use the one from start_http()
         let storage = self.create_in_memory_storage();
 
+        // Load planner agent configuration
+        let planner_config = PlannerAgentDefinition::load_from_default_path().await?;
+        // Initialize PlannerAgent
+        let planner_agent = PlannerAgent::new(planner_config).await?;
+
         // Create message handler
         let message_handler =
-            SimplePlannerAgentHandler::with_storage(self.runtime_config.clone(), storage.clone());
+            SimplePlannerAgentHandler::with_storage(self.runtime_config.clone(), storage.clone(), planner_agent);
         self.start_with_handler(message_handler, storage).await
     }
 
@@ -185,7 +191,7 @@ impl SimplePlannerAgentServer {
                 server
                     .start()
                     .await
-                    .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
+                    .map_err(|e| Box<dyn std::error::Error>::from(e))
             }
             AuthConfig::ApiKey {
                 keys,

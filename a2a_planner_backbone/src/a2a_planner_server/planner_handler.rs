@@ -9,6 +9,8 @@
 use std::sync::{Arc};
 
 use async_trait::async_trait;
+use tokio::sync::Mutex;
+
 
 use a2a_rs::{
     adapter::storage::InMemoryTaskStorage,
@@ -24,6 +26,8 @@ use a2a_rs::{
 
 use a2a_agent_backbone::a2a_agent_initialization::a2a_agent_config::RuntimeA2aConfigProject;
 use crate::a2a_planner_agent_logic::planner_agent::PlannerAgent;
+use crate::a2a_plan::plan_definition::ExecutionResult;
+
 
 use llm_api::chat::Message as Message_Llm;
 
@@ -47,15 +51,17 @@ pub struct SimplePlannerAgentHandler {
     pub a2a_runtime_config_project: RuntimeA2aConfigProject,
     /// Task storage that implements all the business capabilities
     storage: Arc<InMemoryTaskStorage>,
+    planner_agent: Arc<Mutex<PlannerAgent>>,
 }
 
 impl SimplePlannerAgentHandler {
     /// Create a new simple agent handler
-    pub fn new(a2a_runtime_config_project: RuntimeA2aConfigProject) -> Self {
+    pub fn new(a2a_runtime_config_project: RuntimeA2aConfigProject, planner_agent: PlannerAgent) -> Self {
         println!("Creating SimplePlannerAgentHandler");
         Self {
             a2a_runtime_config_project: a2a_runtime_config_project,
             storage: Arc::new(InMemoryTaskStorage::new()),
+            planner_agent: Arc::new(Mutex::new(planner_agent)),
         }
     }
 
@@ -63,10 +69,12 @@ impl SimplePlannerAgentHandler {
     pub fn with_storage(
         a2a_runtime_config_project: RuntimeA2aConfigProject,
         storage: InMemoryTaskStorage,
+        planner_agent: PlannerAgent,
     ) -> Self {
         Self {
             a2a_runtime_config_project: a2a_runtime_config_project,
             storage: Arc::new(storage),
+            planner_agent: Arc::new(Mutex::new(planner_agent)),
         }
     }
 
@@ -86,7 +94,8 @@ impl SimplePlannerAgentHandler {
                 _ => None,
             })
             .collect::<Vec<_>>()
-            .join("\n");
+            .join("
+");
 
         // Convert A2A Message into LLM Message
         let llm_msg = Message_Llm {
@@ -124,7 +133,7 @@ impl AsyncMessageHandler for SimplePlannerAgentHandler {
         // replace the below default message handler
 
         // Transform a2a message into llm message
-        let llm_msg = self.a2a_message_to_llm_message(&message)?;
+        //let llm_msg = self.a2a_message_to_llm_message(&message)?;
 
         // Create or get the session ID
         //let _session_id = session_id.unwrap_or("default_session").to_string();
@@ -136,11 +145,17 @@ impl AsyncMessageHandler for SimplePlannerAgentHandler {
         //println!("Task Created : {:#?}",task.clone());
 
         // Place her user query handler
-        let response=PlannerAgent::handle_user_request(llm_msg).await;
+        let mut planner = self.planner_agent.lock().await;
+        let response: ExecutionResult = planner.handle_user_request(message.clone()).await;
+
 
         // Convert the message Back to A2A Message
-        // todo : make it resilient and remove unwrap()
-        let response_message = self.llm_message_to_a2a_message(response.unwrap())?;
+        let llm_response_from_planner = Message_Llm {
+            role: "tool".to_string(), // Or appropriate role based on ExecutionResult
+            content: response.output.clone(),
+            tool_call_id: None,
+        };
+        let response_message = self.llm_message_to_a2a_message(llm_response_from_planner)?;
 
         // Add the message to the task and update status
         let task = self

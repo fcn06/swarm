@@ -1,111 +1,122 @@
-# Swarm Crate
+# **Swarm.rs: Orchestrating Intelligent Agents in Rust 🦀**
 
-The `swarm` crate is a Rust implementation of an agentic swarm. It facilitates the connection and interaction between agents using two primary protocols: MCP (Microservice Communication Protocol) and A2A (Agent-to-Agent) protocol. This swarm is designed to be complemented by a planner, allowing for the orchestration and management of multiple agents to achieve complex goals.
+## **Welcome to Swarm.rs\!**
 
-## Architecture
+Swarm.rs is a Rust project that empowers you to build and orchestrate intelligent agents. Think of it as a control center for your digital assistants, allowing them to communicate, collaborate, and tackle complex tasks together.
 
-The overall architecture of the agentic swarm, illustrating the interaction between MCP and A2A protocols and the role of the planner, is depicted in the following diagram:
+We combine two powerful communication protocols:
+
+* MCP (Microservice Communication Protocol): For agents to interact with external services and data sources. Imagine your agents querying a weather API or accessing a database\!  
+* A2A (Agent-to-Agent Protocol): For agents to talk directly to each other, sharing information and coordinating efforts.
+
+The real magic happens with our Planner. It's the brain of the operation, observing your agents, understanding their capabilities, and orchestrating them to achieve ambitious goals.
+
+Whether you're a Rust enthusiast, an AI developer, or just curious about multi-agent systems, we invite you to explore Swarm.rs\!
+
+## **Why Swarm.rs?**
+
+* Rust-powered performance and safety: Build robust and efficient agent systems.  
+* Flexible architecture: Easily integrate with external services and create collaborative agent networks.  
+* Intuitive orchestration: The Planner simplifies complex multi-agent workflows.  
+* Open for collaboration: We're actively developing and welcome your ideas and contributions\!
+
+## **How It Works: A Glimpse into the Architecture**
+
+The diagram below illustrates how our agents, powered by MCP and A2A, interact under the guidance of the Planner.
 
 ![Swarm Architecture](documentation/a2a_mcp_architecture.drawio.png)
 
-## Getting Started
+* MCP Agents: Your agents that connect to the outside world (e.g., fetching real-time data, interacting with APIs).  
+* A2A Agents: Agents that specialize in specific tasks and communicate with each other to achieve sub-goals.  
+* Planner: The orchestrator that understands the overall goal, breaks it down, and directs the A2A agents to execute the plan.
 
-To run components of the swarm, you will need to configure access to an OpenAI compatible chat completion API. \
+## **Getting Started: Join the Swarm\!**
 
-\
-Groq is a personal preference due to its speed. ALong with the model : qwen/qwen3-32b \
-https://api.groq.com/openai/v1/chat/completions \
-\
-It is tested also on Gemini \
-https://generativelanguage.googleapis.com/v1beta/openai/chat/completions \
-\
+Ready to dive in? Here's how to get your first Swarm.rs components up and running.
 
-It is recommended to have an `mcp_server` running to allow the agents to interact with external services or information sources. \
-\
-The `mcp_server` project is typically a separate but complementary component.
+### **Prerequisites**
 
-## Running Components
+To enable your agents to think and communicate, you'll need access to an OpenAI-compatible chat completion API.
 
-You first need to compile the workspace (before you execute cargo run. This will force update Cargo.lock)
+* Our recommendation for speed: [Groq](https://api.groq.com/openai/v1/chat/completions) (we've had great success with the qwen/qwen3-32b model).  
+* Also tested with: [Gemini](https://generativelanguage.googleapis.com/v1beta/openai/chat/completions).
+
+You'll also benefit from having an mcp\_server running. This separate, complementary project allows your MCP agents to connect to external services. (While not part of *this* crate, it's a key piece for practical agent interactions\!)
+
+### **Installation & Building**
+
+First, compile the workspace to ensure all dependencies are in sync:
+
+cargo build \--release
+
+### **Running Components**
+
+Now, let's fire up some agents\!
+
+* A2A Agent Server (your individual intelligent assistants):  
+  You can run multiple A2A agents, each with its own configuration.  
+
+```bash
+  # Option 1: Run directly with cargo ( LLM_API_KEY needs to be set in .env)  
+  cargo run --bin simple_agent_server -- --config-file "configuration/agent_a2a_config.toml"
+
+  # Option 2: Run compiled binary (recommended for production-like usage)  
+  LLM_API_KEY=<YOUR-API-KEY> ./target/release/simple_agent_server --config-file "configuration/agent_a2a_config.toml"
 ```
-bash
-    cargo build --release
-    
-```
 
-Then You can execute various components of the swarm using `cargo run`:
+* Planner (the orchestrator):  
+  Ask the Planner to achieve a goal by providing a user query.  
+```bash
+  # Option 1: Run directly with cargo  ( LLM_API_KEY needs to be set in .env) 
+  cargo run --bin planner_agent -- --user-query "What is the weather in Boston?"
 
-*   **A2A Agent Server:** ( You can create multiple agents , each one linked to a different config file)
+  # Option 2: Run compiled binary 
+  LLM_API_KEY=<YOUR-API-KEY> ./target/release/planner_agent --user-query "What is the weather in Boston?"
 ```
-bash
-    cargo run --bin simple_agent_server -- --config-file "configuration/agent_a2a_config.toml"
-    or
-    LLM_API_KEY=<YOUR-API-KEY> ./target/release/simple_agent_server --config-file "configuration/agent_a2a_config.toml"
-    
-```
-*   **Planner:**
-```
-bash
-    cargo run --bin planner_agent -- --user-query "What is the weather in Boston ?"
-    or
-    LLM_API_KEY=<YOUR-API-KEY> ./target/release/planner_agent  --user-query "What is the weather in Boston ?"
+  *Remember to replace "What is the weather in Boston?" with your own query\!*
 
-```
-Replace `"What is the weather in Boston ?"` with your desired user query.
+### **Configuration**
 
-## Configuration
-
-The `configuration` directory contains three important configuration files:
+The configuration directory is your go-to for customizing agent behavior:
 
 *   `agent_a2a_config.toml`: Configuration for A2A agents.
 *   `agent_mcp_config.toml`: Configuration for MCP agents.
 *   `agent_planner_config.toml`: Configuration for the planner agent.
 
-These files allow you to customize the behavior and settings of each agent type.
 
-For interacting with MCP , from my perspective, the qwen model is very efficient. 
-The one I use regularly is : model qwen/qwen3-32b
+LLM Models:  
+We've found `qwen/qwen3-32b` to be highly effective, especially for MCP interactions.  
 
-## Use different LLM per agent type
+Currently, A2A and MCP agents share the same LLM, but the Planner can use a different one (configurable via LLM\_API\_URL in `agent_planner_config.toml`).
 
-For now a2a agent and mcp agent needs to run on the same LLM
-\
-Planner agent can be run on a different LLM. LLM_API_URL can be defined in `agent_planner_config.toml`
+## **Under the Hood: Swarm.rs Crate Breakdown**
 
+The swarm project is composed of several specialized sub-crates:
 
-## Crates within the Swarm
+* `a2a_agent_backbone`: The core framework for A2A agents, including a server for standalone agents and a client for testing. These agents can also incorporate MCP agents for external interactions.  
+* `a2a_planner_backbone`: The brain for the A2A Planner. It connects to declared A2A agents, understands their skills, creates a plan, and executes it to achieve your goals.  
+* `configuration`: Manages all your Swarm.rs configuration files.  
+* `llm_api`: Provides a convenient interface for interacting with various Large Language Models via an OpenAI-compatible API.  
+* `mcp_agent_backbone`: The core framework for MCP agents. Note: An external mcp\_server (like the illustrative project or Apify) is needed for these agents to function.  
+* `mcp_agent_endpoint`: A testing utility for MCP agents to receive and process requests.
 
-The `swarm` crate is composed of several sub-crates, each with a specific target or function:
+## **Road Ahead & How You Can Contribute**
 
-*   **`a2a_agent_backbone`**: Provides the core logic and framework for A2A agents. They can incorporate mcp agents, to interact with mcp server. It contains a server agent ( to launch a standalone a2a agent) and a client endpoint , mostly for testing purpose to interact with the a2a agent via rest endpoint
-*   **`a2a_planner_backbone`**: Provides the core logic and framework for the A2A planner. The planner agent connects to multiple a2a agents and orchestrates their interactions. The planner will connect to the declared a2a agents, and based on the skills, will create a plan, and execute the plan through the a2a agents in order to get the outcome.
-*   **`configuration`**: Handles the loading and management of configuration files for all swarm components.
-*   **`llm_api`**: Provides an interface for interacting with Large Language Models (LLMs) via an OpenAI compatible API.
-*   **`mcp_agent_backbone`**: Provides the core logic and framework for MCP agents. You need to declare an mcp server. I created an illustrative project for testing purpose. I also use apify as a mcp server for more sophisticated capabilities.
-*   **`mcp_agent_endpoint`**: Mostly for testing purpose : Provides an executable endpoint for MCP agents to receive and process requests.
+Swarm.rs is a project born out of discovery and exploration\! While not production-ready, it's a fantastic playground for understanding how these protocols can be combined to build powerful agentic systems.
 
-## Next Steps
+We're continuously working on improvements, including:
 
-This crates is not intended for production, but rather for discovery of how these protocols could be used in combination
-There are some shortcuts in implementation, and I will continue work on improvements
+* Recursivity: Enabling "planner of planners" for even more complex orchestration.  
+* Refactoring: Continuously improving code clarity and maintainability.  
+* Unit Tests: Enhancing robustness and reliability.
 
-Some of the further identified steps are also :
-Create a possibility for recursivity ( to have a planner of planner). This would be done by creating a server planner and a planner agent
-Refactoring
-Implementing unit tests
+We're eager for your comments, suggestions, and contributions\! Whether it's a bug report, a feature idea, or a pull request, your input helps shape the future of Swarm.rs.
 
-I am interested in any comments and suggestions.
+## **Special Thanks**
 
+We heavily rely on and appreciate the fantastic work of these actively developed crates:
 
-## Nota Bene
+* MCP Protocol: [https://github.com/modelcontextprotocol/rust-sdk](https://github.com/modelcontextprotocol/rust-sdk)  
+* A2A Protocol: [https://github.com/EmilLindfors/a2a-rs](https://github.com/EmilLindfors/a2a-rs)
 
-I am heavily using two crates that are in active development. \
-\
-For mcp propocol : \
-https://github.com/modelcontextprotocol/rust-sdk \
-\
-For a2a protocol : \
-https://github.com/EmilLindfors/a2a-rs \ 
-\
-\
-I may have to point out in Cargo.toml a specific commit , in case there are too many breaking changes
+*Note: Due to their active development, we might occasionally pin to specific commits in Cargo.toml to maintain stability.*

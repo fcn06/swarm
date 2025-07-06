@@ -70,6 +70,8 @@ Now, let's fire up some agents\!
   # Option 2: Run compiled binary (recommended. As per configuration, it uses Groq and qwen3)  
   LLM_API_KEY=<YOUR-API-KEY> ./target/release/simple_agent_server --config-file "configuration/agent_a2a_config.toml"
 ```
+NB: It seems that google openai compatible api, does not accept tool_call_id that is needed for MCP protocol, so I suggest to stay with groq for a2a/mcp agent
+
 
 * Planner (the orchestrator):  
   Ask the Planner to achieve a goal by providing a user query.  

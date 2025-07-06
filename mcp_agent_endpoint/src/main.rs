@@ -1,8 +1,13 @@
 // main.rs
-
 mod api;
 
-use log::{error, info}; // Use log for logging
+use tracing::{info, error, Level, debug};
+use tracing_subscriber::{
+    prelude::*,
+    fmt,
+    layer::Layer,
+    Registry, filter
+};
 
 use crate::api::endpoint::run_endpoint;
 use configuration::AgentMcpConfig;
@@ -18,7 +23,22 @@ pub struct AppState {
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     // Initialize logging (e.g., using tracing or env_logger)
-     tracing_subscriber::fmt::init(); // Example using tracing_subscriber
+     //tracing_subscriber::fmt::init(); // Example using tracing_subscriber
+
+     let subscriber = Registry::default()
+        .with(
+            // stdout layer, to view everything in the console
+            fmt::layer()
+                .compact()
+                .with_ansi(true)
+                //.with_filter(filter::LevelFilter::from_level(Level::DEBUG))
+                .with_filter(filter::LevelFilter::from_level(Level::ERROR))
+        );
+    
+    tracing::subscriber::set_global_default(subscriber).unwrap();
+
+
+
     //env_logger::init(); // Example using env_logger
 
     info!("Starting MCP Agent...");

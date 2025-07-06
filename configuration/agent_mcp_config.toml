@@ -9,6 +9,6 @@ agent_mcp_server_api_key="<YOUR_API_KEY>"
 agent_mcp_model_id="qwen/qwen3-32b"
 agent_mcp_llm_url="https://api.groq.com/openai/v1/chat/completions"
 #agent_mcp_model_id="gemini-2.0-flash"
-#agent_mcp_llm_url // future use
+#agent_mcp_llm_url ="https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
 agent_mcp_system_message= "You are a helpful assistant that answers user requests. You can use one or more tools. When you receive a message with a role called \"tool\", you must use the response from tools in order to build a final answer."
 agent_mcp_endpoint="http://localhost:3000/"

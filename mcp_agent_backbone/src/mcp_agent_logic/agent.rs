@@ -1,4 +1,6 @@
-use log::{debug, error, info, warn};
+//use log::{debug, error, info,trace, warn};
+use tracing::{info, error,warn,trace, Level, debug};
+
 use reqwest::Client;
 use serde_json::json;
 use std::error::Error;
@@ -34,7 +36,7 @@ async fn call_api(
     request_payload: &ChatCompletionRequest,
 ) -> Result<ChatCompletionResponse, reqwest::Error> {
     debug!("Calling LLM API with payload: {:?}", request_payload);
-    // println!("Request Payload:{:#?}",request_payload.clone());
+    trace!("Request Payload:{:#?}",request_payload.clone());
 
     let response = call_chat_completions(client, request_payload).await;
     debug!("LLM API Response: {:?}", response);
@@ -185,6 +187,7 @@ async fn execute_loop(state: &mut AgentState) -> Result<Option<Message>, Box<dyn
         }
 
         if loop_count == state.config.agent_mcp_max_loops - 1 {
+            info!("Maximum loop count reached.");
             error!(
                 "Maximum loop count ({}) reached, exiting.",
                 state.config.agent_mcp_max_loops

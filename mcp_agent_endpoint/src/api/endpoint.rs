@@ -7,14 +7,15 @@ use axum::{
     routing::{get, post},
 };
 use llm_api::chat::Message;
-use log::{error, info};
+
+use tracing::{info, error, Level, debug,warn};
+
 use serde::Serialize;
 use std::sync::Arc; // Use log
 
 use crate::AppState;
 use mcp_agent_backbone::mcp_agent_logic::agent::run_agent;
 
-use log::warn;
 
 // Define a custom error type for API responses
 #[derive(Serialize)]

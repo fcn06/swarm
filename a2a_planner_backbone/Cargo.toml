@@ -39,6 +39,6 @@ tracing-subscriber = { workspace = true }
 name = "planner_agent"
 path = "bin/a2a_planner_client.rs"
 
-#[[bin]]
-#name = "planner_server"
-#path = "bin/planner_server.rs"
+[[bin]]
+name = "planner_server"
+path = "bin/simple_planner_server.rs"

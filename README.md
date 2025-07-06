@@ -67,7 +67,7 @@ Now, let's fire up some agents\!
   # Option 1: Run directly with cargo ( LLM_API_KEY needs to be set in .env)  
   cargo run --bin simple_agent_server -- --config-file "configuration/agent_a2a_config.toml"
 
-  # Option 2: Run compiled binary (recommended for production-like usage)  
+  # Option 2: Run compiled binary (recommended. As per configuration, it uses Groq and qwen3)  
   LLM_API_KEY=<YOUR-API-KEY> ./target/release/simple_agent_server --config-file "configuration/agent_a2a_config.toml"
 ```
 
@@ -77,7 +77,7 @@ Now, let's fire up some agents\!
   # Option 1: Run directly with cargo  ( LLM_API_KEY needs to be set in .env) 
   cargo run --bin planner_agent -- --user-query "What is the weather in Boston?"
 
-  # Option 2: Run compiled binary 
+  # Option 2: Run compiled binary (recommended. As per configuration it uses gemini)
   LLM_API_KEY=<YOUR-API-KEY> ./target/release/planner_agent --user-query "What is the weather in Boston?"
 ```
   *Remember to replace "What is the weather in Boston?" with your own query\!*
@@ -113,7 +113,7 @@ Swarm.rs is a project born out of discovery and exploration\! While not producti
 
 We're continuously working on improvements, including:
 
-* Recursivity: Enabling "planner of planners" for even more complex orchestration.  
+* Recursivity: Enabling "planner of planners" for even more complex orchestration.  Work In Progress
 * Refactoring: Continuously improving code clarity and maintainability.  
 * Unit Tests: Enhancing robustness and reliability.
 

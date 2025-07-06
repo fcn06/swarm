@@ -9,8 +9,12 @@ use a2a_rs::{
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Create a client connected to our example server
-    let client = HttpClient::new("http://localhost:8080".to_string());
+    
+    // send a query to planner agent
+    //let client = HttpClient::new("http://localhost:8080".to_string());
+    
+    // Send a query to planner server, to enable planner of planners
+    let client = HttpClient::new("http://localhost:9080".to_string());
 
     // Generate a task ID
     let task_id = format!("task-{}", uuid::Uuid::new_v4());

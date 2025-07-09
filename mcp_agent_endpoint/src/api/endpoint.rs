@@ -105,9 +105,10 @@ async fn post_msg(
                 Json(Message {
                     // Using OK instead of CREATED
                     role: state.mcp_agent_config.agent_mcp_role_assistant.clone(), // Use config for role
-                    content: "Agent finished processing, but no specific response was generated."
-                        .to_string(),
+                    content: Some("Agent finished processing, but no specific response was generated."
+                        .to_string()),
                     tool_call_id: None,
+                    tool_calls:None
                 }),
             ))
         }

@@ -36,7 +36,11 @@ async fn call_api(
     request_payload: &ChatCompletionRequest,
 ) -> Result<ChatCompletionResponse, reqwest::Error> {
     debug!("Calling LLM API with payload: {:?}", request_payload);
-    trace!("Request Payload:{:#?}",request_payload.clone());
+    //trace!("Request Payload:{:#?}",request_payload.clone());
+
+    // Serialize it to a JSON string.
+    let payload_json = serde_json::to_string(&request_payload.clone()).unwrap();
+    trace!("{}",payload_json);
 
     let response = call_chat_completions(client, request_payload).await;
     debug!("LLM API Response: {:?}", response);
@@ -56,9 +60,7 @@ async fn handle_tool_calls(
 
         for tool_call in tool_calls {
             info!("Executing tool call: {}", tool_call.id);
-            // Debug
-            //eprintln!("Executing tool call: {}", tool_call.id);
-
+            
             match execute_tool_call_v2(mcp_client.clone(), tool_call.clone()).await {
                 Ok(result) => {
                     let result_content_str =
@@ -69,8 +71,9 @@ async fn handle_tool_calls(
 
                     tool_results.push(Message {
                         role: config.agent_mcp_role_tool.clone(),
-                        content: format!("Response from Tool: {}", result_content_str),
+                        content: Some(format!("Response from Tool: {}", result_content_str)),
                         tool_call_id: Some(tool_call.id.clone()),
+                        tool_calls: None,
                     });
                 }
                 Err(e) => {
@@ -81,8 +84,9 @@ async fn handle_tool_calls(
                     });
                     tool_results.push(Message {
                         role: config.agent_mcp_role_tool.clone(),
-                        content: error_content.to_string(),
+                        content: Some(error_content.to_string()),
                         tool_call_id: Some(tool_call.id.clone()),
+                        tool_calls: None,
                     });
                 }
             }
@@ -128,6 +132,7 @@ async fn execute_loop(state: &mut AgentState) -> Result<Option<Message>, Box<dyn
         // Pass relevant config parts if needed (e.g., state.config.role_assistant)
         let agent_response = process_response(loop_count, choice, &mut state.messages);
 
+
         if agent_response.should_exit {
             final_message = agent_response.final_message;
             info!("Agent loop exiting based on process_response decision.");
@@ -153,7 +158,12 @@ async fn execute_loop(state: &mut AgentState) -> Result<Option<Message>, Box<dyn
                 if final_message.is_none() {
                     // Optionally capture the last message from choice.message if needed, using config roles
                     if choice.message.role == state.config.agent_mcp_role_assistant {
-                        final_message = final_message.clone();
+                        final_message = Some(Message {
+                            role: state.config.agent_mcp_role_assistant.clone(),
+                            content: choice.message.content.clone(),
+                            tool_call_id: None,
+                            tool_calls: None,
+                        });
                         warn!(
                             "Finish reason was 'stop', but no final message captured by process_response. Captured last assistant message."
                         );
@@ -173,14 +183,26 @@ async fn execute_loop(state: &mut AgentState) -> Result<Option<Message>, Box<dyn
                         // Use configured assistant role when capturing fallback message
                         final_message = Some(Message {
                             role: state.config.agent_mcp_role_assistant.clone(),
-                            content: content.clone(),
+                            content: Some(content.clone()),
                             tool_call_id: None, // Assuming no tool call ID for this fallback
+                            tool_calls: None,
                         });
                         info!(
                             "Captured last assistant message due to unhandled finish reason '{}'",
                             other_reason
                         );
                     }
+                } else {
+                    final_message = Some(Message {
+                        role: state.config.agent_mcp_role_assistant.clone(),
+                        content: None,
+                        tool_call_id: None,
+                        tool_calls: None,
+                    });
+                    info!(
+                        "Captured empty assistant message due to unhandled finish reason '{}'",
+                        other_reason
+                    );
                 }
                 break;
             }

@@ -238,8 +238,9 @@ impl PlannerAgent {
 
         let messages_draft = vec![llm_api::chat::Message {
             role: "user".to_string(),
-            content: prompt.to_string(),
+            content: Some(prompt.to_string()),
             tool_call_id: None,
+            tool_calls:None
         }];
 
         let llm_request_payload = ChatCompletionRequest {
@@ -411,8 +412,9 @@ impl PlannerAgent {
                         // Use the full_task_description as the prompt for the LLM
                         let messages_draft = vec![llm_api::chat::Message {
                             role: "user".to_string(),
-                            content: full_task_description.to_string(),
+                            content: Some(full_task_description.to_string()),
                             tool_call_id: None,
+                            tool_calls:None
                         }];
 
                         let llm_request_payload = ChatCompletionRequest {
@@ -610,8 +612,9 @@ impl PlannerAgent {
 
         let messages_draft = vec![llm_api::chat::Message {
             role: "user".to_string(),
-            content: context.to_string(),
+            content: Some(context.to_string()),
             tool_call_id: None,
+            tool_calls:None
         }];
 
         let llm_request_payload = ChatCompletionRequest {

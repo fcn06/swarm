@@ -34,12 +34,17 @@ pub struct ChatCompletionRequest {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Message {
     pub role: String,    // "system", "user", "assistant", or "tool"
-    pub content: String, // Content for system/user/assistant, or result for tool
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub content: Option<String>, // Content for system/user/assistant, or result for tool
 
     // --- Tool Calling Additions (for Tool Result Message) ---
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tool_call_id: Option<String>, // Only used when role is "tool"
-                                      // --- End Tool Calling Additions ---
+    // --- End Tool Calling Additions ---
+
+    // --- Add tool_calls to Message for assistant messages ---
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tool_calls: Option<Vec<ToolCall>>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -90,14 +95,14 @@ pub struct ResponseMessage {
     pub tool_calls: Option<Vec<ToolCall>>,
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Serialize,Deserialize, Debug, Clone)]
 pub struct ToolCall {
     pub id: String,     // ID to be sent back in the tool result message
     pub r#type: String, // Typically "function"
     pub function: FunctionCall,
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Serialize,Deserialize, Debug, Clone)]
 pub struct FunctionCall {
     pub name: String,
     // Arguments is a STRING containing JSON, needs parsing
@@ -161,4 +166,3 @@ pub async fn call_chat_completions_v2(
 
     Ok(response_body)
 }
-

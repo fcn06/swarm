@@ -101,8 +101,9 @@ impl SimplePlannerAgentHandler {
         // Convert A2A Message into LLM Message
         let llm_msg = Message_Llm {
             role: "user".to_string(),
-            content: user_query.to_string(),
+            content: Some(user_query.to_string()),
             tool_call_id: None,
+            tool_calls:None
         };
 
         Ok(llm_msg)
@@ -113,7 +114,7 @@ impl SimplePlannerAgentHandler {
         // Convert LLM Message into A2A
         // todo use agent_text or user_text depending on role
         let message_id = uuid::Uuid::new_v4().to_string();
-        let llm_msg = Message::agent_text(llm_message.content, message_id);
+        let llm_msg = Message::agent_text(llm_message.content.expect("Empty Message"), message_id);
         Ok(llm_msg)
     }
 }
@@ -153,8 +154,9 @@ impl AsyncMessageHandler for SimplePlannerAgentHandler {
         // Convert the message Back to A2A Message
         let llm_response_from_planner = Message_Llm {
             role: "tool".to_string(), // Or appropriate role based on ExecutionResult
-            content: response.output.clone(),
+            content: Some(response.output.clone()),
             tool_call_id: None,
+            tool_calls:None
         };
         let response_message = self.llm_message_to_a2a_message(llm_response_from_planner)?;
 

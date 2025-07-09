@@ -31,12 +31,11 @@ async fn main() -> anyhow::Result<()> {
             fmt::layer()
                 .compact()
                 .with_ansi(true)
-                //.with_filter(filter::LevelFilter::from_level(Level::DEBUG))
+                //.with_filter(filter::LevelFilter::from_level(Level::TRACE))
                 .with_filter(filter::LevelFilter::from_level(Level::ERROR))
         );
     
     tracing::subscriber::set_global_default(subscriber).unwrap();
-
 
 
     //env_logger::init(); // Example using env_logger

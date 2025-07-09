@@ -13,44 +13,64 @@ pub struct AgentResponse {
 pub fn process_response(
     loop_number: u32,
     choice: &Choice,
-    messages: &Vec<Message>,
+   // messages: &Vec<Message>,
+    messages: &mut Vec<Message>,
 ) -> AgentResponse {
+    //let mut new_messages = messages.clone();
+
     match choice.finish_reason.as_str() {
         "stop" => {
             // Case 1: Model generated text response
             if let Some(content) = &choice.message.content {
-                //println!("{}", content);
                 let final_message = Message {
                     role: "assistant".to_string(),
-                    content: content.clone(),
+                    content: Some(content.clone()),
                     tool_call_id: None,
+                    tool_calls: None,
                 };
-                let mut new_messages = messages.clone();
-                new_messages.push(final_message.clone());
-                let agent_response = AgentResponse {
+                //new_messages.push(final_message.clone());
+               
+                AgentResponse {
                     should_exit: true,
                     nb_loop: loop_number,
                     final_message: Some(final_message),
-                };
-                agent_response
+                }
             } else {
-                //println!("Finish reason 'stop' but no content found.");
                 AgentResponse {
                     should_exit: true,
                     nb_loop: loop_number,
                     final_message: None,
                 }
             }
-            //true // Exit loop
         }
         "tool_calls" => {
             // Case 2: Model requested tool calls
-            //false
-            AgentResponse {
-                should_exit: false,
-                nb_loop: loop_number,
-                final_message: None,
+            // todo:Bug to be fixed : This message is not processed in message history
+            if let Some(tool_calls) = &choice.message.tool_calls {
+                let tool_call_message = Message {
+                    role: "assistant".to_string(),
+                    content: None, // Content is None for tool_calls messages
+                    tool_call_id: None, // todo : register the right tool_call_id
+                    tool_calls: Some(tool_calls.clone()),
+                };
+                //new_messages.push(tool_call_message.clone());
+                messages.extend(vec!(tool_call_message.clone()));
+
+                AgentResponse {
+                    should_exit: false,
+                    nb_loop: loop_number,
+                    final_message: Some(tool_call_message),
+                }
+            } else {
+                AgentResponse {
+                    should_exit: true,
+                    nb_loop: loop_number,
+                    final_message: None,
+                }
             }
+
+
+           
         }
         _ => {
             // Handle other finish reasons
@@ -58,7 +78,6 @@ pub fn process_response(
             if let Some(content) = &choice.message.content {
                 println!("Assistant Message (Partial/Error?): {}", content);
             }
-            //true // Exit loop on unhandled reason
             AgentResponse {
                 should_exit: true,
                 nb_loop: loop_number,
@@ -66,5 +85,6 @@ pub fn process_response(
             }
         }
     }
-    // todo: return agent_response
+
+    
 }

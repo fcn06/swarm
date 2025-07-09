@@ -1,3 +1,0 @@
-Add two variation of planner
-client planner : connecting to end agents ( with or without MCP), and to server_planner for more complex tasks
-server planner, that can be connected to client planner

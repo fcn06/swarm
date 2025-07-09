@@ -54,8 +54,10 @@ pub async fn setup_project_mcp(
     // Conversation history
     let init_messages = vec![Message {
         role: "system".to_string(),
-        content: system_message,
+        content: Some(system_message),
         tool_call_id: None,
+        tool_calls:None
+
     }];
 
     // Create a reqwest client

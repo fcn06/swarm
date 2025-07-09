@@ -10,7 +10,7 @@ use rmcp::RoleClient;
 use rmcp::model::InitializeRequestParam;
 use rmcp::service::RunningService;
 
-use llm_api::chat::call_chat_completions;
+use llm_api::chat::{call_chat_completions_v2};
 use llm_api::chat::{ChatCompletionRequest, ChatCompletionResponse, Choice, Message, ToolChoice};
 use llm_api::tools::Tool;
 
@@ -30,10 +30,12 @@ struct AgentState {
     config: AgentMcpConfig, // Keep config struct here
 }
 
+
 /// Calls the external LLM API.
-async fn call_api(
+async fn call_api_v2(
     client: &Client,
     request_payload: &ChatCompletionRequest,
+    api_url:String,
 ) -> Result<ChatCompletionResponse, reqwest::Error> {
     debug!("Calling LLM API with payload: {:?}", request_payload);
     //trace!("Request Payload:{:#?}",request_payload.clone());
@@ -42,7 +44,7 @@ async fn call_api(
     let payload_json = serde_json::to_string(&request_payload.clone()).unwrap();
     trace!("{}",payload_json);
 
-    let response = call_chat_completions(client, request_payload).await;
+    let response = call_chat_completions_v2(client, request_payload,api_url).await;
     debug!("LLM API Response: {:?}", response);
     response
 }
@@ -121,7 +123,7 @@ async fn execute_loop(state: &mut AgentState) -> Result<Option<Message>, Box<dyn
             )),
         };
 
-        let response = call_api(&state.http_client, &request_payload).await?;
+        let response = call_api_v2(&state.http_client, &request_payload,state.config.agent_mcp_llm_url.clone()).await?;
 
         if response.choices.is_empty() {
             error!("LLM response contained no choices.");

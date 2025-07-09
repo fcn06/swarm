@@ -16,7 +16,7 @@ pub fn process_response(
    // messages: &Vec<Message>,
     messages: &mut Vec<Message>,
 ) -> AgentResponse {
-    //let mut new_messages = messages.clone();
+    
 
     match choice.finish_reason.as_str() {
         "stop" => {
@@ -28,7 +28,9 @@ pub fn process_response(
                     tool_call_id: None,
                     tool_calls: None,
                 };
-                //new_messages.push(final_message.clone());
+                
+                // this final message does not need to be logged
+                //messages.push(final_message.clone());
                
                 AgentResponse {
                     should_exit: true,
@@ -45,7 +47,7 @@ pub fn process_response(
         }
         "tool_calls" => {
             // Case 2: Model requested tool calls
-            // todo:Bug to be fixed : This message is not processed in message history
+            // todo:Bug to be fixed about tools_call_id
             if let Some(tool_calls) = &choice.message.tool_calls {
                 let tool_call_message = Message {
                     role: "assistant".to_string(),
@@ -53,8 +55,10 @@ pub fn process_response(
                     tool_call_id: None, // todo : register the right tool_call_id
                     tool_calls: Some(tool_calls.clone()),
                 };
-                //new_messages.push(tool_call_message.clone());
-                messages.extend(vec!(tool_call_message.clone()));
+                
+                // this assistant message requesting to make a call for tools needs to be recorded in message history
+                // this is requested by gemini to work
+                messages.push(tool_call_message.clone());
 
                 AgentResponse {
                     should_exit: false,

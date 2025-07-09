@@ -48,41 +48,12 @@ Here is a separate complementary project may be used to start your testing :
 * Test MCP Server : [https://github.com/fcn06/mcp_server](https://github.com/fcn06/mcp_server) 
 
 
-
 ### **Installation & Building**
 
 First, compile the workspace to ensure all dependencies are in sync:
 ```bash
 cargo build --release
 ```
-
-### **Running Components**
-
-Now, let's fire up some agents\!
-
-* A2A Agent Server (your individual intelligent assistants):  
-  You can run multiple A2A agents, each with its own configuration.  
-
-```bash
-  # Option 1: Run directly with cargo ( LLM_API_KEY needs to be set in .env)  
-  cargo run --bin simple_agent_server -- --config-file "configuration/agent_a2a_config.toml"
-
-  # Option 2: Run compiled binary (recommended. As per configuration, it uses Groq and qwen3)  
-  LLM_API_KEY=<YOUR-API-KEY> ./target/release/simple_agent_server --config-file "configuration/agent_a2a_config.toml"
-```
-NB: It seems that google openai compatible api, does not accept tool_call_id that is needed for MCP protocol, so I suggest to stay with groq for a2a/mcp agent
-
-
-* Planner (the orchestrator):  
-  Ask the Planner to achieve a goal by providing a user query.  
-```bash
-  # Option 1: Run directly with cargo  ( LLM_API_KEY needs to be set in .env) 
-  cargo run --bin planner_agent -- --user-query "What is the weather in Boston?"
-
-  # Option 2: Run compiled binary (recommended. As per configuration it uses gemini)
-  LLM_API_KEY=<YOUR-API-KEY> ./target/release/planner_agent --user-query "What is the weather in Boston?"
-```
-  *Remember to replace "What is the weather in Boston?" with your own query\!*
 
 ### **Configuration**
 
@@ -92,11 +63,33 @@ The configuration directory is your go-to for customizing agent behavior:
 *   `agent_mcp_config.toml`: Configuration for MCP agents.
 *   `agent_planner_config.toml`: Configuration for the planner agent.
 
-
 LLM Models:  
 We've found `qwen/qwen3-32b` to be highly effective, especially for MCP interactions.  
 
 Currently, A2A and MCP agents share the same LLM, but the Planner can use a different one (configurable via LLM\_API\_URL in `agent_planner_config.toml`).
+
+
+### **Running Components**
+
+Now, let's fire up some agents\!
+
+* A2A Agent Server (your individual intelligent assistants):  
+  You can run multiple A2A agents, each with its own configuration.  
+
+```bash
+  # Run compiled binary and inject LLM_API_KEY as an environment variable  , compatible with llm url defined in config file 
+  LLM_API_KEY=<YOUR-API-KEY> ./target/release/simple_agent_server --config-file "configuration/agent_a2a_config.toml"
+```
+
+* Planner (the orchestrator):  
+  Ask the Planner to achieve a goal by providing a user query.  
+
+```bash
+  # Run compiled binary and inject LLM_API_KEY as an environment variable  , compatible with llm url defined in config file
+  LLM_API_KEY=<YOUR-API-KEY> ./target/release/planner_agent --user-query "What is the weather in Boston?"
+```
+  *Remember to replace "What is the weather in Boston?" with your own query\!*
+
 
 ## **Under the Hood: Swarm.rs Crate Breakdown**
 
@@ -108,6 +101,7 @@ The swarm project is composed of several specialized sub-crates:
 * `llm_api`: Provides a convenient interface for interacting with various Large Language Models via an OpenAI-compatible API.  
 * `mcp_agent_backbone`: The core framework for MCP agents. Note: An external mcp\_server (like the illustrative project or Apify) is needed for these agents to function.  
 * `mcp_agent_endpoint`: A testing utility for MCP agents to receive and process requests.
+* you can refer to `documentation` directory to have some additional details. 
 
 ## **Road Ahead & How You Can Contribute**
 

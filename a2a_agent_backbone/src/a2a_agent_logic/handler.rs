@@ -150,6 +150,8 @@ impl AsyncMessageHandler for SimpleAgentHandler {
         .await
         .unwrap();
 
+        // if there is no MCP agent attached to the agent, plan a direct LLM call
+
         // Convert the message Back to A2A Message
         // todo : make it resilient and remove unwrap()
         let response_message = self.llm_message_to_a2a_message(response.unwrap())?;

@@ -21,8 +21,9 @@ mcp_agent_endpoint = { path = "./mcp_agent_endpoint" }
 a2a_planner_backbone = { path = "./a2a_planner_backbone" }
 
 # For rmcp and a2a-rs, in the future, I may have to pin a revision number because this crate is evolving rapidly with significant number of breaking changes
-rmcp= { git = "https://github.com/modelcontextprotocol/rust-sdk.git", features = ["client", "transport-sse-client", "transport-child-process", "tower","reqwest"] ,rev="73188eff6fcc8fc152949ac1d5df0439607ba3ad"}
-#a2a-rs= { git = "https://github.com/EmilLindfors/a2a-rs.git", features = ["full"]  }
+#rmcp= { git = "https://github.com/modelcontextprotocol/rust-sdk.git", features = ["client", "transport-sse-client", "transport-child-process", "tower","reqwest"] ,rev="73188eff6fcc8fc152949ac1d5df0439607ba3ad"}
+rmcp= { git = "https://github.com/modelcontextprotocol/rust-sdk.git", features = ["client", "transport-sse-client", "transport-child-process", "tower","reqwest"] }
+
 a2a-rs= { git = "https://github.com/EmilLindfors/a2a-rs.git" , features=["server","http-server","client","http-client","tracing"] }
 
 

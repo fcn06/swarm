@@ -140,9 +140,7 @@ impl AsyncMessageHandler for SimpleAgentHandler {
         //println!("Task Created : {:#?}",task.clone());
 
         /////////////////////////////////////////////////////////////
-        // todo : decide if we run for mcp or ask llm directly
-        // If there is a mcp server, then run mcp agent
-        // if not then request to agent llm
+        // todo : can be cleaner, and simpler
         /////////////////////////////////////////////////////////////
 
         let response =if (self.a2a_runtime_config_project.agent_a2a_config.agent_a2a_mcp_config_path.is_none()) {
@@ -165,24 +163,6 @@ impl AsyncMessageHandler for SimpleAgentHandler {
         };
            
 
-        // Invoke the agent, this is where business logic needs to be implemented
-        /* 
-        let response = run_agent(
-            self.a2a_runtime_config_project
-                .mcp_runtime_config
-                .clone()
-                .expect("No runtime for mcp"),
-            self.a2a_runtime_config_project
-                .agent_mcp_config
-                .clone()
-                .expect("No config for mcp"),
-            llm_msg.clone(),
-        )
-        .await
-        .unwrap();
-
-        */
-
         // if there is no MCP agent attached to the agent, plan a direct LLM call
 
         /////////////////////////////////////////////////////////////
@@ -197,26 +177,12 @@ impl AsyncMessageHandler for SimpleAgentHandler {
             .await?;
         //println!("Task Update : {:#?}",task.clone());
 
-        // for testing purpose
-        //let task_retrieved=self.get_task(task_id, Some(10)).await?;
-        //println!("Task Retrieved : {:#?}",task_retrieved);
-
-        // to do : find a way to dump storage
-
-        // this is where you need to implement a loop and have a way to identify if the run is final
-        // Determine if this is a completed response or requires input
-        //let task_state = if response.contains("TTTTT") {
-        //    TaskState::InputRequired
-        //} else {
-        //    TaskState::Completed
-        //};
-
         Ok(task)
     }
 }
 
-// below are all default boilerplate
 
+// below are all default boilerplate
 #[async_trait]
 impl AsyncTaskManager for SimpleAgentHandler {
     async fn create_task<'a>(
@@ -370,7 +336,7 @@ impl AsyncStreamingHandler for SimpleAgentHandler {
 }
 
 
-
+// todo: to be moved to llm_api crate
 impl SimpleAgentHandler {
     /// Create a new simple agent handler
     pub async  fn call_llm(&self,user_query:String) -> anyhow::Result<Option<Message_Llm>> {
@@ -411,18 +377,6 @@ impl SimpleAgentHandler {
             .content
             .clone();
 
-        /* 
-        // remove think tags from llm response
-        let response_content = Some(
-            self.remove_think_tags(response_content.clone().expect("REASON"))
-                .await?,
-        );
-
-        println!(
-            "A2A Agent: LLM responded with plan content:{:?}",
-            response_content
-        );
-        */
 
         let response_message = Some(Message_Llm {
             role: "assistant".to_string(),

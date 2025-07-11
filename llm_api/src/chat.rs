@@ -4,7 +4,8 @@ use serde_json::Value; // Import Value for flexible parameters
 use std::env;
 
 use crate::tools::Tool;
-use anyhow::Result;
+use anyhow::{Result,Context};
+
 
 #[derive(Serialize, Debug, Clone)]
 pub struct ChatCompletionRequest {
@@ -165,4 +166,99 @@ pub async fn call_chat_completions_v2(
     let response_body = response.json::<ChatCompletionResponse>().await?;
 
     Ok(response_body)
+}
+
+pub async fn call_api_message(
+    client: &Client,
+    api_url:String,
+    model_id:String,
+    agent_role:String,
+    user_query:String,
+) -> anyhow::Result<Option<Message>> {
+
+    let api_key = env::var("LLM_API_KEY").expect("LLM_API_KEY must be set");
+    
+    let messages_origin = vec![Message {
+        role: agent_role,
+        content: Some(user_query),
+        tool_call_id: None,
+        tool_calls:None
+    }];
+
+    let llm_request_payload = ChatCompletionRequest {
+        model: model_id.clone(),
+        messages: messages_origin,
+        // Add other parameters like temperature if needed
+        temperature: Some(0.7),
+        tool_choice: None,
+        max_tokens: None,
+        top_p: None,
+        stop: None,
+        stream: None,
+        tools: None,
+    };
+
+    let llm_response = call_chat_completions_v2(&client, &llm_request_payload,api_url)
+    .await
+    .context("LLM API request failed during plan creation")?;
+
+    let response_content = llm_response
+        .choices
+        .get(0)
+        .ok_or_else(|| anyhow::anyhow!("LLM response missing choices"))?
+        .message
+        .content
+        .clone();
+
+        
+        // remove think tags from llm response
+        let response_content = Some(
+            remove_think_tags(response_content.clone().expect("REASON"))
+                .await?,
+        );
+
+        /* 
+        println!(
+            "A2A Agent: LLM responded with plan content:{:?}",
+            response_content
+        );
+        */
+
+        let response_message = Some(Message {
+            role: "assistant".to_string(),
+            content: Some(response_content.expect("Incorrect Answer")),
+            tool_call_id: None,
+            tool_calls:None
+        });
+    
+        Ok(response_message)
+}
+
+// Helper function to extract text from a Message
+pub async fn remove_think_tags( result: String) -> anyhow::Result<String> {
+    let mut cleaned_result = String::new();
+    let mut in_think_tag = false;
+
+    // in case llm returns json markdown
+    let result_clean= if result.contains("```json") {
+        let result_1=result.replace("```json", "");
+        result_1.replace("```", "")
+    } else {result};
+    let result=result_clean;
+
+    // in case LLM return <think> and </think> tags
+    for line in result.lines() {
+        if line.contains("<think>") {
+            in_think_tag = true;
+        }
+        if line.contains("</think>") {
+            in_think_tag = false;
+            continue;
+        } // Continue to avoid adding the </think> line itself
+        if !in_think_tag {
+            cleaned_result.push_str(line);
+            cleaned_result.push('\n');
+        }
+    }
+    Ok(cleaned_result)
 }

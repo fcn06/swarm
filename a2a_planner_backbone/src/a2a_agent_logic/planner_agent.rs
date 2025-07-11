@@ -256,6 +256,7 @@ impl PlannerAgent {
             tools: None,
         };
 
+        
         let http_client = reqwest::Client::new();
 
         // The llm_api crate is expected to handle the API key, e.g., via environment variables

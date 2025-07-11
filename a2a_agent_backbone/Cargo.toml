@@ -75,7 +75,9 @@ tracing-subscriber = { workspace = true, optional = true }
 
 
 [features]
-default = ["server", "tracing"]
+#default = ["server", "tracing"]
+default = ["server", "tracing","dep:reqwest"]
+
 client = ["dep:tokio", "dep:async-trait", "dep:futures"]
 http-client = ["client", "dep:reqwest"]
 ws-client = ["client", "dep:tokio-tungstenite"]

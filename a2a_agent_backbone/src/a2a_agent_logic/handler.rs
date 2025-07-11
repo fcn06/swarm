@@ -7,6 +7,7 @@
 //! and compose it with the storage implementations directly.
 
 use std::sync::{Arc};
+use anyhow::Context;
 
 use async_trait::async_trait;
 
@@ -23,6 +24,9 @@ use a2a_rs::{
 };
 
 use llm_api::chat::Message as Message_Llm;
+use llm_api::chat::call_chat_completions_v2;
+use llm_api::chat::ChatCompletionRequest;
+
 use mcp_agent_backbone::mcp_agent_logic::agent::run_agent;
 
 use crate::a2a_agent_initialization::a2a_agent_config::RuntimeA2aConfigProject;
@@ -135,7 +139,34 @@ impl AsyncMessageHandler for SimpleAgentHandler {
 
         //println!("Task Created : {:#?}",task.clone());
 
+        /////////////////////////////////////////////////////////////
+        // todo : decide if we run for mcp or ask llm directly
+        // If there is a mcp server, then run mcp agent
+        // if not then request to agent llm
+        /////////////////////////////////////////////////////////////
+
+        let response =if (self.a2a_runtime_config_project.agent_a2a_config.agent_a2a_mcp_config_path.is_none()) {
+                self.call_llm(llm_msg.content.expect("Empty Message").to_string()).await.unwrap()
+
+        } else {
+                run_agent(
+                    self.a2a_runtime_config_project
+                        .mcp_runtime_config
+                        .clone()
+                        .expect("No runtime for mcp"),
+                    self.a2a_runtime_config_project
+                        .agent_mcp_config
+                        .clone()
+                        .expect("No config for mcp"),
+                    llm_msg.clone(),
+                )
+                .await
+                .unwrap()
+        };
+           
+
         // Invoke the agent, this is where business logic needs to be implemented
+        /* 
         let response = run_agent(
             self.a2a_runtime_config_project
                 .mcp_runtime_config
@@ -150,7 +181,11 @@ impl AsyncMessageHandler for SimpleAgentHandler {
         .await
         .unwrap();
 
+        */
+
         // if there is no MCP agent attached to the agent, plan a direct LLM call
+
+        /////////////////////////////////////////////////////////////
 
         // Convert the message Back to A2A Message
         // todo : make it resilient and remove unwrap()
@@ -331,5 +366,71 @@ impl AsyncStreamingHandler for SimpleAgentHandler {
         A2AError,
     > {
         self.storage.combined_update_stream(task_id).await
+    }
+}
+
+
+
+impl SimpleAgentHandler {
+    /// Create a new simple agent handler
+    pub async  fn call_llm(&self,user_query:String) -> anyhow::Result<Option<Message_Llm>> {
+        println!("send msg to llm");
+        
+        let messages_draft = vec![Message_Llm {
+            role: "user".to_string(),
+            content: Some(user_query.to_string()),
+            tool_call_id: None,
+            tool_calls:None
+        }];
+
+        let llm_request_payload = ChatCompletionRequest {
+            model: self.a2a_runtime_config_project.agent_a2a_config.agent_a2a_model_id.clone(),
+            messages: messages_draft,
+            // Add other parameters like temperature if needed
+            temperature: Some(0.7),
+            tool_choice: None,
+            max_tokens: None,
+            top_p: None,
+            stop: None,
+            stream: None,
+            tools: None,
+        };
+
+        
+        let http_client = reqwest::Client::new();
+
+        let llm_response = call_chat_completions_v2(&http_client, &llm_request_payload,self.a2a_runtime_config_project.agent_a2a_config.agent_a2a_llm_url.clone())
+        .await
+        .context("LLM API request failed during plan creation")?;
+
+        let response_content = llm_response
+            .choices
+            .get(0)
+            .ok_or_else(|| anyhow::anyhow!("LLM response missing choices"))?
+            .message
+            .content
+            .clone();
+
+        /* 
+        // remove think tags from llm response
+        let response_content = Some(
+            self.remove_think_tags(response_content.clone().expect("REASON"))
+                .await?,
+        );
+
+        println!(
+            "A2A Agent: LLM responded with plan content:{:?}",
+            response_content
+        );
+        */
+
+        let response_message = Some(Message_Llm {
+            role: "assistant".to_string(),
+            content: Some(response_content.expect("Incorrect Answer")),
+            tool_call_id: None,
+            tool_calls:None
+        });
+
+        Ok(response_message)
     }
 }

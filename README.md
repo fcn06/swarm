@@ -59,14 +59,13 @@ cargo build --release
 
 The configuration directory is your go-to for customizing agent behavior:
 
-*   `agent_a2a_config.toml`: Configuration for A2A agents.
+*   `agent_a2a_config.toml`: Configuration for A2A agents. ( They can embed mcp agents)
 *   `agent_mcp_config.toml`: Configuration for MCP agents.
 *   `agent_planner_config.toml`: Configuration for the planner agent.
 
-LLM Models:  
-We've found `qwen/qwen3-32b` to be highly effective, especially for MCP interactions.  
+LLM Models:  We've found `qwen/qwen3-32b` to be highly effective, especially for MCP interactions.  
 
-Currently, A2A and MCP agents share the same LLM, but the Planner can use a different one (configurable via LLM\_API\_URL in `agent_planner_config.toml`).
+Each model can access to its own LLM. The urls are parametrized in config files while API KEY needs to be injected at runtime.
 
 
 ### **Running Components**
@@ -74,19 +73,21 @@ Currently, A2A and MCP agents share the same LLM, but the Planner can use a diff
 Now, let's fire up some agents\!
 
 * A2A Agent Server (your individual intelligent assistants):  
-  You can run multiple A2A agents, each with its own configuration.  
+  You can run multiple A2A agents, each with its own configuration.  ( In the example, the a2a agent embeds a MCP agent )
 
 ```bash
-  # Run compiled binary and inject LLM_API_KEY as an environment variable  , compatible with llm url defined in config file 
-  LLM_API_KEY=<YOUR-API-KEY> ./target/release/simple_agent_server --config-file "configuration/agent_a2a_config.toml"
+  # Run compiled binary and inject environment variables :LLM_A2A_API_KEY (for normal agent) 
+  # and LLM_MCP_API_KEY (for mcp embedded if any)
+  # They need to be compatible with llm_url defined in config file (Gemini, Groq or whatever else that you use) 
+  LLM_A2A_API_KEY=<YOUR-API-KEY> LLM_MCP_API_KEY=<YOUR-API-KEY> ./target/release/simple_agent_server --config-file "configuration/agent_a2a_config.toml"
 ```
 
 * Planner (the orchestrator):  
   Ask the Planner to achieve a goal by providing a user query.  
 
 ```bash
-  # Run compiled binary and inject LLM_API_KEY as an environment variable  , compatible with llm url defined in config file
-  LLM_API_KEY=<YOUR-API-KEY> ./target/release/planner_agent --user-query "What is the weather in Boston?"
+  # Run compiled binary and inject LLM_PLANNER_API_KEY as an environment variable  , compatible with llm url defined in config file
+  LLM_PLANNER_API_KEY=<YOUR-API-KEY> ./target/release/planner_agent --user-query "What is the weather in Boston?"
 ```
   *Remember to replace "What is the weather in Boston?" with your own query\!*
 

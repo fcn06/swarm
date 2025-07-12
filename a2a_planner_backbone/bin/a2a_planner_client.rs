@@ -33,26 +33,11 @@ async fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
     // load a2a config file and initialize appropriateruntime
-    let a2a_agent_planner_config = AgentPlannerConfig::load_agent_config(&args.config_file)
+    let agent_planner_config = AgentPlannerConfig::load_agent_config(&args.config_file)
         .expect("No planner configuration file");
 
-    // Set model to be used
-    let model_id = a2a_agent_planner_config.agent_planner_model_id;
-    // Set llm_url to be used
-    let llm_url = a2a_agent_planner_config.agent_planner_llm_url;
-
-    // Set model to be used
-    let agents_references = a2a_agent_planner_config.agent_planner_agents_references;
-
-    let config = PlannerAgentDefinition {
-        model_id: model_id, // Or your preferred model
-        llm_url: llm_url,
-        agent_configs: agents_references,
-    };
-
-
     // Initialize the Planner Agent
-    let mut planner_agent = PlannerAgent::new(config).await?;
+    let mut planner_agent = PlannerAgent::new(agent_planner_config).await?;
 
     // --- Test Case 1 ---
     let message_id_1 = uuid::Uuid::new_v4().to_string();

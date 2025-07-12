@@ -24,7 +24,6 @@ use a2a_rs::{
     },
 };
 
-use a2a_agent_backbone::a2a_agent_initialization::a2a_agent_config::RuntimeA2aConfigProject;
 use crate::a2a_agent_logic::planner_agent::PlannerAgent;
 use crate::a2a_plan::plan_definition::ExecutionResult;
 

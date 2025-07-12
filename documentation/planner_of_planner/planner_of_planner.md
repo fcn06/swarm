@@ -8,7 +8,7 @@ Launch MCP Server (https://github.com/fcn06/mcp_server)
 
 Launch a2a server agent ( as per configuration, this uses groq and qwen3 )
 ```bash
-LLM_API_KEY=<YOUR-API-KEY> ./target/release/simple_agent_server --config-file "configuration/agent_a2a_config.toml"
+LLM_A2A_API_KEY=<YOUR-API-KEY> ./target/release/simple_agent_server --config-file "configuration/agent_a2a_config.toml"
 ```
 
 Launch planner server ( as per configuration, this uses Gemini)

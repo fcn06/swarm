@@ -14,7 +14,6 @@ use serde::Serialize;
 use std::sync::Arc; // Use log
 
 use crate::AppState;
-use mcp_agent_backbone::mcp_agent_logic::agent::run_agent;
 
 
 // Define a custom error type for API responses
@@ -48,7 +47,7 @@ pub async fn run_endpoint(app_state: AppState) -> Result<(), Box<dyn std::error:
     // This logic might be better placed in main.rs after the server stops,
     // especially if AppState holds the only Arc reference when the server exits.
     info!("Shutting down endpoint. Attempting to cancel MCP client...");
-    let mcp_client = app_state.project_config.mcp_client; // Get client from state
+    let mcp_client = app_state.mcp_agent.mcp_client; // Get client from state
 
     // Attempt to get exclusive ownership to cancel.
     match Arc::try_unwrap(mcp_client) {
@@ -79,32 +78,32 @@ async fn root() -> &'static str {
 
 // Updated handler to accept AppState
 async fn post_msg(
-    State(state): State<AppState>, // Extract the AppState
+    State(mut state): State<AppState>, // Extract the AppState
     Json(payload): Json<Message>,
 ) -> Result<impl IntoResponse, ApiError> {
     // Return Result for error handling
     info!("Received message: {:?}", payload);
 
     // Call run_agent, passing both project and agent configs
-    match run_agent(
-        state.project_config.clone(),   // Clone necessary parts from state
-        state.mcp_agent_config.clone(), // Dereference Arc and clone AgentConfig
+    match state.mcp_agent.run_agent_internal(
         payload,
     )
     .await
     {
         Ok(Some(msg)) => {
             info!("Agent returned response: {:?}", msg);
+            state.mcp_agent.reset_messages();
             Ok((StatusCode::CREATED, Json(msg)))
         }
         Ok(None) => {
             warn!("Agent finished without a final message.");
             // Return a specific no-content message or an error
+            state.mcp_agent.reset_messages();
             Ok((
                 StatusCode::OK,
                 Json(Message {
                     // Using OK instead of CREATED
-                    role: state.mcp_agent_config.agent_mcp_role_assistant.clone(), // Use config for role
+                    role: state.agent_mcp_config.agent_mcp_role_assistant.clone(), // Use config for role
                     content: Some("Agent finished processing, but no specific response was generated."
                         .to_string()),
                     tool_call_id: None,

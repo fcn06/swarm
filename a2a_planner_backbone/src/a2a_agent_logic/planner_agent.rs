@@ -4,8 +4,7 @@ use std::collections::{HashMap, HashSet, VecDeque};
 use uuid::Uuid;
 
 // Assuming llm_api crate is available and has these
-use llm_api::chat::{ChatCompletionRequest, call_chat_completions};
-use llm_api::chat::call_chat_completions_v2;
+use llm_api::chat::{ChatCompletionRequest,ChatLlmInteraction};
 
 use crate::PlannerAgentDefinition;
 use crate::a2a_plan::plan_definition::{
@@ -16,20 +15,50 @@ use crate::a2a_plan::plan_execution::A2AClient;
 // to update
 use a2a_rs::domain::{Message, Part, TaskState};
 
+use std::env;
+use configuration::AgentPlannerConfig;
+
+
 /// Agent that will be in charge of the planning definition and execution
 /// He will have access to various a2a resources for this purpose
 #[derive(Clone)]
 pub struct PlannerAgent {
-    config: PlannerAgentDefinition,
+    planner_agent_definition: PlannerAgentDefinition,
+    llm_interaction: ChatLlmInteraction,
     client_agents: HashMap<String, A2AClient>,
 }
 
+
 impl PlannerAgent {
-    pub async fn new(config: PlannerAgentDefinition) -> Result<Self> {
+    pub async fn new(
+        agent_planner_config: AgentPlannerConfig) -> Result<Self> {
+
+        // Set model to be used
+        let model_id = agent_planner_config.agent_planner_model_id.clone();
+        // Set llm_url to be used
+        let llm_url = agent_planner_config.agent_planner_llm_url.clone();
+
+        // Set API key for LLM
+        let llm_planner_api_key = env::var("LLM_PLANNER_API_KEY").expect("LLM_PLANNER_API_KEY must be set");
+
+        let llm_interaction= ChatLlmInteraction::new(
+        llm_url,
+        model_id,
+        llm_planner_api_key,
+        );
+
+        // Set model to be used
+        let agents_references = agent_planner_config.agent_planner_agents_references.clone();
+
+        let planner_agent_definition = PlannerAgentDefinition {
+        agent_configs: agents_references,
+        };
+
+
         let mut client_agents = HashMap::new();
 
         println!("PlannerAgent: Connecting to A2a server agents...");
-        for agent_reference in &config.agent_configs {
+        for agent_reference in &planner_agent_definition.agent_configs {
             // Use agent_info (which implements AgentInfoProvider) to get details for connection
             let agent_reference = agent_reference.get_agent_reference().await?;
 
@@ -59,7 +88,7 @@ impl PlannerAgent {
             }
         }
 
-        if client_agents.is_empty() && !config.agent_configs.is_empty() {
+        if client_agents.is_empty() && !planner_agent_definition.agent_configs.is_empty() {
             println!(
                 "PlannerAgent: Warning: No A2a server agents connected, planner capabilities will be limited to direct LLM interaction if any."
             );
@@ -68,10 +97,12 @@ impl PlannerAgent {
         }
 
         Ok(Self {
-            config,
+            planner_agent_definition,
+            llm_interaction,
             client_agents,
         })
     }
+
 
     async fn get_available_skills_description(&self) -> String {
         let mut description = "Available agent skills:".to_string();
@@ -244,7 +275,7 @@ impl PlannerAgent {
         }];
 
         let llm_request_payload = ChatCompletionRequest {
-            model: self.config.model_id.clone(),
+            model: self.llm_interaction.model_id.clone(),
             messages: messages_draft,
             // Add other parameters like temperature if needed
             temperature: Some(0.7),
@@ -256,9 +287,6 @@ impl PlannerAgent {
             tools: None,
         };
 
-        
-        let http_client = reqwest::Client::new();
-
         // The llm_api crate is expected to handle the API key, e.g., via environment variables
         // Assuming 'self.llm_client' is initialized elsewhere with a concrete implementation
         // For now, we'll call the function directly assuming it handles client creation/management
@@ -266,7 +294,7 @@ impl PlannerAgent {
         //    .await
         //    .context("LLM API request failed during plan creation")?;
 
-        let llm_response = call_chat_completions_v2(&http_client, &llm_request_payload,self.config.llm_url.clone())
+        let llm_response = self.llm_interaction.call_chat_completions_v2(&llm_request_payload)
         .await
         .context("LLM API request failed during plan creation")?;
 
@@ -419,7 +447,7 @@ impl PlannerAgent {
                         }];
 
                         let llm_request_payload = ChatCompletionRequest {
-                            model: self.config.model_id.clone(),
+                            model: self.llm_interaction.model_id.clone(),
                             messages: messages_draft,
                             temperature: Some(0.7),
                             tool_choice: None,
@@ -430,8 +458,8 @@ impl PlannerAgent {
                             tools: None,
                         };
 
-                        let http_client = reqwest::Client::new();
-                        task_result = call_chat_completions_v2(&http_client, &llm_request_payload,self.config.llm_url.clone())
+                        
+                        task_result = self.llm_interaction.call_chat_completions_v2(&llm_request_payload)
                             .await
                             .context("LLM API request failed during reflective task execution")?
                             .choices
@@ -619,7 +647,7 @@ impl PlannerAgent {
         }];
 
         let llm_request_payload = ChatCompletionRequest {
-            model: self.config.model_id.clone(),
+            model: self.llm_interaction.model_id.clone(),
             messages: messages_draft,
             temperature: Some(0.7),
             tool_choice: None,
@@ -631,7 +659,7 @@ impl PlannerAgent {
         };
 
         // Assuming call_chat_completions handles client internally or uses provided config
-        let llm_response = call_chat_completions_v2(&http_client, &llm_request_payload,self.config.llm_url.clone())
+        let llm_response = self.llm_interaction.call_chat_completions_v2(&llm_request_payload)
             .await
             .context("LLM API request for summary failed")?;
 

@@ -8,6 +8,8 @@ keywords = ["agent", "ai", "mcp","framework"]
 [workspace]
 resolver = "3"
 members = [ "configuration","llm_api","mcp_agent_backbone","a2a_agent_backbone","a2a_planner_backbone","mcp_agent_endpoint"]
+#members = [ "configuration","llm_api","mcp_agent_backbone","mcp_agent_endpoint","a2a_agent_backbone"]
+
 
 [workspace.dependencies]
 llm_api = { path = "./llm_api" }

@@ -11,13 +11,13 @@ use tracing_subscriber::{
 
 use crate::api::endpoint::run_endpoint;
 use configuration::AgentMcpConfig;
-use mcp_agent_backbone::mcp_initialization::mcp_agent_config::RuntimeMcpConfigProject;
+use mcp_agent_backbone::mcp_agent_logic::agent::McpAgent;
 
 /// Application state holding configurations
 #[derive(Clone)] // AppState needs to be Clone to be used as Axum state
 pub struct AppState {
-    pub project_config: RuntimeMcpConfigProject,
-    pub mcp_agent_config: AgentMcpConfig, // Use Arc for shared ownership
+    pub mcp_agent: McpAgent,
+    pub agent_mcp_config: AgentMcpConfig, // Use Arc for shared ownership
 }
 
 #[tokio::main]
@@ -37,15 +37,12 @@ async fn main() -> anyhow::Result<()> {
     
     tracing::subscriber::set_global_default(subscriber).unwrap();
 
-
-    //env_logger::init(); // Example using env_logger
-
     info!("Starting MCP Agent...");
 
     // Load Agent Configuration from config file
     let config_path = "configuration/agent_mcp_config.toml"; // to be inserted via command line
     info!("Loading agent configuration from {}...", config_path);
-    let mcp_agent_config = match AgentMcpConfig::load_agent_config(config_path) {
+    let agent_mcp_config = match AgentMcpConfig::load_agent_config(config_path) {
         Ok(config) => config,
         Err(e) => {
             error!(
@@ -56,27 +53,13 @@ async fn main() -> anyhow::Result<()> {
         }
     };
 
-    info!("Agent configuration loaded successfully.");
 
-    // Setup Runtime Project Configuration
-    let project_config =
-        match mcp_agent_backbone::mcp_initialization::mcp_agent_config::setup_project_mcp(
-            mcp_agent_config.clone(),
-        )
-        .await
-        {
-            Ok(config) => config,
-            Err(e) => {
-                error!("Failed to setup project configuration: {}. Exiting.", e);
-                return Err(e.into());
-            }
-        };
-    info!("Project configuration setup successfully.");
+    let mut mcp_agent = McpAgent::new(agent_mcp_config.clone()).await?;
 
     // Create AppState
     let app_state = AppState {
-        project_config,
-        mcp_agent_config, // Move the Arc<AgentConfig> into state
+        mcp_agent,
+        agent_mcp_config, // Keep the original config
     };
 
     // Run the endpoint, passing the combined state

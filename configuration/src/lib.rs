@@ -51,7 +51,7 @@ pub struct AgentMcpConfig {
     pub agent_mcp_server_api_key:Option<String>,
     pub agent_mcp_model_id: String,
     pub agent_mcp_llm_url: String,
-    pub agent_mcp_system_message: String,
+    pub agent_mcp_system_prompt: String,
     pub agent_mcp_endpoint_url: Option<String>, // This will come from command line or instance config
 }
 

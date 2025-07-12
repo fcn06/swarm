@@ -5,13 +5,15 @@ use a2a_rs::adapter::{
 use a2a_rs::port::{AsyncNotificationManager, AsyncTaskManager};
 
 
-use a2a_agent_backbone::a2a_agent_logic::config::{AuthConfig, ServerConfig, StorageConfig};
-use a2a_agent_backbone::a2a_agent_initialization::a2a_agent_config::RuntimeA2aConfigProject;
+use a2a_agent_backbone::a2a_agent_logic::server_config::{AuthConfig, ServerConfig, StorageConfig};
+
 
 use super::planner_handler::SimplePlannerAgentHandler;
 use crate::a2a_agent_logic::planner_agent::PlannerAgent;
 use crate::PlannerAgentDefinition;
 use configuration::AgentPlannerConfig;
+use llm_api::chat::ChatLlmInteraction;
+use std::env;
 
 /// Modern A2A server setup using ReimbursementHandler
 //pub struct ReimbursementServer {
@@ -22,28 +24,10 @@ pub struct SimplePlannerAgentServer {
 
 impl SimplePlannerAgentServer {
     /// Create a new modern reimbursement server with default config
-    pub async fn new(a2a_agent_planner_config: AgentPlannerConfig) -> anyhow::Result<Self> {
-
-        // load a2a config file and initialize appropriateruntime
-        let agent_planner_config = AgentPlannerConfig::load_agent_config("configuration/agent_planner_config.toml")
-            .expect("No planner configuration file");
-
-        // Set model to be used
-        let model_id = agent_planner_config.agent_planner_model_id.clone();
-        // Set llm_url to be used
-        let llm_url = agent_planner_config.agent_planner_llm_url.clone();
-
-        // Set model to be used
-        let agents_references = agent_planner_config.agent_planner_agents_references.clone();
-
-        let config = PlannerAgentDefinition {
-            model_id: model_id, // Or your preferred model
-            llm_url: llm_url,
-            agent_configs: agents_references,
-        };
+    pub async fn new(agent_planner_config: AgentPlannerConfig) -> anyhow::Result<Self> {
 
         // Initialize the Planner Agent
-        let  planner_agent = PlannerAgent::new(config).await?;
+        let  planner_agent = PlannerAgent::new(agent_planner_config.clone()).await?;
 
         Ok(Self {
             agent_planner_config:agent_planner_config,

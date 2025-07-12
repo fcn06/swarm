@@ -1,5 +1,4 @@
 use a2a_agent_backbone::a2a_agent_logic::server::SimpleAgentServer;
-use a2a_agent_backbone::a2a_agent_initialization::a2a_agent_config::setup_project_a2a;
 use configuration::AgentA2aConfig;
 
 use clap::Parser;
@@ -24,13 +23,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
 
     // load a2a config file and initialize appropriateruntime
-    let a2a_agent_config = AgentA2aConfig::load_agent_config(&args.config_file);
-    let a2a_runtime_config_project =
-        setup_project_a2a(a2a_agent_config.expect("Could not load A2a Config file")).await?;
+    let agent_a2a_config = AgentA2aConfig::load_agent_config(&args.config_file);
 
+  
     // Create the modern server, and pass the runtime elements
-    // runtime config is passed from server then to task handler
-    let server = SimpleAgentServer::new(a2a_runtime_config_project);
+    let server = SimpleAgentServer::new(agent_a2a_config.expect("Incrorrect A2A config file")).await?;
+
+
     println!("🌐 Starting HTTP server only...");
     server.start_http().await?;
 

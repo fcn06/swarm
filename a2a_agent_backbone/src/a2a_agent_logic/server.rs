@@ -8,42 +8,71 @@ use a2a_rs::port::{AsyncNotificationManager, AsyncTaskManager};
 #[cfg(feature = "sqlx-storage")]
 use a2a_rs::adapter::storage::SqlxTaskStorage;
 
-use super::config::{AuthConfig, ServerConfig, StorageConfig};
+use super::server_config::{AuthConfig, ServerConfig, StorageConfig};
 use super::handler::SimpleAgentHandler;
-use crate::a2a_agent_initialization::a2a_agent_config::RuntimeA2aConfigProject;
-
+use mcp_agent_backbone::mcp_agent_logic::agent::McpAgent;
+use configuration::{AgentA2aConfig,AgentMcpConfig};
+use llm_api::chat::ChatLlmInteraction;
+use std::env;
 
 /// Modern A2A server setup using ReimbursementHandler
 //pub struct ReimbursementServer {
 pub struct SimpleAgentServer {
-    config: ServerConfig,
-    runtime_config: RuntimeA2aConfigProject,
+    //config: ServerConfig,
+    //runtime_config: RuntimeA2aConfigProject, // to be removed
+    // should be replaced by the below signature
+    // new needs to be fine tuned
+    server_config: ServerConfig,
+    llm_interaction: ChatLlmInteraction,
+    agent_a2a_config: AgentA2aConfig,
+    mcp_agent:Option<McpAgent>
 }
+
+
 
 impl SimpleAgentServer {
     /// Create a new modern reimbursement server with default config
-    pub fn new(runtime_config: RuntimeA2aConfigProject) -> Self {
-        let config = ServerConfig::new(
-            runtime_config.agent_a2a_config.agent_a2a_host.clone(),
-            runtime_config
-                .agent_a2a_config
-                .agent_a2a_http_port
-                .clone()
-                .parse::<u16>()
-                .unwrap(),
-            runtime_config
-                .agent_a2a_config
-                .agent_a2a_ws_port
-                .clone()
-                .parse::<u16>()
-                .unwrap(),
+    pub async fn new(agent_a2a_config: AgentA2aConfig,) -> anyhow::Result<Self> {
+        
+        let server_config = ServerConfig::new(
+            agent_a2a_config.agent_a2a_host.clone(),
+            agent_a2a_config.agent_a2a_http_port.clone().parse::<u16>().unwrap(),
+            agent_a2a_config.agent_a2a_ws_port.clone().parse::<u16>().unwrap(),
+            );
+
+             // Set model to be used
+        let model_id = agent_a2a_config.agent_a2a_model_id.clone();
+
+        // Set model to be used
+        let system_message = agent_a2a_config.agent_a2a_system_prompt.clone();
+
+        // Set API key for LLM
+        let llm_a2a_api_key = env::var("LLM_A2A_API_KEY").expect("LLM_A2A_API_KEY must be set");
+
+        let llm_interaction= ChatLlmInteraction::new(
+            agent_a2a_config.agent_a2a_llm_url.clone(),
+            model_id,
+            llm_a2a_api_key,
         );
 
-        Self {
-            config,
-            runtime_config,
-        }
+        // load mcp agent agent if it exists
+        let mcp_agent = match agent_a2a_config.agent_a2a_mcp_config_path.clone() {
+            None => None,
+            Some(path) => {
+                let agent_mcp_config=AgentMcpConfig::load_agent_config(path.as_str()).expect("Error loading agent config");
+                let mut mcp_agent = McpAgent::new(agent_mcp_config).await?;
+                Some(mcp_agent)},
+            
+        };
+
+        Ok(Self {
+            server_config:server_config,
+            llm_interaction:llm_interaction,
+            agent_a2a_config:agent_a2a_config,
+            mcp_agent:mcp_agent,
+        })
     }
+
 
     /// Create in-memory storage
     fn create_in_memory_storage(&self) -> InMemoryTaskStorage {
@@ -78,7 +107,7 @@ impl SimpleAgentServer {
 
     /// Start the HTTP server
     pub async fn start_http(&self) -> Result<(), Box<dyn std::error::Error>> {
-        match &self.config.storage {
+        match &self.server_config.storage {
             StorageConfig::InMemory => {
                 let storage = self.create_in_memory_storage();
                 self.start_http_server(storage).await
@@ -113,7 +142,7 @@ impl SimpleAgentServer {
 
         // Create message handler
         let message_handler =
-            SimpleAgentHandler::with_storage(self.runtime_config.clone(), storage.clone());
+            SimpleAgentHandler::with_storage(self.llm_interaction.clone(), self.mcp_agent.clone(), storage.clone());
         self.start_with_handler(message_handler, storage).await
     }
 
@@ -136,7 +165,7 @@ impl SimpleAgentServer {
 
         //////////////////////////////////////////////////////////////////
 
-        let agent_a2a_config = self.runtime_config.agent_a2a_config.clone();
+        let agent_a2a_config = self.agent_a2a_config.clone();
 
         let agent_info = SimpleAgentInfo::new(
             agent_a2a_config.agent_a2a_name,
@@ -161,7 +190,7 @@ impl SimpleAgentServer {
 
         //////////////////////////////////////////////////////////////////
 
-        let agent_a2a_config = self.runtime_config.agent_a2a_config.clone();
+        let agent_a2a_config = self.agent_a2a_config.clone();
         // Create HTTP server
         let bind_address = format!("{}:{}", agent_a2a_config.agent_a2a_host, agent_a2a_config.agent_a2a_http_port);
 
@@ -178,12 +207,12 @@ impl SimpleAgentServer {
             agent_a2a_config.agent_a2a_host, agent_a2a_config.agent_a2a_http_port
         );
 
-        match &self.config.storage {
+        match &self.server_config.storage {
             StorageConfig::InMemory => println!("💾 Storage: In-memory (non-persistent)"),
             StorageConfig::Sqlx { url, .. } => println!("💾 Storage: SQLx ({})", url),
         }
 
-        match &self.config.auth {
+        match &self.server_config.auth {
             AuthConfig::None => {
                 println!("🔓 Authentication: None (public access)");
 

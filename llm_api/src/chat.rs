@@ -6,6 +6,15 @@ use std::env;
 use crate::tools::Tool;
 use anyhow::{Result,Context};
 
+#[derive(Clone)]
+pub struct ChatLlmInteraction {
+    pub client: Client,
+    pub llm_url:String,
+    llm_api_key:String,
+    pub model_id:String,
+
+}
+
 
 #[derive(Serialize, Debug, Clone)]
 pub struct ChatCompletionRequest {
@@ -120,40 +129,29 @@ pub struct Usage {
 
 // --- API Call Function ---
 
-pub async fn call_chat_completions(
-    client: &Client,
-    request_payload: &ChatCompletionRequest,
-) -> Result<ChatCompletionResponse, reqwest::Error> {
-    let api_key = env::var("LLM_API_KEY").expect("LLM_API_KEY must be set");
-    let api_url = env::var("LLM_API_URL").expect("LLM_API_URL must be set"); // Ensure this is the correct endpoint
+impl ChatLlmInteraction {
+    /// Create a new llm interaction entity
+    pub fn new(llm_url:String,model_id:String,llm_api_key:String) -> Self {
+        
+        Self {
+            client:reqwest::Client::new(),
+            llm_url:llm_url,
+            llm_api_key:llm_api_key,
+            model_id:model_id,
+        }
+    }
 
-    let response = client
-        .post(api_url)
-        .bearer_auth(api_key)
-        .header("Content-Type", "application/json; charset=utf-8")
-        .json(request_payload)
-        .send()
-        .await?;
 
-    // Check for HTTP errors first
-    response.error_for_status_ref()?;
-
-    // Then deserialize the successful response
-    let response_body = response.json::<ChatCompletionResponse>().await?;
-
-    Ok(response_body)
-}
-
+/// for complex calls using tools, this is the api to use
 pub async fn call_chat_completions_v2(
-    client: &Client,
+    &self,
     request_payload: &ChatCompletionRequest,
-    api_url:String,
 ) -> Result<ChatCompletionResponse, reqwest::Error> {
-    let api_key = env::var("LLM_API_KEY").expect("LLM_API_KEY must be set");
+    //let api_key = env::var("LLM_API_KEY").expect("LLM_API_KEY must be set");
     
-    let response = client
-        .post(api_url)
-        .bearer_auth(api_key)
+    let response = self.client
+        .post(self.llm_url.clone())
+        .bearer_auth(self.llm_api_key.clone())
         .header("Content-Type", "application/json; charset=utf-8")
         .json(request_payload)
         .send()
@@ -168,16 +166,13 @@ pub async fn call_chat_completions_v2(
     Ok(response_body)
 }
 
-pub async fn call_api_message(
-    client: &Client,
-    api_url:String,
-    model_id:String,
+/// for very simple calls without tools, one can use this simpler api
+pub async fn call_api_simple(
+    &self,
     agent_role:String,
     user_query:String,
 ) -> anyhow::Result<Option<Message>> {
 
-    let api_key = env::var("LLM_API_KEY").expect("LLM_API_KEY must be set");
-    
     let messages_origin = vec![Message {
         role: agent_role,
         content: Some(user_query),
@@ -185,9 +180,22 @@ pub async fn call_api_message(
         tool_calls:None
     }];
 
+    self.call_api_message(messages_origin).await
+
+}
+
+
+pub async fn call_api_message(
+    &self,
+    messages:  Vec<Message>,
+) -> anyhow::Result<Option<Message>> {
+
+    //let api_key = env::var("LLM_API_KEY").expect("LLM_API_KEY must be set");
+    
+
     let llm_request_payload = ChatCompletionRequest {
-        model: model_id.clone(),
-        messages: messages_origin,
+        model: self.model_id.clone(),
+        messages: messages.clone(),
         // Add other parameters like temperature if needed
         temperature: Some(0.7),
         tool_choice: None,
@@ -198,7 +206,7 @@ pub async fn call_api_message(
         tools: None,
     };
 
-    let llm_response = call_chat_completions_v2(&client, &llm_request_payload,api_url)
+    let llm_response = self.call_chat_completions_v2( &llm_request_payload)
     .await
     .context("LLM API request failed during plan creation")?;
 
@@ -213,7 +221,7 @@ pub async fn call_api_message(
         
         // remove think tags from llm response
         let response_content = Some(
-            remove_think_tags(response_content.clone().expect("REASON"))
+            self.remove_think_tags(response_content.clone().expect("REASON"))
                 .await?,
         );
 
@@ -235,7 +243,7 @@ pub async fn call_api_message(
 }
 
 // Helper function to extract text from a Message
-pub async fn remove_think_tags( result: String) -> anyhow::Result<String> {
+pub async fn remove_think_tags( &self,result: String) -> anyhow::Result<String> {
     let mut cleaned_result = String::new();
     let mut in_think_tag = false;
 
@@ -261,4 +269,6 @@ pub async fn remove_think_tags( result: String) -> anyhow::Result<String> {
         }
     }
     Ok(cleaned_result)
+}
+
 }

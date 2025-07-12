@@ -9,7 +9,7 @@ Launch MCP Server (https://github.com/fcn06/mcp_server)
 ```
 Launch mcp_endpoint ( as per configuration, this uses groq and qwen3 , but it can also run on gemini )
 ```bash
-LLM_API_KEY=<YOUR-API-KEY>  ./target/release/mcp_agent_endpoint
+LLM_MCP_API_KEY=<YOUR-API-KEY>  ./target/release/mcp_agent_endpoint
 ```
 Then you can test with the following curl request
 ```bash

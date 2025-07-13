@@ -7,20 +7,18 @@ keywords = ["agent", "ai", "mcp","framework"]
 
 [workspace]
 resolver = "3"
-members = [ "configuration","llm_api","mcp_agent_backbone","a2a_agent_backbone","a2a_planner_backbone","mcp_agent_endpoint"]
-#members = [ "configuration","llm_api","mcp_agent_backbone","mcp_agent_endpoint","a2a_agent_backbone"]
+#members = [ "configuration","llm_api","mcp_agent_backbone","a2a_agent_backbone","a2a_planner_backbone","mcp_agent_endpoint"]
+members = [ "configuration","llm_api","mcp_agent_backbone","mcp_agent_endpoint","a2a_agent_backbone"]
 
 
 [workspace.dependencies]
 llm_api = { path = "./llm_api" }
-
 configuration = { path = "./configuration" }
-
 mcp_agent_backbone = { path = "./mcp_agent_backbone" }
 a2a_agent_backbone = { path = "./a2a_agent_backbone" }
 a2a_planner_backbone = { path = "./a2a_planner_backbone" }
 
-mcp_agent_endpoint = { path = "./mcp_agent_endpoint" }
+#mcp_agent_endpoint = { path = "./mcp_agent_endpoint" }
 
 # For rmcp and a2a-rs, in the future, I may have to pin a revision number because this crate is evolving rapidly with significant number of breaking changes
 #rmcp= { git = "https://github.com/modelcontextprotocol/rust-sdk.git", features = ["client", "transport-sse-client", "transport-child-process", "tower","reqwest"] ,rev="73188eff6fcc8fc152949ac1d5df0439607ba3ad"}
@@ -34,13 +32,9 @@ tokio-tungstenite = { version = "0.27", features = ["rustls", "connect", "stream
 futures = "0.3"
 async-trait = { version = "0.1"}
 
-#serde = { version = "1.0", features = ["derive"] }
-#serde_json = "1.0"
-#anyhow = "1.0"
-
-serde = { version = "1.0.219", features = ["derive","rc"] }
-serde_json = "1.0.140"
-anyhow = "1.0.98"
+serde = { version = "1.0", features = ["derive","rc"] }
+serde_json = "1.0"
+anyhow = "1.0"
 
 rustls="0.23"
 

@@ -8,7 +8,7 @@ keywords = ["agent", "ai", "mcp","framework"]
 [workspace]
 resolver = "3"
 #members = [ "configuration","llm_api","mcp_agent_backbone","a2a_agent_backbone","a2a_planner_backbone","mcp_agent_endpoint"]
-members = [ "configuration","llm_api","mcp_agent_backbone","mcp_agent_endpoint","a2a_agent_backbone"]
+members = [ "configuration","llm_api","mcp_agent_backbone","mcp_agent_endpoint","a2a_agent_backbone","a2a_planner_backbone"]
 
 
 [workspace.dependencies]
@@ -71,3 +71,21 @@ opt-level = 0
 
 [profile.release]
 opt-level = 3
+
+
+[workspace.patch.crates-io]
+base64 = { version = "0.22.1" }
+getrandom = { version = "0.3.3" }
+h2 = { version = "0.4.11" }
+http = { version = "1.3.1" }
+hyper = { version = "1.6.0" }
+hyper-rustls = { version = "0.27.7" }
+reqwest = { version = "0.12.22" }
+regex-automata = { version = "0.4.9" }
+regex-syntax = { version = "0.8.5" }
+rustls = { version = "0.23.29" }
+serde = { version = "1.0.219" }
+sync_wrapper = { version = "1.0.2" }
+thiserror = { version = "2.0.12" }
+tokio-rustls = { version = "0.26.2" }
+webpki-roots = { version = "1.0.1" }

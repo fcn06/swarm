@@ -32,6 +32,7 @@ reqwest = { version = "0.12", features = ["json","rustls-tls"] }
 tokio = { version = "1", features = ["full"] }
 tokio-tungstenite = { version = "0.27", features = ["rustls", "connect", "stream", "handshake"], default-features = false }
 futures = "0.3"
+async-trait = { version = "0.1"}
 
 #serde = { version = "1.0", features = ["derive"] }
 #serde_json = "1.0"
@@ -52,7 +53,6 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 axum = "0.8"
 tower = "0.5"
 tower-http = { version = "0.6.0", features = ["cors"] }
-async-trait = { version = "0.1"}
 
 jsonwebtoken = { version = "9.3" }
 oauth2 = { version = "5" }
@@ -63,16 +63,14 @@ rand = "0.9"
 lazy_static = "1.4"  # Used for static request ID storage in message_handler
 regex = "1.10"  # Used for text parsing in improved handler
 uuid = { version = "1", features = ["v4","serde"] }
-toml = "0.8"
+toml = "0.9"
 base64 = "0.22"
 url = { version = "2.4", features = ["serde"] }
 
 sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "chrono", "uuid", "json"] }
 bon = "3"
 
-#dotenv = "0.15"
-#log = "0.4"
-#env_logger="0.11"
+
 
 [profile.dev]
 opt-level = 0

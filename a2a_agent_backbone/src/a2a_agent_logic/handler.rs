@@ -7,7 +7,6 @@
 //! and compose it with the storage implementations directly.
 
 use std::sync::{Arc};
-use anyhow::Context;
 
 use async_trait::async_trait;
 
@@ -24,7 +23,7 @@ use a2a_rs::{
 };
 
 use llm_api::chat::Message as Message_Llm;
-use llm_api::chat::{ChatCompletionRequest,ChatLlmInteraction};
+use llm_api::chat::{ChatLlmInteraction};
 use mcp_agent_backbone::mcp_agent_logic::agent::McpAgent;
 
 
@@ -119,7 +118,7 @@ impl AsyncMessageHandler for SimpleAgentHandler {
         &self,
         task_id: &'a str,
         message: &'a Message,
-        session_id: Option<&'a str>,
+        _session_id: Option<&'a str>,
     ) -> Result<Task, A2AError> {
         // This is where we need to process custom code for message handling
         // including communication with mcp
@@ -142,7 +141,7 @@ impl AsyncMessageHandler for SimpleAgentHandler {
         // todo : can be cleaner, and simpler
         /////////////////////////////////////////////////////////////
 
-        let response =if (self.mcp_agent.is_none()) {
+        let response =if self.mcp_agent.is_none() {
                 self.llm_interaction.call_api_simple("user".to_string(),llm_msg.content.expect("Empty Message").to_string()).await.unwrap()
 
         } else {

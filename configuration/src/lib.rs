@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use log::{debug, info};
+//use log::{debug, info};
 use std::fs; // Assuming you might want logging here too
 
 //////////////////////////////////////////////////////////////////////
@@ -30,10 +30,10 @@ pub struct AgentA2aConfig {
 impl AgentA2aConfig {
     /// Loads agent configuration from a TOML file.
     pub fn load_agent_config(path: &str) -> anyhow::Result<AgentA2aConfig> {
-        info!("Loading agent configuration from: {}", path);
+        //info!("Loading agent configuration from: {}", path);
         let config_content = fs::read_to_string(path)?;
         let config: AgentA2aConfig = toml::from_str(&config_content)?;
-        debug!("Loaded agent configuration: {:?}", config);
+        //debug!("Loaded agent configuration: {:?}", config);
         Ok(config)
     }
 }
@@ -58,10 +58,10 @@ pub struct AgentMcpConfig {
 impl AgentMcpConfig {
     /// Loads agent configuration from a TOML file.
     pub fn load_agent_config(path: &str) -> anyhow::Result<AgentMcpConfig> {
-        info!("Loading agent configuration from: {}", path);
+        //info!("Loading agent configuration from: {}", path);
         let config_content = fs::read_to_string(path)?;
         let config: AgentMcpConfig = toml::from_str(&config_content)?;
-        debug!("Loaded agent configuration: {:?}", config);
+        //debug!("Loaded agent configuration: {:?}", config);
         Ok(config)
     }
 }
@@ -112,10 +112,10 @@ pub struct AgentPlannerConfig {
 impl AgentPlannerConfig {
     /// Loads agent configuration from a TOML file.
     pub fn load_agent_config(path: &str) -> anyhow::Result<AgentPlannerConfig> {
-        info!("Loading agent configuration from: {}", path);
+        //info!("Loading agent configuration from: {}", path);
         let config_content = fs::read_to_string(path)?;
         let config: AgentPlannerConfig = toml::from_str(&config_content)?;
-        debug!("Loaded agent configuration: {:?}", config);
+        //debug!("Loaded agent configuration: {:?}", config);
         Ok(config)
     }
 }

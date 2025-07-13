@@ -6,6 +6,7 @@ use a2a_rs::{
 use anyhow::Result;
 
 use std::sync::Arc;
+use tracing::{error,warn,info,debug,trace};
 
 /////////////////////////////////////////////////////////
 // Client to connect to a2a server
@@ -65,14 +66,14 @@ impl A2AClient {
 
         // Generate a task ID
         let task_id = format!("task-{}", uuid::Uuid::new_v4());
-        println!("Created task with ID: {}", task_id);
+        info!("Created task with ID: {}", task_id);
 
         // Create a message
         let message_id = uuid::Uuid::new_v4().to_string();
         let message = Message::agent_text(task_description.to_string(), message_id);
 
         // Send a task message
-        println!("Sending message to task...");
+        info!("Sending message to task...");
         let task = self
             .client
             .send_task_message(&task_id, &message, None, Some(50))
@@ -95,7 +96,7 @@ impl A2AClient {
             .collect::<Vec<_>>()
             .join("\n");
 
-        println!("Received response: {:?}", response);
+        info!("Received response: {:?}", response);
 
         Ok(response)
 
@@ -110,7 +111,7 @@ impl A2AClient {
     /// Check if the agent has a specific skill.
     /// THIS NEEDS TO BE REWORKED
     pub fn has_skill(&self, skill_name: &str) -> bool {
-        println!("Checking if agent has skill: {}, out of skills : {:?}", skill_name,self.skills[0]);
+        debug!("Checking if agent has skill: {}, out of skills : {:?}", skill_name,self.skills[0]);
         self.skills[0].id.contains(&skill_name.to_string())
     }
 

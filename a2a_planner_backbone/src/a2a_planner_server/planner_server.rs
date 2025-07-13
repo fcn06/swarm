@@ -1,19 +1,13 @@
 use a2a_rs::adapter::{
-    BearerTokenAuthenticator, DefaultRequestProcessor, HttpServer, InMemoryTaskStorage,
+    DefaultRequestProcessor, HttpServer, InMemoryTaskStorage,
     NoopPushNotificationSender, SimpleAgentInfo,
 };
 use a2a_rs::port::{AsyncNotificationManager, AsyncTaskManager};
 
 
-use a2a_agent_backbone::a2a_agent_logic::server_config::{AuthConfig, ServerConfig, StorageConfig};
-
-
 use super::planner_handler::SimplePlannerAgentHandler;
 use crate::a2a_agent_logic::planner_agent::PlannerAgent;
-use crate::PlannerAgentDefinition;
 use configuration::AgentPlannerConfig;
-use llm_api::chat::ChatLlmInteraction;
-use std::env;
 
 /// Modern A2A server setup using ReimbursementHandler
 //pub struct ReimbursementServer {
@@ -50,7 +44,7 @@ impl SimplePlannerAgentServer {
     }
 
     /// Start HTTP server
-    async fn start_http_server<S>(&self, storage: S) -> Result<(), Box<dyn std::error::Error>>
+    async fn start_http_server<S>(&self, _storage: S) -> Result<(), Box<dyn std::error::Error>>
     where
         S: AsyncTaskManager + AsyncNotificationManager + Clone + Send + Sync + 'static,
     {

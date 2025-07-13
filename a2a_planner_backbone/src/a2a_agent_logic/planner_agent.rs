@@ -18,6 +18,7 @@ use a2a_rs::domain::{Message, Part, TaskState};
 use std::env;
 use configuration::AgentPlannerConfig;
 
+use tracing::{error,warn,info,debug,trace};
 
 /// Agent that will be in charge of the planning definition and execution
 /// He will have access to various a2a resources for this purpose
@@ -57,12 +58,12 @@ impl PlannerAgent {
 
         let mut client_agents = HashMap::new();
 
-        println!("PlannerAgent: Connecting to A2a server agents...");
+        debug!("PlannerAgent: Connecting to A2a server agents...");
         for agent_reference in &planner_agent_definition.agent_configs {
             // Use agent_info (which implements AgentInfoProvider) to get details for connection
             let agent_reference = agent_reference.get_agent_reference().await?;
 
-            println!(
+            debug!(
                 "PlannerAgent: Connecting to agent '{}' at {}",
                 agent_reference.name, agent_reference.url
             );
@@ -71,7 +72,7 @@ impl PlannerAgent {
                 .await
             {
                 Ok(client) => {
-                    println!(
+                    debug!(
                         "PlannerAgent: Successfully connected to agent '{}' at {}",
                         client.id, client.uri
                     );
@@ -80,7 +81,7 @@ impl PlannerAgent {
                 }
                 Err(e) => {
                     // Use details from agent_info for error reporting
-                    eprintln!(
+                    debug!(
                         "PlannerAgent: Warning: Failed to connect to A2a agent '{}' at {}: {}",
                         agent_reference.name, agent_reference.url, e
                     );
@@ -89,7 +90,7 @@ impl PlannerAgent {
         }
 
         if client_agents.is_empty() && !planner_agent_definition.agent_configs.is_empty() {
-            println!(
+            warn!(
                 "PlannerAgent: Warning: No A2a server agents connected, planner capabilities will be limited to direct LLM interaction if any."
             );
             // Depending on requirements, you might return an error here:
@@ -136,14 +137,14 @@ impl PlannerAgent {
         // Extracting text from message
         let user_query = self.extract_text_from_message(&user_request).await;
 
-        println!(
+        info!(
             "---PlannerAgent: Starting to handle user request --  Query: '{}'---",
             user_query
         );
 
         match self.create_plan(&user_request).await {
             Ok(mut plan) => {
-                println!(
+                trace!(
                     "PlannerAgent: Plan created successfully for request ID: {}. Plan ID: {}",
                     request_id, plan.id
                 );
@@ -154,7 +155,7 @@ impl PlannerAgent {
                 // Attempt to summarize results regardless of execution outcome
                 match self.summarize_results(&mut plan).await {
                     Ok(summary) => {
-                        println!(
+                        trace!(
                             "PlannerAgent: Final summary generated for request ID {}.",
                             request_id
                         );
@@ -166,7 +167,7 @@ impl PlannerAgent {
                         }
                     }
                     Err(e) => {
-                        eprintln!(
+                        trace!(
                             "PlannerAgent: Failed to summarize results for request ID {}: {}",
                             request_id, e
                         );
@@ -188,7 +189,7 @@ impl PlannerAgent {
                     "PlannerAgent: Failed to create plan for request ID {}: {}",
                     request_id, e
                 );
-                eprintln!("{}", error_msg);
+                trace!("{}", error_msg);
                 ExecutionResult {
                     request_id,
                     success: false,
@@ -260,7 +261,7 @@ impl PlannerAgent {
 
             skills_description, self.extract_text_from_message(request).await
         );
-        // sometime the Json is sent between '''json''' , like in python and this needs to be avoided
+
 
         let _messages = vec![Message::user_text(
             prompt.clone().to_string(),
@@ -287,13 +288,7 @@ impl PlannerAgent {
             tools: None,
         };
 
-        // The llm_api crate is expected to handle the API key, e.g., via environment variables
-        // Assuming 'self.llm_client' is initialized elsewhere with a concrete implementation
-        // For now, we'll call the function directly assuming it handles client creation/management
-        //let llm_response = call_chat_completions(&http_client, &llm_request_payload)
-        //    .await
-        //    .context("LLM API request failed during plan creation")?;
-
+        // we need to move part of this logic to llm_api
         let llm_response = self.llm_interaction.call_chat_completions_v2(&llm_request_payload)
         .await
         .context("LLM API request failed during plan creation")?;
@@ -306,13 +301,15 @@ impl PlannerAgent {
             .content
             .clone();
 
+        
         // remove think tags from llm response
         let response_content = Some(
             self.remove_think_tags(response_content.clone().expect("REASON"))
                 .await?,
         );
+        
 
-        println!(
+        info!(
             "PlannerAgent: LLM responded with plan content:{:?}",
             response_content
         );
@@ -323,11 +320,11 @@ impl PlannerAgent {
             match serde_json::from_str(&response_content.clone().expect("REASON")) {
                 Ok(data) => data,
                 Err(e) => {
-                    eprintln!(
+                    warn!(
                         "PlannerAgent: Failed to parse LLM plan response as JSON: {}",
                         e
                     );
-                    eprintln!("PlannerAgent: LLM Raw Response: {:?}", response_content);
+                    warn!("PlannerAgent: LLM Raw Response: {:?}", response_content);
                     bail!(
                         "LLM returned invalid plan format: {:?}. Raw: {:?}",
                         e,
@@ -350,7 +347,7 @@ impl PlannerAgent {
 
     // to be fine tuned and better tested
     async fn execute_plan(&mut self, plan: &mut Plan) -> Result<()> {
-        println!(
+        trace!(
             "PlannerAgent: Starting plan execution for request ID: {}",
             plan.request_id
         );
@@ -391,7 +388,7 @@ impl PlannerAgent {
                     .all(|dep_id| completed_tasks.contains(dep_id));
 
                 if dependencies_met {
-                    println!(
+                    debug!(
                         "PlannerAgent: Submitting task '{}': {}",
                         task_id, task_def.description
                     );
@@ -411,21 +408,21 @@ impl PlannerAgent {
                     }
 
                     // Find a suitable agent or determine it's an LLM task
-                    let assigned_agent_id: Option<String>;
+                    let _assigned_agent_id: Option<String>;
                     let task_result: Result<String>;
 
                     if let Some(skill) = &task_def.skill_to_use {
                         let agent_client = self.find_agent_with_skill(skill, &task_id).await;
                         match agent_client {
                             Some(client) => {
-                                assigned_agent_id = Some(client.id.clone());
+                                _assigned_agent_id = Some(client.id.clone());
                                 task_result = client
                                     .execute_task(&full_task_description, skill)
                                     .await
                                     .map(|r| r);
                             }
                             None => {
-                                assigned_agent_id = None;
+                                _assigned_agent_id = None;
                                 task_result = Err(anyhow::anyhow!(
                                     "No agent found with skill '{}' for task '{}'",
                                     skill,
@@ -436,7 +433,7 @@ impl PlannerAgent {
                     } else {
                         // IMPORTANT : Connect this task to a LLM
                         // Task requires no specific skill, potentially an LLM reflection task
-                        assigned_agent_id = None; // No specific agent
+                        _assigned_agent_id = None; // No specific agent
 
                         // Use the full_task_description as the prompt for the LLM
                         let messages_draft = vec![llm_api::chat::Message {
@@ -475,7 +472,7 @@ impl PlannerAgent {
                         Ok(result_content) => {
                             // remove think tags from result_content
                             let result_content = self.remove_think_tags(result_content).await?;
-                            println!(
+                            debug!(
                                 "PlannerAgent: Task '{}' completed successfully.Result : {}",
                                 task_id, result_content
                             );
@@ -500,7 +497,7 @@ impl PlannerAgent {
                         }
                         Err(e) => {
                             let error_msg = format!("Task '{}' failed: {}", task_id, e);
-                            eprintln!("PlannerAgent: {}", error_msg);
+                            error!("PlannerAgent: {}", error_msg);
                             plan.status =
                                 PlanStatus::Failed(format!("Execution failed at task {}", task_id));
                             plan.updated_at = Some(Utc::now());
@@ -523,7 +520,7 @@ impl PlannerAgent {
         if all_tasks_completed {
             plan.status = PlanStatus::Completed;
             plan.updated_at = Some(Utc::now());
-            println!(
+            debug!(
                 "PlannerAgent: Plan execution completed successfully for request ID: {}",
                 plan.request_id
             );
@@ -539,7 +536,7 @@ impl PlannerAgent {
                 "Plan execution finished, but not all tasks completed. Unfinished: {:?}",
                 unfinished_tasks
             );
-            eprintln!("PlannerAgent: {}", failure_reason);
+            warn!("PlannerAgent: {}", failure_reason);
             plan.status = PlanStatus::Failed(failure_reason);
             plan.updated_at = Some(Utc::now());
         }
@@ -547,7 +544,7 @@ impl PlannerAgent {
         Ok(())
     }
 
-    async fn find_agent_with_skill(&self, skill: &str, task_id: &str) -> Option<&A2AClient> {
+    async fn find_agent_with_skill(&self, skill: &str, _task_id: &str) -> Option<&A2AClient> {
         // 1. Try preferred agent if specified and has skill
         /*
         if let Some(pref_agent_id) = preferred_agent_id {
@@ -563,11 +560,11 @@ impl PlannerAgent {
 
         // 2. If no preferred or preferred can't do it, find any agent with the skill
         for (agent_id, agent) in &self.client_agents {
-            println!("Test PlannerAgent: Agents : '{}' with skill '{}'.",agent_id, skill);
+            trace!("Test PlannerAgent: Agents : '{}' with skill '{}'.",agent_id, skill);
             // Access skills directly from the A2AClient struct
             if agent.has_skill(skill) {
                 // Use the has_skill method
-                println!(
+                trace!(
                     "PlannerAgent: Found agent '{}' with skill '{}'.",
                     agent_id, skill
                 );
@@ -575,14 +572,13 @@ impl PlannerAgent {
             }
         }
 
-        println!("PlannerAgent: No agent found with skill '{}'.", skill);
+        warn!("PlannerAgent: No agent found with skill '{}'.", skill);
         None
     }
 
     async fn summarize_results(&self, plan: &mut Plan) -> Result<String> {
-        let http_client = reqwest::Client::new();
 
-        println!("PlannerAgent: Summarizing results for plan ID: {}", plan.id);
+        info!("PlannerAgent: Summarizing results for plan ID: {}", plan.id);
         let mut context = format!("User's initial request: {}\n", plan.user_query);
         context.push_str(&format!(
             "Plan ID: {}\nOverall Plan Summary by LLM: {}\nPlan Status: {:?}\nTasks executed:\n",
@@ -594,7 +590,7 @@ impl PlannerAgent {
         // A more complete solution would store task results in the Plan struct or a related structure.
 
         // Sort tasks by their original definition order for a consistent summary
-        let  sorted_tasks_defs = plan.tasks_definition.clone();
+        let  _sorted_tasks_defs = plan.tasks_definition.clone();
         // Assuming TaskDefinition has a way to maintain original order or we use the order from plan.tasks_definition directly
         // For now, let's just iterate through tasks_definition as is.
 
@@ -620,10 +616,6 @@ impl PlannerAgent {
             if let Some(output) = plan.task_results.get(&task_def.id) {
                 context.push_str(&format!(", Output: \"{}\"", output.replace('\n', " "))); // Replace newlines for cleaner output
             }
-            context.push_str(
-                "
-",
-            );
         }
 
         if plan.status == PlanStatus::Completed {
@@ -676,7 +668,7 @@ impl PlannerAgent {
 
         plan.final_summary = Some(summary.clone());
         plan.updated_at = Some(Utc::now());
-        println!("PlannerAgent: Summary generated.");
+        debug!("PlannerAgent: Summary generated.");
 
         Ok(summary)
     }

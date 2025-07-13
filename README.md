@@ -79,7 +79,8 @@ Now, let's fire up some agents\!
   # Run compiled binary and inject environment variables :LLM_A2A_API_KEY (for normal agent) 
   # and LLM_MCP_API_KEY (for mcp embedded if any)
   # They need to be compatible with llm_url defined in config file (Gemini, Groq or whatever else that you use) 
-  LLM_A2A_API_KEY=<YOUR-API-KEY> LLM_MCP_API_KEY=<YOUR-API-KEY> ./target/release/simple_agent_server --config-file "configuration/agent_a2a_config.toml"
+    # You can define log level as well. Default Level is warn
+  LLM_A2A_API_KEY=<YOUR-API-KEY> LLM_MCP_API_KEY=<YOUR-API-KEY> ./target/release/simple_agent_server --config-file "configuration/agent_a2a_config.toml" --log-level "warn"
 ```
 
 * Planner (the orchestrator):  
@@ -87,7 +88,8 @@ Now, let's fire up some agents\!
 
 ```bash
   # Run compiled binary and inject LLM_PLANNER_API_KEY as an environment variable  , compatible with llm url defined in config file
-  LLM_PLANNER_API_KEY=<YOUR-API-KEY> ./target/release/planner_agent --user-query "What is the weather in Boston?"
+  # You can define log level as well. Default is warn
+  LLM_PLANNER_API_KEY=<YOUR-API-KEY> ./target/release/planner_agent --user-query "What is the weather in Boston?" --log-level "info"
 ```
   *Remember to replace "What is the weather in Boston?" with your own query\!*
 

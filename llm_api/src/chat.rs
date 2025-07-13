@@ -1,7 +1,7 @@
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::Value; // Import Value for flexible parameters
-use std::env;
+
 
 use crate::tools::Tool;
 use anyhow::{Result,Context};
@@ -218,7 +218,7 @@ pub async fn call_api_message(
         .content
         .clone();
 
-        
+     
         // remove think tags from llm response
         let response_content = Some(
             self.remove_think_tags(response_content.clone().expect("REASON"))

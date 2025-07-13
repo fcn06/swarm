@@ -10,12 +10,20 @@ use a2a_rs::{
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     
-    // send a query to planner agent
+    /************************************************/
+    /* Sample A2A client either responding to       */
+    /* A simple A2A Server or A2A Planner Agent     */
+    /************************************************/ 
+
+    // In our config simple a2a agent respond to port 8080
     let client = HttpClient::new("http://localhost:8080".to_string());
     
-    // Send a query to planner server, to enable planner of planners
+    // In our config planner of planners respond to port 9080
     //let client = HttpClient::new("http://localhost:9080".to_string());
 
+    /************************************************/
+    /* First Task                                   */
+    /************************************************/ 
     // Generate a task ID
     let task_id = format!("task-{}", uuid::Uuid::new_v4());
     println!("Created task with ID: {}", task_id);
@@ -45,9 +53,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    // Add a small delay to allow the server to process the task
-    //tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
-
     // Get the task again to verify it's stored
     println!("Retrieving task...");
     let task_retrieved = client.get_task(&task_id, Some(10)).await?;
@@ -55,6 +60,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "Retrieved task with ID: {} and state: {:?}",
         task_retrieved.id, task_retrieved.status.state
     );
+
+    /************************************************/
+    /* End of First Task                            */
+    /************************************************/ 
+
+    /************************************************/
+    /* Second Task                                  */
+    /************************************************/ 
 
     let task_id_2 = format!("task-{}", uuid::Uuid::new_v4());
 
@@ -90,6 +103,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         task_2.id, task_2.status.state
     );
 
+
+    /************************************************/
+    /* End of Second Task                           */
+    /************************************************/ 
 
     Ok(())
 }

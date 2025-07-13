@@ -22,7 +22,6 @@ use crate::mcp_client::mcp_client::get_tools_list_v2;
 use crate::mcp_client::mcp_client::initialize_mcp_client_v2;
 use crate::mcp_tools::tools::define_all_tools;
 
-use reqwest::Client;
 
 /// Holds the state and logic for the MCP Agent.
 #[derive(Clone)]
@@ -292,7 +291,7 @@ impl McpAgent {
         user_message: Message,
     ) -> Result<Option<Message>, Box<dyn Error>>  {
 
-        self.push_message(user_message);
+        let _= self.push_message(user_message);
         self.execute_loop().await
     }
 

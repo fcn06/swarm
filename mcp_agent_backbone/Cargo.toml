@@ -12,12 +12,12 @@ configuration = { workspace = true }
 rmcp = { workspace = true }
 
 
-log = "0.4.27"
+#log = "0.4.27"
 
 
 
 rustls = { workspace = true }
-dotenv = { workspace = true }
+#dotenv = { workspace = true }
 
 tower = { workspace = true }
 

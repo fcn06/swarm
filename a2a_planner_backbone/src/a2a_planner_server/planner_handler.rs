@@ -50,17 +50,17 @@ use configuration::AgentPlannerConfig;
 pub struct SimplePlannerAgentHandler {
     /// Task storage that implements all the business capabilities
     storage: Arc<InMemoryTaskStorage>,
-    config:AgentPlannerConfig,
+    _config:AgentPlannerConfig,
     planner_agent: Arc<Mutex<PlannerAgent>>,
 }
 
 impl SimplePlannerAgentHandler {
     /// Create a new simple agent handler
-    pub fn new(storage: InMemoryTaskStorage, config:AgentPlannerConfig, planner_agent: PlannerAgent) -> Self {
+    pub fn new(_storage: InMemoryTaskStorage, config:AgentPlannerConfig, planner_agent: PlannerAgent) -> Self {
         println!("Creating SimplePlannerAgentHandler");
         Self {
             storage: Arc::new(InMemoryTaskStorage::new()),
-            config:config,
+            _config:config,
             planner_agent: Arc::new(Mutex::new(planner_agent)),
         }
     }
@@ -73,7 +73,7 @@ impl SimplePlannerAgentHandler {
     ) -> Self {
         Self {
             storage: Arc::new(storage),
-            config:config,
+            _config:config,
             planner_agent: Arc::new(Mutex::new(planner_agent)),
         }
     }
@@ -84,6 +84,7 @@ impl SimplePlannerAgentHandler {
         &self.storage
     }
 
+    #[warn(dead_code)]
     fn a2a_message_to_llm_message(&self, a2a_message: &Message) -> Result<Message_Llm, A2AError> {
         // Extract user query
         let user_query = a2a_message
@@ -126,7 +127,7 @@ impl AsyncMessageHandler for SimplePlannerAgentHandler {
         &self,
         task_id: &'a str,
         message: &'a Message,
-        session_id: Option<&'a str>,
+        _session_id: Option<&'a str>,
     ) -> Result<Task, A2AError> {
         // This is where we need to process custom code for message handling
         // including communication with mcp

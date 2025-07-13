@@ -8,7 +8,7 @@ use axum::{
 };
 use llm_api::chat::Message;
 
-use tracing::{info, error, Level, debug,warn};
+use tracing::{info, error,warn};
 
 use serde::Serialize;
 use std::sync::Arc; // Use log
@@ -92,13 +92,13 @@ async fn post_msg(
     {
         Ok(Some(msg)) => {
             info!("Agent returned response: {:?}", msg);
-            state.mcp_agent.reset_messages();
+            let _= state.mcp_agent.reset_messages();
             Ok((StatusCode::CREATED, Json(msg)))
         }
         Ok(None) => {
             warn!("Agent finished without a final message.");
             // Return a specific no-content message or an error
-            state.mcp_agent.reset_messages();
+            let _= state.mcp_agent.reset_messages();
             Ok((
                 StatusCode::OK,
                 Json(Message {

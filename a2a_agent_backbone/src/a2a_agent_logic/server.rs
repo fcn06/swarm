@@ -44,7 +44,7 @@ impl SimpleAgentServer {
         let model_id = agent_a2a_config.agent_a2a_model_id.clone();
 
         // Set model to be used
-        let system_message = agent_a2a_config.agent_a2a_system_prompt.clone();
+        let _system_message = agent_a2a_config.agent_a2a_system_prompt.clone();
 
         // Set API key for LLM
         let llm_a2a_api_key = env::var("LLM_A2A_API_KEY").expect("LLM_A2A_API_KEY must be set");
@@ -60,7 +60,7 @@ impl SimpleAgentServer {
             None => None,
             Some(path) => {
                 let agent_mcp_config=AgentMcpConfig::load_agent_config(path.as_str()).expect("Error loading agent config");
-                let mut mcp_agent = McpAgent::new(agent_mcp_config).await?;
+                let mcp_agent = McpAgent::new(agent_mcp_config).await?;
                 Some(mcp_agent)},
             
         };
@@ -131,7 +131,7 @@ impl SimpleAgentServer {
     }
 
     /// Start HTTP server
-    async fn start_http_server<S>(&self, storage: S) -> Result<(), Box<dyn std::error::Error>>
+    async fn start_http_server<S>(&self, _storage: S) -> Result<(), Box<dyn std::error::Error>>
     where
         S: AsyncTaskManager + AsyncNotificationManager + Clone + Send + Sync + 'static,
     {

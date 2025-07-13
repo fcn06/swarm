@@ -13,7 +13,6 @@ tokio = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 rustls = { workspace = true }
-dotenv = { workspace = true }
 anyhow = { workspace = true }
 rmcp = { workspace = true }
 tracing = { workspace = true }
@@ -25,7 +24,6 @@ axum = { workspace = true }
 chrono = { workspace = true }
 tower-http = { workspace = true }
 uuid = { workspace = true }
-#log = { workspace = true }
 
 toml = { workspace = true }
-#env_logger= { workspace = true }
+clap = { workspace = true }

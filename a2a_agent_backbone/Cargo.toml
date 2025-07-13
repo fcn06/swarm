@@ -12,16 +12,16 @@ llm_api = { workspace = true }
 configuration = { workspace = true }
 mcp_agent_backbone={ workspace = true }
 anyhow={ workspace = true }
-dotenv={ workspace = true }
+#dotenv={ workspace = true }
 
 
 rustls = { workspace = true }
 a2a-rs= { workspace = true }
 
 clap = { workspace = true }
-log = { workspace = true }
+#log = { workspace = true }
 toml = { workspace = true }
-env_logger= { workspace = true }
+#env_logger= { workspace = true }
 
 # Required dependencies
 #lazy_static = "1.4"  # Used for static request ID storage in message_handler

@@ -4,9 +4,7 @@ use a2a_rs::adapter::{
 };
 use a2a_rs::port::{AsyncNotificationManager, AsyncTaskManager};
 
-// SQLx storage support (feature-gated)
-#[cfg(feature = "sqlx-storage")]
-use a2a_rs::adapter::storage::SqlxTaskStorage;
+
 
 use super::server_config::{AuthConfig, ServerConfig, StorageConfig};
 use super::handler::SimpleAgentHandler;
@@ -15,13 +13,8 @@ use configuration::{AgentA2aConfig,AgentMcpConfig};
 use llm_api::chat::ChatLlmInteraction;
 use std::env;
 
-/// Modern A2A server setup using ReimbursementHandler
-//pub struct ReimbursementServer {
+/// Modern A2A server setup 
 pub struct SimpleAgentServer {
-    //config: ServerConfig,
-    //runtime_config: RuntimeA2aConfigProject, // to be removed
-    // should be replaced by the below signature
-    // new needs to be fine tuned
     server_config: ServerConfig,
     llm_interaction: ChatLlmInteraction,
     agent_a2a_config: AgentA2aConfig,
@@ -81,29 +74,6 @@ impl SimpleAgentServer {
         InMemoryTaskStorage::with_push_sender(push_sender)
     }
 
-    #[cfg(feature = "sqlx-storage")]
-    /// Create SQLx storage (only available with sqlx feature)
-    async fn create_sqlx_storage(
-        &self,
-        url: &str,
-        _max_connections: u32,
-        enable_logging: bool,
-    ) -> Result<SqlxTaskStorage, Box<dyn std::error::Error>> {
-        tracing::info!("Using SQLx storage with URL: {}", url);
-        if enable_logging {
-            tracing::info!("SQL query logging enabled");
-        }
-
-        // Include reimbursement-specific migrations
-        let reimbursement_migrations = &[include_str!(
-            "../../migrations/001_create_reimbursements.sql"
-        )];
-
-        let storage = SqlxTaskStorage::with_migrations(url, reimbursement_migrations)
-            .await
-            .map_err(|e| format!("Failed to create SQLx storage: {}", e))?;
-        Ok(storage)
-    }
 
     /// Start the HTTP server
     pub async fn start_http(&self) -> Result<(), Box<dyn std::error::Error>> {
@@ -112,18 +82,6 @@ impl SimpleAgentServer {
                 let storage = self.create_in_memory_storage();
                 self.start_http_server(storage).await
             }
-            #[cfg(feature = "sqlx-storage")]
-            StorageConfig::Sqlx {
-                url,
-                max_connections,
-                enable_logging,
-            } => {
-                let storage = self
-                    .create_sqlx_storage(url, *max_connections, *enable_logging)
-                    .await?;
-                self.start_http_server(storage).await
-            }
-            #[cfg(not(feature = "sqlx-storage"))]
             StorageConfig::Sqlx { .. } => {
                 Err("SQLx storage requested but 'sqlx' feature is not enabled.".into())
             }

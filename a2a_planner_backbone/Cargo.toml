@@ -22,7 +22,6 @@ uuid = { workspace = true }
 
 base64= { workspace = true }
 url = { workspace = true }
-#dotenv = { workspace = true }
 
 # Async foundation - optional
 async-trait = { workspace = true }

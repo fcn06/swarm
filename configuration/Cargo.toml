@@ -4,19 +4,17 @@ version = "0.1.0"
 edition = "2024"
 
 [lib]
-crate-type = ["dylib", "rlib"]
-
+#crate-type = ["dylib", "rlib"]
+crate-type = ["rlib"]
 
 [dependencies]
-reqwest = { workspace = true }
+#reqwest = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 anyhow = { workspace = true }
 
 toml = { workspace = true }
-#log = { workspace = true }
-a2a-rs={ workspace = true }
-tokio = { workspace = true }
-async-trait = { workspace = true }
+
+
 
 

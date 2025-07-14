@@ -18,17 +18,17 @@ mcp_agent_backbone = { path = "./mcp_agent_backbone" }
 a2a_agent_backbone = { path = "./a2a_agent_backbone" }
 a2a_planner_backbone = { path = "./a2a_planner_backbone" }
 
-#mcp_agent_endpoint = { path = "./mcp_agent_endpoint" }
 
 # For rmcp and a2a-rs, in the future, I may have to pin a revision number because this crate is evolving rapidly with significant number of breaking changes
 #rmcp= { git = "https://github.com/modelcontextprotocol/rust-sdk.git", features = ["client", "transport-sse-client", "transport-child-process", "tower","reqwest"] ,rev="73188eff6fcc8fc152949ac1d5df0439607ba3ad"}
-rmcp= { git = "https://github.com/modelcontextprotocol/rust-sdk.git", features = ["client", "transport-sse-client", "transport-child-process", "tower","reqwest"] }
+
+rmcp= { git = "https://github.com/modelcontextprotocol/rust-sdk.git", features = ["client","transport-sse-client", "transport-child-process","reqwest"] }
 a2a-rs= { git = "https://github.com/EmilLindfors/a2a-rs.git" , features=["server","http-server","client","http-client","tracing"] }
 
 reqwest = { version = "0.12", features = ["json","rustls-tls"] }
+rustls="0.23"
 
 tokio = { version = "1", features = ["full"] }
-tokio-tungstenite = { version = "0.27", features = ["rustls", "connect", "stream", "handshake"], default-features = false }
 futures = "0.3"
 async-trait = { version = "0.1"}
 
@@ -36,7 +36,6 @@ serde = { version = "1.0", features = ["derive","rc"] }
 serde_json = "1.0"
 anyhow = "1.0"
 
-rustls="0.23"
 
 thiserror = "2"
 clap = { version = "4.5", features = ["derive"] }
@@ -45,8 +44,6 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 axum = "0.8"
-tower = "0.5"
-tower-http = { version = "0.6.0", features = ["cors"] }
 
 jsonwebtoken = { version = "9.3" }
 oauth2 = { version = "5" }
@@ -61,9 +58,8 @@ toml = "0.9"
 base64 = "0.22"
 url = { version = "2.4", features = ["serde"] }
 
-sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "chrono", "uuid", "json"] }
 bon = "3"
-
+schemars = { version = "1.0",  features = ["chrono04"] }
 
 
 [profile.dev]
@@ -72,23 +68,3 @@ opt-level = 0
 [profile.release]
 opt-level = 3
 
-
-[workspace.patch.crates-io]
-base64 = { version = "0.22.1" }
-bon = { version = "3.6.4" } # New: Force bon to the higher version
-getrandom = { version = "0.3.3" }
-h2 = { version = "0.4.11" }
-http = { version = "1.3.1" }
-hyper = { version = "1.6.0" }
-hyper-rustls = { version = "0.27.7" }
-reqwest = { version = "0.12.22" }
-regex-automata = { version = "0.4.9" }
-regex-syntax = { version = "0.8.5" }
-rustls = { version = "0.23.29" }
-rustls-pemfile = { version = "1.0.4" } # Still include this, even if reqwest update might resolve it, better safe.
-rustls-webpki = { version = "0.103.4" }
-serde = { version = "1.0.219" }
-sync_wrapper = { version = "1.0.2" }
-thiserror = { version = "2.0.12" }
-tokio-rustls = { version = "0.26.2" }
-webpki-roots = { version = "1.0.1" }

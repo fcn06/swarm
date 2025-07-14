@@ -11,29 +11,23 @@ edition = "2024"
 llm_api = { workspace = true }
 configuration = { workspace = true }
 mcp_agent_backbone={ workspace = true }
-anyhow={ workspace = true }
-#dotenv={ workspace = true }
 
-
-rustls = { workspace = true }
 a2a-rs= { workspace = true }
 
+anyhow={ workspace = true }
 clap = { workspace = true }
-#log = { workspace = true }
 toml = { workspace = true }
-#env_logger= { workspace = true }
 
 # Required dependencies
-#lazy_static = "1.4"  # Used for static request ID storage in message_handler
 lazy_static={ workspace = true }
-#regex = "1.10"  # Used for text parsing in improved handler
 regex={ workspace = true }
 
 # Optional AI integration (for future use)
-# reqwest = { version = "0.11", features = ["json", "rustls-tls"], default-features = false, optional = true }
 # HTTP client - optional
 #reqwest = { version = "0.11", features = ["json", "rustls-tls"], default-features = false, optional = true }
 reqwest={ workspace = true, optional = true }
+rustls = { workspace = true }
+
 
 # Core dependencies
 serde={ workspace = true }
@@ -47,19 +41,12 @@ thiserror = { workspace = true }
 url = { workspace = true }
 bon = { workspace = true }
 
-# Database - optional
-sqlx = { workspace = true, optional = true }
 
 # Async foundation - optional
-#tokio = { version = "1.32", features = ["rt", "rt-multi-thread", "macros", "net", "io-util", "sync", "time"], optional = true }
 tokio={ workspace = true, optional = true }
 async-trait = { workspace = true, optional = true }
 futures = { workspace = true, optional = true }
 
-
-# WebSocket - optional
-#tokio-tungstenite = { version = "0.20", features = ["rustls", "connect", "stream", "handshake"], default-features = false, optional = true }
-tokio-tungstenite={ workspace = true, optional = true }
 
 # HTTP server - optional
 axum = { workspace = true, optional = true }
@@ -75,22 +62,15 @@ tracing-subscriber = { workspace = true, optional = true }
 
 
 [features]
-#default = ["server", "tracing"]
-default = ["server", "tracing","dep:reqwest"]
 
+default = ["server", "tracing","dep:reqwest"]
 client = ["dep:tokio", "dep:async-trait", "dep:futures"]
 http-client = ["client", "dep:reqwest"]
-ws-client = ["client", "dep:tokio-tungstenite"]
 server = ["dep:tokio", "dep:async-trait", "dep:futures"]
 http-server = ["server", "dep:axum"]
 tracing = ["dep:tracing", "dep:tracing-subscriber"]
-ws-server = ["server", "dep:tokio-tungstenite"]
 auth = ["dep:jsonwebtoken", "dep:oauth2", "dep:openidconnect", "dep:reqwest"]
-sqlx-storage = ["server", "dep:sqlx"]
-sqlite = ["sqlx-storage", "sqlx/sqlite"]
-postgres = ["sqlx-storage", "sqlx/postgres"]
-mysql = ["sqlx-storage", "sqlx/mysql"]
-full = ["http-client", "ws-client", "http-server", "ws-server", "tracing", "auth", "sqlite", "postgres"]
+full = ["http-client",  "http-server", "tracing", "auth"]
 
 
 

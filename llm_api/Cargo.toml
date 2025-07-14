@@ -4,7 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [lib]
-crate-type = ["dylib", "rlib"]
+#crate-type = ["dylib", "rlib"]
+crate-type = ["rlib"]
 
 [dependencies]
 reqwest = { workspace = true }

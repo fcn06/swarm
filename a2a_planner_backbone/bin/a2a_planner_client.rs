@@ -86,11 +86,14 @@ async fn main() -> anyhow::Result<()> {
     /* Using it to resolve query passed in cmd line */
     /************************************************/ 
     // --- Test Case 1 ---
+    /* 
     let message_id_1 = uuid::Uuid::new_v4().to_string();
     let user_req_1 = Message::user_text(args.user_query, message_id_1);
-
     //println!("--- Sending User Request 1 ---");
     let result_1 = planner_agent.handle_user_request(user_req_1).await;
+    */
+
+    let result_1=planner_agent.submit_user_text(args.user_query.clone()).await;
 
     println!("Output:{:?}", result_1.output);
 

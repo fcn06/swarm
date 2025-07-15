@@ -717,4 +717,15 @@ impl PlannerAgent {
         }
         Ok(cleaned_result)
     }
+
+
+        pub async fn submit_user_text(&mut self, user_query: String) -> ExecutionResult {
+            let message_id = Uuid::new_v4().to_string();
+            let user_req= Message::user_text(user_query, message_id.clone());
+            let execution_result = self.handle_user_request(user_req).await;
+            execution_result
+        }
+
+
+
 }

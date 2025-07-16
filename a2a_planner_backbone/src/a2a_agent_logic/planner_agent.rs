@@ -201,7 +201,7 @@ impl PlannerAgent {
     }
 
     async fn create_plan(&self, request: &Message) -> Result<Plan> {
-        println!(
+        info!(
             "PlannerAgent: Creating plan for request ID: {}",
             Uuid::new_v4().to_string()
         ); // Removed request.id and used a new Uuid
@@ -614,7 +614,8 @@ impl PlannerAgent {
 
             // Include the task output if available
             if let Some(output) = plan.task_results.get(&task_def.id) {
-                context.push_str(&format!(", Output: \"{}\"", output.replace('\n', " "))); // Replace newlines for cleaner output
+               // context.push_str(&format!(", Output: \"{}\"", output.replace('\n', " "))); // Replace newlines for cleaner output
+                context.push_str(&format!(", Output: \"{}\"", output)); // Replace newlines for cleaner output
             }
         }
 
@@ -712,7 +713,8 @@ impl PlannerAgent {
             } // Continue to avoid adding the </think> line itself
             if !in_think_tag {
                 cleaned_result.push_str(line);
-                cleaned_result.push('\n');
+                // it may be the reason of the \n at the end of output
+                //cleaned_result.push('\n');
             }
         }
         Ok(cleaned_result)

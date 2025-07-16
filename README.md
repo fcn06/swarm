@@ -106,6 +106,15 @@ The swarm project is composed of several specialized sub-crates:
 * `mcp_agent_endpoint`: A testing utility for MCP agents to receive and process requests.
 * you can refer to `documentation` directory to have some additional details. 
 
+## **Some simple projects Powered by Swarm**
+
+We created a series of sample projects powered by Swarm
+
+* MCP agent endpoint : [https://github.com/fcn06/mcp_agent_endpoint](https://github.com/fcn06/mcp_agent_endpoint) 
+* Simple A2A agent : [https://github.com/fcn06/simple_agent](https://github.com/fcn06/simple_agent ) 
+* Simple Planner Agent : [https://github.com/fcn06/simple_planner](https://github.com/fcn06/simple_planner) 
+
+
 ## **Road Ahead & How You Can Contribute**
 
 Swarm.rs is a project born out of discovery and exploration\! While not production-ready, it's a fantastic playground for understanding how these protocols can be combined to build powerful agentic systems.

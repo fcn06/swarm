@@ -262,52 +262,8 @@ impl PlannerAgent {
             skills_description, self.extract_text_from_message(request).await
         );
 
-
-        let _messages = vec![Message::user_text(
-            prompt.clone().to_string(),
-            Uuid::new_v4().to_string(),
-        )];
-
-        let messages_draft = vec![llm_api::chat::Message {
-            role: "user".to_string(),
-            content: Some(prompt.to_string()),
-            tool_call_id: None,
-            tool_calls:None
-        }];
-
-        let llm_request_payload = ChatCompletionRequest {
-            model: self.llm_interaction.model_id.clone(),
-            messages: messages_draft,
-            // Add other parameters like temperature if needed
-            temperature: Some(0.7),
-            tool_choice: None,
-            max_tokens: None,
-            top_p: None,
-            stop: None,
-            stream: None,
-            tools: None,
-        };
-
-        // we need to move part of this logic to llm_api
-        let llm_response = self.llm_interaction.call_chat_completions_v2(&llm_request_payload)
-        .await
-        .context("LLM API request failed during plan creation")?;
-
-        let response_content = llm_response
-            .choices
-            .get(0)
-            .ok_or_else(|| anyhow::anyhow!("LLM response missing choices"))?
-            .message
-            .content
-            .clone();
-
-        
-        // remove think tags from llm response
-        let response_content = Some(
-            self.remove_think_tags(response_content.clone().expect("REASON"))
-                .await?,
-        );
-        
+        // This api returns raw text from llm
+        let response_content = self.llm_interaction.call_api_simple_v2("user".to_string(),prompt.to_string()).await?;
 
         info!(
             "PlannerAgent: LLM responded with plan content:{:?}",
@@ -434,6 +390,8 @@ impl PlannerAgent {
                         // IMPORTANT : Connect this task to a LLM
                         // Task requires no specific skill, potentially an LLM reflection task
                         _assigned_agent_id = None; // No specific agent
+
+                        // todo : call llm_chat api that returns raw answer
 
                         // Use the full_task_description as the prompt for the LLM
                         let messages_draft = vec![llm_api::chat::Message {

@@ -271,4 +271,56 @@ pub async fn remove_think_tags( &self,result: String) -> anyhow::Result<String> 
     Ok(cleaned_result)
 }
 
+/// This api returns a String from llm instead of Option<Message>
+pub async fn call_api_simple_v2(
+    &self,
+    agent_role:String,
+    user_query:String,
+) ->  anyhow::Result<Option<String>> {
+
+    let messages = vec![Message {
+        role: agent_role,
+        content: Some(user_query.to_string()),
+        tool_call_id: None,
+        tool_calls:None
+    }];
+
+    let llm_request_payload = ChatCompletionRequest {
+        model: self.model_id.clone(),
+        messages: messages,
+        // Add other parameters like temperature if needed
+        temperature: Some(0.7),
+        tool_choice: None,
+        max_tokens: None,
+        top_p: None,
+        stop: None,
+        stream: None,
+        tools: None,
+    };
+
+    // we need to move part of this logic to llm_api
+    let llm_response = self.call_chat_completions_v2(&llm_request_payload)
+    .await
+    .context("LLM API request failed during plan creation")?;
+
+    let response_content = llm_response
+        .choices
+        .get(0)
+        .ok_or_else(|| anyhow::anyhow!("LLM response missing choices"))?
+        .message
+        .content
+        .clone();
+
+    
+    // remove think tags from llm response
+    let response_content = Some(
+        self.remove_think_tags(response_content.clone().expect("REASON"))
+            .await?,
+    );
+    
+    Ok(response_content)
+
+}
+
+
 }

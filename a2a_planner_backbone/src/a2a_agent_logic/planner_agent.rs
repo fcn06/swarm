@@ -68,8 +68,6 @@ impl PlannerAgent {
                 agent_reference.name, agent_reference.url
             );
 
-            // todo: manage is_default flag
-            let is_default= agent_reference.is_default.clone();
 
             match A2AClient::connect(agent_reference.name.clone(), agent_reference.url.clone())
                 .await
@@ -81,7 +79,6 @@ impl PlannerAgent {
                     );
                     // Use the connected client's ID as the key
                     client_agents.insert(client.id.clone(), client);
-                    // todo: manage is_default flag 
 
                 }
                 Err(e) => {
@@ -510,20 +507,8 @@ impl PlannerAgent {
     }
 
     async fn find_agent_with_skill(&self, skill: &str, _task_id: &str) -> Option<&A2AClient> {
-        // 1. Try preferred agent if specified and has skill
-        /*
-        if let Some(pref_agent_id) = preferred_agent_id {
-            if let Some(agent) = self.client_agents.get(pref_agent_id) {
-                // Access skills directly from the A2AClient struct
-                if agent.has_skill(skill) { // Use the has_skill method
-                    println!("PlannerAgent: Found preferred agent '{}' with skill '{}'.", pref_agent_id, skill);
-                    return Some(agent);
-                }
-            }
-        }
-        */
 
-        // 2. If no preferred or preferred can't do it, find any agent with the skill
+        // 1. Try to find the agent with appropriate skill 
         for (agent_id, agent) in &self.client_agents {
             info!("PlannerAgent: agent_id : '{}' with skill '{}'.",agent_id, skill);
             // Access skills directly from the A2AClient struct
@@ -537,9 +522,26 @@ impl PlannerAgent {
             }
         }
 
-        warn!("PlannerAgent: No agent found with skill '{}'. Returning Default Agent", skill);
-        // todo:Instead of None, we should return first or prefered agent
-        None
+         // 2. If no agent with the specific skill is found, try to find the default agent
+         warn!("PlannerAgent: No agent found with skill '{}'. Attempting to find default agent.", skill);
+
+         for agent_ref_config in &self.planner_agent_definition.agent_configs {
+             if agent_ref_config.is_default == Some(true) {
+                 // We need to find the A2AClient instance associated with this default SimpleAgentReference
+                 // We can do this by matching the name or ID. Assuming client.id is agent_reference.name
+                 if let Some(default_agent_client) = self.client_agents.get(&agent_ref_config.name) {
+                     info!(
+                         "PlannerAgent: Found default agent '{}' as fallback.",
+                         default_agent_client.id
+                     );
+                     return Some(default_agent_client);
+                 }
+             }
+         }
+ 
+         // 3. If no agent with the skill and no default agent are found
+         warn!("PlannerAgent: No suitable agent (skill-matching or default) found for skill '{}'.", skill);
+         None
     }
 
     async fn summarize_results(&self, plan: &mut Plan) -> Result<String> {

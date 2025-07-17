@@ -77,6 +77,7 @@ impl AgentMcpConfig {
 pub struct SimpleAgentReference {
     pub name: String,
     pub url: String,
+    pub is_default:Option<bool>,
 }
 
 impl SimpleAgentReference {
@@ -85,6 +86,7 @@ impl SimpleAgentReference {
         Ok(SimpleAgentReference {
             name: name,
             url: url,
+            is_default:None,
         })
     }
 }

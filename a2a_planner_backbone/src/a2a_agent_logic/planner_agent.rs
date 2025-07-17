@@ -68,6 +68,9 @@ impl PlannerAgent {
                 agent_reference.name, agent_reference.url
             );
 
+            // todo: manage is_default flag
+            let is_default= agent_reference.is_default.clone();
+
             match A2AClient::connect(agent_reference.name.clone(), agent_reference.url.clone())
                 .await
             {
@@ -78,6 +81,8 @@ impl PlannerAgent {
                     );
                     // Use the connected client's ID as the key
                     client_agents.insert(client.id.clone(), client);
+                    // todo: manage is_default flag 
+
                 }
                 Err(e) => {
                     // Use details from agent_info for error reporting
@@ -588,6 +593,12 @@ impl PlannerAgent {
             context.push_str("The plan is still in progress. Provide a brief update based on the plan summary and tasks.");
         }
 
+        ////////////////////////////////////////////////////////////////////////////////////////////////
+        // to be replaced by call in llm_interaction
+        // This api returns raw text from llm
+        //let response_content = self.llm_interaction.call_api_simple_v2("user".to_string(),context.to_string()).await?;
+        ////////////////////////////////////////////////////////////////////////////////////////////////
+
         let _messages = vec![Message::user_text(
             context.clone().to_string(),
             Uuid::new_v4().to_string(),
@@ -627,6 +638,8 @@ impl PlannerAgent {
         let summary = self
             .remove_think_tags(summary.clone().expect("REASON"))
             .await?;
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////
 
         plan.final_summary = Some(summary.clone());
         plan.updated_at = Some(Utc::now());

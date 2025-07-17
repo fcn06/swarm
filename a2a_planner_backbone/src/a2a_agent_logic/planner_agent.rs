@@ -106,12 +106,12 @@ impl PlannerAgent {
 
 
     async fn get_available_skills_description(&self) -> String {
-        let mut description = "Available agent skills:".to_string();
+        let mut description = "Available agent skills: \n".to_string();
         if self.client_agents.is_empty() {
             description.push_str("- No A2a agents connected.\n",);
         } else {
             for (name, agent) in &self.client_agents {
-                description.push_str(&format!("- Agent '{}':", name));
+                description.push_str(&format!("* Agent_id : '{}' -- ", name));
                 // Access skills directly from the A2AClient struct
                 let skills = agent.get_skills();
                 
@@ -119,7 +119,7 @@ impl PlannerAgent {
                     description.push_str(" No specific skills listed.");
                 } else {
                     for skill in skills {
-                        description.push_str(&format!(" skill.id : {} -- skill.description : {} \n", skill.id,skill.description.clone()));
+                        description.push_str(&format!(" skill.id : '{}' -- skill.description : '{}' \n", skill.id,skill.description.clone()));
                     }
                 }
                 //description.push_str("\n");// Add newline for next agent
@@ -207,6 +207,8 @@ impl PlannerAgent {
         ); // Removed request.id and used a new Uuid
 
         let skills_description = self.get_available_skills_description().await;
+
+        debug!("{}",skills_description );
 
         let prompt = format!(
             "You are a planner agent that creates execution plans for user requests.
@@ -518,11 +520,11 @@ impl PlannerAgent {
 
         // 2. If no preferred or preferred can't do it, find any agent with the skill
         for (agent_id, agent) in &self.client_agents {
-            trace!("Test PlannerAgent: Agents : '{}' with skill '{}'.",agent_id, skill);
+            info!("PlannerAgent: agent_id : '{}' with skill '{}'.",agent_id, skill);
             // Access skills directly from the A2AClient struct
             if agent.has_skill(skill) {
                 // Use the has_skill method
-                trace!(
+                info!(
                     "PlannerAgent: Found agent '{}' with skill '{}'.",
                     agent_id, skill
                 );
@@ -530,7 +532,8 @@ impl PlannerAgent {
             }
         }
 
-        warn!("PlannerAgent: No agent found with skill '{}'.", skill);
+        warn!("PlannerAgent: No agent found with skill '{}'. Returning Default Agent", skill);
+        // todo:Instead of None, we should return first or prefered agent
         None
     }
 

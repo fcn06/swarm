@@ -38,6 +38,7 @@ agent_planner_discovery_url="http://127.0.0.1:4000/"
 # Series of agents to which planner agent is connected to
 # once he has defined a plan, he will coordinate execution
 # accross the A2A agents he is connected to
+# todo : Add prefered or default agent
 #################################################################
 [[agent_planner_agents_references]]
 name = "agent_search"

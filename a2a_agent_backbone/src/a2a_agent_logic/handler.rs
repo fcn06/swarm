@@ -139,6 +139,7 @@ impl AsyncMessageHandler for SimpleAgentHandler {
 
         /////////////////////////////////////////////////////////////
         // todo : can be cleaner, and simpler
+        // this would create a problem if the mcp agent cannot find answer
         /////////////////////////////////////////////////////////////
 
         let response =if self.mcp_agent.is_none() {
@@ -147,6 +148,7 @@ impl AsyncMessageHandler for SimpleAgentHandler {
         } else {
                 self.mcp_agent.clone().unwrap().run_agent_internal(llm_msg.clone())
                 .await
+                // todo : make it more robust
                 .unwrap()
         };
            

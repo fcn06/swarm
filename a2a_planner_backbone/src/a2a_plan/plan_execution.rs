@@ -110,10 +110,24 @@ impl A2AClient {
 
     /// Check if the agent has a specific skill.
     /// THIS NEEDS TO BE REWORKED
-    pub fn has_skill(&self, skill_name: &str) -> bool {
+    pub fn has_skill_old(&self, skill_name: &str) -> bool {
         debug!("Checking if agent has skill: {}, out of skills : {:?}", skill_name,self.skills[0]);
         self.skills[0].id.contains(&skill_name.to_string())
     }
+
+    pub fn has_skill(&self, skill_name: &str) -> bool {
+        for skill in &self.skills {
+            if skill.id .contains(skill_name) ||
+               skill.name.contains(skill_name) ||
+               skill.description.contains(skill_name)  {
+                debug!("Agent {} has skill: {}", self.id, skill_name);
+                return true;
+            }
+        }
+        debug!("Agent {} does NOT have skill: {}", self.id, skill_name);
+        false
+    }
+
 
     /// Get the agent's ID.
     pub fn id(&self) -> &str {

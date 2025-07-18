@@ -265,7 +265,6 @@ pub async fn remove_think_tags( &self,result: String) -> anyhow::Result<String> 
         } // Continue to avoid adding the </think> line itself
         if !in_think_tag {
             cleaned_result.push_str(line);
-            cleaned_result.push('\n');
         }
     }
     Ok(cleaned_result)

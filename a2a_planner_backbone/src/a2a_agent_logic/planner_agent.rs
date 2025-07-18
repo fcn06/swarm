@@ -55,7 +55,6 @@ impl PlannerAgent {
         agent_configs: agents_references,
         };
 
-
         let mut client_agents = HashMap::new();
 
         debug!("PlannerAgent: Connecting to A2a server agents...");
@@ -124,9 +123,7 @@ impl PlannerAgent {
                         description.push_str(&format!(" skill.id : '{}' -- skill.description : '{}' \n", skill.id,skill.description.clone()));
                     }
                 }
-                //description.push_str("\n");// Add newline for next agent
-                // For testing purpose
-                //println!("PlannerAgent: Agent '{}' has skills: {}", name, description);
+                
             }
         }
         
@@ -139,10 +136,7 @@ impl PlannerAgent {
         // Extracting text from message
         let user_query = self.extract_text_from_message(&user_request).await;
 
-        info!(
-            "---PlannerAgent: Starting to handle user request --  Query: '{}'---",
-            user_query
-        );
+        info!("---PlannerAgent: Starting to handle user request --  Query: '{}'---",user_query);
 
         match self.create_plan(&user_request).await {
             Ok(mut plan) => {
@@ -395,45 +389,14 @@ impl PlannerAgent {
                         // Task requires no specific skill, potentially an LLM reflection task
                         _assigned_agent_id = None; // No specific agent
 
-                        // todo : call llm_chat api that returns raw answer
-
-                        // Use the full_task_description as the prompt for the LLM
-                        let messages_draft = vec![llm_api::chat::Message {
-                            role: "user".to_string(),
-                            content: Some(full_task_description.to_string()),
-                            tool_call_id: None,
-                            tool_calls:None
-                        }];
-
-                        let llm_request_payload = ChatCompletionRequest {
-                            model: self.llm_interaction.model_id.clone(),
-                            messages: messages_draft,
-                            temperature: Some(0.7),
-                            tool_choice: None,
-                            max_tokens: None,
-                            top_p: None,
-                            stop: None,
-                            stream: None,
-                            tools: None,
-                        };
-
-                        
-                        task_result = self.llm_interaction.call_chat_completions_v2(&llm_request_payload)
-                            .await
-                            .context("LLM API request failed during reflective task execution")?
-                            .choices
-                            .get(0)
-                            .map(|choice| choice.message.content.clone().unwrap_or_default())
-                            .ok_or_else(|| {
-                                anyhow::anyhow!("LLM reflective task response missing content")
-                            });
+                        task_result = Ok(self.llm_interaction.call_api_simple_v2("user".to_string(),full_task_description.to_string()).await?.expect("Improper task description"));
                     }
+
 
                     // Process the task result immediately for now (sequential execution)
                     match task_result {
                         Ok(result_content) => {
-                            // remove think tags from result_content
-                            let result_content = self.remove_think_tags(result_content).await?;
+                            
                             debug!(
                                 "PlannerAgent: Task '{}' completed successfully.Result : {}",
                                 task_id, result_content
@@ -596,51 +559,11 @@ impl PlannerAgent {
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////////
-        // to be replaced by call in llm_interaction
-        // This api returns raw text from llm
-        //let response_content = self.llm_interaction.call_api_simple_v2("user".to_string(),context.to_string()).await?;
+        /// Generate answer based on Context
         ////////////////////////////////////////////////////////////////////////////////////////////////
-
-        let _messages = vec![Message::user_text(
-            context.clone().to_string(),
-            Uuid::new_v4().to_string(),
-        )];
-
-        let messages_draft = vec![llm_api::chat::Message {
-            role: "user".to_string(),
-            content: Some(context.to_string()),
-            tool_call_id: None,
-            tool_calls:None
-        }];
-
-        let llm_request_payload = ChatCompletionRequest {
-            model: self.llm_interaction.model_id.clone(),
-            messages: messages_draft,
-            temperature: Some(0.7),
-            tool_choice: None,
-            max_tokens: None,
-            top_p: None,
-            stop: None,
-            stream: None,
-            tools: None,
-        };
-
-        // Assuming call_chat_completions handles client internally or uses provided config
-        let llm_response = self.llm_interaction.call_chat_completions_v2(&llm_request_payload)
-            .await
-            .context("LLM API request for summary failed")?;
-
-        let summary = llm_response
-            .choices
-            .get(0)
-            .map(|choice| choice.message.content.clone())
-            .ok_or_else(|| anyhow::anyhow!("LLM summary response missing content"))?;
-
-        // remove <think> tags from summary
-        let summary = self
-            .remove_think_tags(summary.clone().expect("REASON"))
-            .await?;
-
+        
+        let summary = self.llm_interaction.call_api_simple_v2("user".to_string(),context.to_string()).await?.expect("Improper Summary");
+        
         ////////////////////////////////////////////////////////////////////////////////////////////////
 
         plan.final_summary = Some(summary.clone());
@@ -664,36 +587,6 @@ impl PlannerAgent {
             })
             .collect::<Vec<String>>()
             .join("")
-    }
-
-    // Helper function to extract text from a Message
-    async fn remove_think_tags(&self, result: String) -> anyhow::Result<String> {
-        let mut cleaned_result = String::new();
-        let mut in_think_tag = false;
-
-        // in case llm returns json markdown
-        let result_clean= if result.contains("```json") {
-            let result_1=result.replace("```json", "");
-            result_1.replace("```", "")
-        } else {result};
-        let result=result_clean;
-
-        // in case LLM return <think> and </think> tags
-        for line in result.lines() {
-            if line.contains("<think>") {
-                in_think_tag = true;
-            }
-            if line.contains("</think>") {
-                in_think_tag = false;
-                continue;
-            } // Continue to avoid adding the </think> line itself
-            if !in_think_tag {
-                cleaned_result.push_str(line);
-                // it may be the reason of the \n at the end of output
-                //cleaned_result.push('\n');
-            }
-        }
-        Ok(cleaned_result)
     }
 
 

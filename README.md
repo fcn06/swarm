@@ -55,7 +55,7 @@ First, compile the workspace to ensure all dependencies are in sync:
 cargo build --release
 ```
 
-### **Configuration Details **
+### **Configuration Details**
 
 The configuration directory is your go-to for customizing agent behavior:
 
@@ -76,7 +76,7 @@ We created a launcher project , so that you can experiment easily launching Swar
 You will be able to launch an a2a agent ( with or without MCP capability), a simple planner, and a planner agent ( to enable recursivity)
 
 
-### **Manual Launching of Agents**
+## **Manual Launching of Agents**
 
 Now, let's fire up some agents\!
 

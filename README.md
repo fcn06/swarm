@@ -48,14 +48,14 @@ Here is a separate complementary project may be used to start your testing :
 * Test MCP Server : [https://github.com/fcn06/mcp_server](https://github.com/fcn06/mcp_server) 
 
 
-### **Installation & Building**
+### **Building swarm**
 
 First, compile the workspace to ensure all dependencies are in sync:
 ```bash
 cargo build --release
 ```
 
-### **Configuration**
+### **Configuration Details **
 
 The configuration directory is your go-to for customizing agent behavior:
 
@@ -67,8 +67,16 @@ LLM Models:  We've found `qwen/qwen3-32b` to be highly effective, especially for
 
 Each model can access to its own LLM. The urls are parametrized in config files while API KEY needs to be injected at runtime.
 
+## **KickStart**
 
-### **Running Components**
+We created a launcher project , so that you can experiment easily launching Swarm Agents
+
+* Swarm Launcher : [https://github.com/fcn06/swarm_launcher](https://github.com/fcn06/swarm_launcher) 
+
+You will be able to launch an a2a agent ( with or without MCP capability), a simple planner, and a planner agent ( to enable recursivity)
+
+
+### **Manual Launching of Agents**
 
 Now, let's fire up some agents\!
 
@@ -105,14 +113,6 @@ The swarm project is composed of several specialized sub-crates:
 * `mcp_agent_backbone`: The core framework for MCP agents. Note: An external mcp\_server (like the illustrative project or Apify) is needed for these agents to function.  
 * `mcp_agent_endpoint`: A testing utility for MCP agents to receive and process requests.
 * you can refer to `documentation` directory to have some additional details. 
-
-## **Some simple projects Powered by Swarm**
-
-We created a series of sample projects powered by Swarm
-
-* MCP agent endpoint : [https://github.com/fcn06/mcp_agent_endpoint](https://github.com/fcn06/mcp_agent_endpoint) 
-* Simple A2A agent : [https://github.com/fcn06/simple_agent](https://github.com/fcn06/simple_agent ) 
-* Simple Planner Agent : [https://github.com/fcn06/simple_planner](https://github.com/fcn06/simple_planner) 
 
 
 ## **Road Ahead & How You Can Contribute**

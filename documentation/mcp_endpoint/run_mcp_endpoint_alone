@@ -15,3 +15,6 @@ Then you can test with the following curl request
 ```bash
 curl -d '{"role":"user", "content":"What is the address of customer 1234 ?"}' -H "Content-Type: application/json" -X POST http://localhost:3000/msg
 ```
+
+We recently in this server the feature to scrape an url and return the result as LLM friendly
+So you can ask to get summary of a web page

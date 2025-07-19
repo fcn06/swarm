@@ -111,7 +111,7 @@ The swarm project is composed of several specialized sub-crates:
 * `configuration`: Manages all your Swarm.rs configuration files.  
 * `llm_api`: Provides a convenient interface for interacting with various Large Language Models via an OpenAI-compatible API.  
 * `mcp_agent_backbone`: The core framework for MCP agents. Note: An external mcp\_server (like the illustrative project or Apify) is needed for these agents to function.  
-* `mcp_agent_endpoint`: A testing utility for MCP agents to receive and process requests.
+* `mcp_agent_endpoint`: A testing utility for MCP agents to receive and process requests through a MCP server.
 * you can refer to `documentation` directory to have some additional details. 
 
 

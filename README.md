@@ -25,8 +25,7 @@ Whether you're a Rust enthusiast, an AI developer, or just curious about multi-a
 
 The diagram below illustrates how our agents, powered by MCP and A2A, interact under the guidance of the Planner.
 
-<p align="right" width="100%">
-    Swarm Architecture<br>
+<p align="right" width="80%">
     <img width="90%" src="./documentation/swarm_architecture.png">
 </p>
 

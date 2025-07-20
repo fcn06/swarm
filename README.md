@@ -25,8 +25,8 @@ Whether you're a Rust enthusiast, an AI developer, or just curious about multi-a
 
 The diagram below illustrates how our agents, powered by MCP and A2A, interact under the guidance of the Planner.
 
-<p align="right" width="80%">
-    <img width="90%" src="./documentation/swarm_architecture.png">
+<p align="center" width="80%">
+    <img width="80%" src="./documentation/swarm_architecture.png">
 </p>
 
 
@@ -64,9 +64,9 @@ cargo build --release
 
 The configuration directory is your go-to for customizing agent behavior:
 
-*   `agent_a2a_config.toml`: Configuration for A2A agents. ( They can embed mcp agents)
-*   `agent_mcp_config.toml`: Configuration for MCP agents.
-*   `agent_planner_config.toml`: Configuration for the planner agent.
+*   `agent_a2a_config.toml`: Configuration for A2A server agents. ( They can embed mcp agents)
+*   `agent_mcp_config.toml`: Configuration for MCP runtime.
+*   `agent_planner_config.toml`: Configuration for the planner stand alone agent, or planner a2a server agent.
 
 LLM Models:  We've found `qwen/qwen3-32b` to be highly effective, especially for MCP interactions.  
 
@@ -104,7 +104,7 @@ Now, let's fire up some agents\!
   # LLM_PLANNER_API_KEY needs to be defined upfront.
   # It needs to be compatible with llm url defined in config file for planner agent (Gemini, Groq or whatever else that you use) 
   # You can define log level as well. Default is warn
-  LLM_PLANNER_API_KEY=<YOUR-API-KEY> ./target/release/planner_agent --user-query "What is the weather in Boston?" --log-level "info"
+  ./target/release/planner_agent --user-query "What is the weather in Boston?" --log-level "info"
 ```
   *Remember to replace "What is the weather in Boston?" with your own query\!*
 

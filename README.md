@@ -25,7 +25,7 @@ Whether you're a Rust enthusiast, an AI developer, or just curious about multi-a
 
 The diagram below illustrates how our agents, powered by MCP and A2A, interact under the guidance of the Planner.
 
-![Swarm Architecture](documentation/a2a_mcp_architecture.drawio.png)
+![Swarm Architecture](documentation/swarm_architecture.png)
 
 * MCP RunTime: Enable  agents to connect to the outside world (e.g., fetching real-time data, interacting with APIs).  
 * A2A Agents: Agents that specialize in specific tasks, an can embed an MCP runtime. 

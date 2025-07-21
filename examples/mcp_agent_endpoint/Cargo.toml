@@ -26,3 +26,14 @@ uuid = { workspace = true }
 
 toml = { workspace = true }
 clap = { workspace = true }
+
+
+[profile.dev]
+opt-level = 0
+
+[profile.release]
+opt-level = 3
+
+[[example]]
+name = "mcp_agent_endpoint"
+path = "src/main.rs"

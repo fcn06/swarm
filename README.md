@@ -4,7 +4,7 @@
 
 Swarm.rs is a Rust project that empowers you to build and orchestrate intelligent agents. Think of it as a control center for your digital assistants, allowing them to communicate, collaborate, and tackle complex tasks together.
 
-We combine two powerful communication protocols, and an orchestration capability:
+We combine two powerful communication protocols ( MCP and A2A) , and an orchestration capability:
 
 * MCP (Microservice Communication Protocol): For agents to interact with external services and data sources. Imagine your agents querying a weather API or accessing a database\!  
 
@@ -29,11 +29,15 @@ The diagram below illustrates how our agents, powered by MCP and A2A, interact u
     <img width="80%" src="./documentation/swarm_architecture.png">
 </p>
 
-
 * MCP RunTime: Enable  agents to connect to the outside world (e.g., fetching real-time data, interacting with APIs).  
+
 * A2A Agents: Agents that specialize in specific tasks, an can embed an MCP runtime. 
+
 * Planner: The orchestrator that understands the overall goal, breaks it down, and directs the A2A agents to execute the plan.Through planner, agents can communicate with each other to achieve sub-goals.  
+
 * When Planner is used as an A2A Planner Server, it can also enables recursivity, as well as more complex pattern.
+
+If needed for experimentation purpose, an MCP Server is provided in the examples section.
 
 ## **Getting Started: Join the Swarm\!**
 
@@ -44,13 +48,8 @@ Ready to dive in? Here's how to get your first Swarm.rs components up and runnin
 To enable your agents to think and communicate, you'll need access to an OpenAI-compatible chat completion API.
 
 * Our recommendation for speed: [Groq](https://api.groq.com/openai/v1/chat/completions) (we've had great success with the qwen/qwen3-32b model).  
+
 * Also tested with: [Gemini](https://generativelanguage.googleapis.com/v1beta/openai/chat/completions).
-
-You'll also benefit from having an mcp\_server running. 
-
-Here is a separate complementary project may be used to start your testing :
-
-* Test MCP Server : [https://github.com/fcn06/mcp_server](https://github.com/fcn06/mcp_server) 
 
 
 ### **Building swarm**
@@ -71,6 +70,9 @@ The configuration directory is your go-to for customizing agent behavior:
 LLM Models:  We've found `qwen/qwen3-32b` to be highly effective, especially for MCP interactions.  
 
 Each model can access to its own LLM. The urls are parametrized in config files while API KEY needs to be injected at runtime.
+
+To enable MCP features, you need to have an MCP server up and running. There is one in examples in case you need one for testing purpose
+
 
 ## **KickStart**
 
@@ -120,6 +122,7 @@ The swarm project is composed of several specialized sub-crates:
 * `mcp_agent_backbone`: A runtime to interact with MCP server. Designed to be integrated into an A2A agent, granting him capability to connect to external set of tools. The MCP runtime can be connected to its own LLM. Note: An external mcp\_server (like the illustrative project or Apify) is needed for these agents to function.  
 * `examples`: Contain mulitple illustrative examples to interact with swarm
     * `mcp_agent_endpoint`: A testing utility for MCP runtime to receive and process requests through a MCP server. 
+    * `mcp_server`: A MCP server exposing three tools, mostly for testing purpose. 
 
 ## **Road Ahead & How You Can Contribute**
 
@@ -129,6 +132,7 @@ We're continuously working on improvements, including:
 
 * Implementation of .a discovery agent, that would hold the various agents available and their skills
 * Implementation of a Bi-Directional agent, that will be more flexible than Planner
+* Implementation of a simple UI for testing purpose, to interact with an a2a agent ( simple server  or planner server)
 * Refactoring: Continuously improving code clarity and maintainability.  
 * Unit Tests: Enhancing robustness and reliability.
 

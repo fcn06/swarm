@@ -1,6 +1,14 @@
 use anyhow::Result;
 use configuration::AgentBidirectionalConfig;
-use tracing::Level;
+
+use tracing::{ Level};
+use tracing_subscriber::{
+    prelude::*,
+    fmt,
+    layer::Layer,
+    Registry, filter
+};
+
 use tracing_subscriber::FmtSubscriber;
 
 mod a2a_agent_logic;

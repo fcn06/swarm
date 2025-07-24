@@ -7,18 +7,18 @@ use uuid::Uuid;
 use llm_api::chat::{ChatLlmInteraction};
 
 use crate::a2a_plan::plan_definition::{
-    ExecutionPlan, ExecutionResult, Plan, PlanResponse, PlanStatus, 
+     ExecutionResult, Plan, PlanResponse, PlanStatus, 
 };
 use crate::a2a_plan::plan_execution::A2AClient;
 
 use a2a_rs::domain::{Message, Part, TaskState, AgentCard};
 
 use std::env;
-use configuration::{AgentPlannerConfig, AgentReference, AgentMcpConfig};
+use configuration::{AgentPlannerConfig, AgentMcpConfig};
 use mcp_agent_backbone::mcp_agent_logic::agent::McpAgent;
 
 use llm_api::tools::Tool;
-
+use configuration::SimpleAgentReference;
 
 use tracing::{error,warn,info,debug,trace};
 
@@ -32,9 +32,10 @@ pub struct PlannerAgent {
     mcp_agent: Option<McpAgent>,
 }
 
-#[derive(Clone)]
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PlannerAgentDefinition {
-    agent_configs: Vec<AgentReference>,
+    pub agent_configs: Vec<SimpleAgentReference>, // Info to connect to agents
 }
 
 
@@ -274,7 +275,7 @@ Available MCP Tools:
 
             - 'assigned_agent_id_preference': (Optional) If a specific skill is mentioned, suggest the ID of an agent that provides this skill (e.g., 'agent_search'). This is just a preference, the executor will find a suitable agent.
 
-            - 'tool_parameters': (Optional) If a tool is to be used, a JSON object containing the parameters for the tool call. Example: {{ "query": "weather in London" }}.
+            - 'tool_parameters': (Optional) If a tool is to be used, a JSON object containing the parameters for the tool call. Example: {{ \"query\": \"weather in London\" }}.
 
             - 'dependencies': (Optional) An array of task IDs that must be completed before this task can start. If no dependencies, use an empty array or omit.
 
@@ -283,40 +284,40 @@ Available MCP Tools:
             Example Plan:
 
             {{
-              "plan_summary": "Search for information and summarize.",
-              "tasks": [
+              \"plan_summary\": \"Search for information and summarize.\",
+              \"tasks\": [
                 {{
-                  "id": "search_web",
-                  "description": "Search the web for information about the user request.",
-                  "skill_to_use": "skill_search_web",
-                  "tool_to_use": null,
-                  "assigned_agent_id_preference": "agent_search",
-                  "tool_parameters": null,
-                  "dependencies": [],
-                  "expected_outcome": "Relevant search results."
+                  \"id\": \"search_web\",
+                  \"description\": \"Search the web for information about the user request.\",
+                  \"skill_to_use\": \"skill_search_web\",
+                  \"tool_to_use\": null,
+                  \"assigned_agent_id_preference\": \"agent_search\",
+                  \"tool_parameters\": null,
+                  \"dependencies\": [],
+                  \"expected_outcome\": \"Relevant search results.\"
                 }},
                 {{
-                  "id": "calculate_sum",
-                  "description": "Calculate the sum of two numbers.",
-                  "skill_to_use": null,
-                  "tool_to_use": "calculator",
-                  "assigned_agent_id_preference": null,
-                  "tool_parameters": {{
-                    "a": 10,
-                    "b": 20
+                  \"id\": \"calculate_sum\",
+                  \"description\": \"Calculate the sum of two numbers.\",
+                  \"skill_to_use\": null,
+                  \"tool_to_use\": \"calculator\",
+                  \"assigned_agent_id_preference\": null,
+                  \"tool_parameters\": {{
+                    \"a\": 10,
+                    \"b\": 20
                   }},                  
-                  "dependencies": [],
-                  "expected_outcome": "The sum of the numbers."
+                  \"dependencies\": [],
+                  \"expected_outcome\": \"The sum of the numbers.\"
                 }},
                 {{
-                  "id": "summarize_info",
-                  "description": "Summarize the information found from the web search.",
-                  "skill_to_use": null,
-                  "tool_to_use": null,
-                  "assigned_agent_id_preference": null,
-                  "tool_parameters": null,
-                  "dependencies": ["search_web"],
-                  "expected_outcome": "A concise summary."
+                  \"id\": \"summarize_info\",
+                  \"description\": \"Summarize the information found from the web search.\",
+                  \"skill_to_use\": null,
+                  \"tool_to_use\": null,
+                  \"assigned_agent_id_preference\": null,
+                  \"tool_parameters\": null,
+                  \"dependencies\": [\"search_web\"],
+                  \"expected_outcome\": \"A concise summary.\"
                 }}]
             }}
 
@@ -580,7 +581,7 @@ Tasks executed:
             ));
 
             if let Some(output) = plan.task_results.get(&task_def.id) {
-                context.push_str(&format!(", Output: "{}"", output)); 
+                context.push_str(&format!(", Output: \"{}\"", output)); 
             }
         }
 

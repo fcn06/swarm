@@ -15,7 +15,12 @@ async-trait = { workspace = true }
 http = "0.2.9"
 hyper = { version = "0.14.27", features = ["full"] }
 tokio = { workspace = true }
+
+
+# Logging - optional
 tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
 serde = { workspace = true }
 serde_json = { workspace = true }
 uuid = { workspace = true }

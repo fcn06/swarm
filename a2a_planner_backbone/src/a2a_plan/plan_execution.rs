@@ -6,7 +6,7 @@ use a2a_rs::{
 use anyhow::Result;
 
 use std::sync::Arc;
-use tracing::{error,warn,info,debug,trace};
+use tracing::{info,debug,trace};
 
 /////////////////////////////////////////////////////////
 // Client to connect to a2a server

@@ -8,49 +8,51 @@ use a2a_rs::services::AgentInfoProvider;
 use a2a_rs::domain::AgentCard;
 
 use super::server_config::{AuthConfig, ServerConfig, StorageConfig};
-use super::handler::SimpleAgentHandler;
+use super::handler::BidirectionalAgentHandler;
+use super::planner_agent::PlannerAgent;
 use mcp_agent_backbone::mcp_agent_logic::agent::McpAgent;
-use configuration::{AgentA2aConfig,AgentMcpConfig};
+use configuration::{AgentBidirectionalConfig, AgentMcpConfig};
 use llm_api::chat::ChatLlmInteraction;
 use std::env;
 
 /// Modern A2A server setup 
-pub struct SimpleAgentServer {
+pub struct BidirectionalAgentServer {
     server_config: ServerConfig,
     llm_interaction: ChatLlmInteraction,
-    agent_a2a_config: AgentA2aConfig,
-    mcp_agent:Option<McpAgent>
+    agent_bidirectional_config: AgentBidirectionalConfig,
+    mcp_agent:Option<McpAgent>,
+    planner_agent: Option<PlannerAgent>,
 }
 
 
 
-impl SimpleAgentServer {
+impl BidirectionalAgentServer {
     /// Create a new modern reimbursement server with default config
-    pub async fn new(agent_a2a_config: AgentA2aConfig,) -> anyhow::Result<Self> {
+    pub async fn new(agent_bidirectional_config: AgentBidirectionalConfig,) -> anyhow::Result<Self> {
         
         let server_config = ServerConfig::new(
-            agent_a2a_config.agent_a2a_host.clone(),
-            agent_a2a_config.agent_a2a_http_port.clone().parse::<u16>().unwrap(),
-            agent_a2a_config.agent_a2a_ws_port.clone().parse::<u16>().unwrap(),
+            agent_bidirectional_config.agent_bidirectional_host.clone(),
+            agent_bidirectional_config.agent_bidirectional_http_port.clone().parse::<u16>().unwrap(),
+            agent_bidirectional_config.agent_bidirectional_ws_port.clone().parse::<u16>().unwrap(),
             );
 
              // Set model to be used
-        let model_id = agent_a2a_config.agent_a2a_model_id.clone();
+        let model_id = agent_bidirectional_config.agent_bidirectional_model_id.clone();
 
         // Set model to be used
-        let _system_message = agent_a2a_config.agent_a2a_system_prompt.clone();
+        let _system_message = agent_bidirectional_config.agent_bidirectional_system_prompt.clone();
 
         // Set API key for LLM
-        let llm_a2a_api_key = env::var("LLM_A2A_API_KEY").expect("LLM_A2A_API_KEY must be set");
+        let llm_bidirectional_api_key = env::var("LLM_BIDIRECTIONAL_API_KEY").expect("LLM_BIDIRECTIONAL_API_KEY must be set");
 
         let llm_interaction= ChatLlmInteraction::new(
-            agent_a2a_config.agent_a2a_llm_url.clone(),
+            agent_bidirectional_config.agent_bidirectional_llm_url.clone(),
             model_id,
-            llm_a2a_api_key,
+            llm_bidirectional_api_key,
         );
 
         // load mcp agent agent if it exists
-        let mcp_agent = match agent_a2a_config.agent_a2a_mcp_config_path.clone() {
+        let mcp_agent = match agent_bidirectional_config.agent_bidirectional_mcp_config_path.clone() {
             None => None,
             Some(path) => {
                 let agent_mcp_config=AgentMcpConfig::load_agent_config(path.as_str()).expect("Error loading agent config");
@@ -59,11 +61,22 @@ impl SimpleAgentServer {
             
         };
 
+        // load planner agent if it exists
+        let planner_agent = match agent_bidirectional_config.agent_bidirectional_planner_config_path.clone() {
+            None => None,
+            Some(path) => {
+                let agent_planner_config = configuration::AgentPlannerConfig::load_agent_config(path.as_str()).expect("Error loading planner config");
+                let planner_agent = PlannerAgent::new(agent_planner_config).await?;
+                Some(planner_agent)
+            },
+        };
+
         Ok(Self {
             server_config:server_config,
             llm_interaction:llm_interaction,
-            agent_a2a_config:agent_a2a_config,
+            agent_bidirectional_config:agent_bidirectional_config,
             mcp_agent:mcp_agent,
+            planner_agent: planner_agent,
         })
     }
 
@@ -101,7 +114,7 @@ impl SimpleAgentServer {
 
         // Create message handler
         let message_handler =
-            SimpleAgentHandler::with_storage(self.llm_interaction.clone(), self.mcp_agent.clone(), storage.clone());
+            BidirectionalAgentHandler::with_storage(self.llm_interaction.clone(), self.mcp_agent.clone(), self.planner_agent.clone(), storage.clone());
         self.start_with_handler(message_handler, storage).await
     }
 
@@ -124,25 +137,25 @@ impl SimpleAgentServer {
 
         //////////////////////////////////////////////////////////////////
 
-        let agent_a2a_config = self.agent_a2a_config.clone();
+        let agent_bidirectional_config = self.agent_bidirectional_config.clone();
 
         let agent_info = SimpleAgentInfo::new(
-            agent_a2a_config.agent_a2a_name,
-            format!("http://{}:{}", agent_a2a_config.agent_a2a_host, agent_a2a_config.agent_a2a_http_port),
+            agent_bidirectional_config.agent_bidirectional_name,
+            format!("http://{}:{}", agent_bidirectional_config.agent_bidirectional_host, agent_bidirectional_config.agent_bidirectional_http_port),
         )
-        .with_description(agent_a2a_config.agent_a2a_description)
+        .with_description(agent_bidirectional_config.agent_bidirectional_description)
         //.with_provider(
         //    "Example Organization".to_string(),
         //    "https://example.org".to_string(),
         //)
-        .with_documentation_url(agent_a2a_config.agent_a2a_doc_url.expect("NO DOC URL"))
+        .with_documentation_url(agent_bidirectional_config.agent_bidirectional_doc_url.expect("NO DOC URL"))
         .with_streaming()
         .add_comprehensive_skill(
-            agent_a2a_config.agent_a2a_skill_id,
-            agent_a2a_config.agent_a2a_skill_name,
-            Some(agent_a2a_config.agent_a2a_skill_description),
-            Some(agent_a2a_config.agent_a2a_tags),
-            Some(agent_a2a_config.agent_a2a_examples),
+            agent_bidirectional_config.agent_bidirectional_skill_id,
+            agent_bidirectional_config.agent_bidirectional_skill_name,
+            Some(agent_bidirectional_config.agent_bidirectional_skill_description),
+            Some(agent_bidirectional_config.agent_bidirectional_tags),
+            Some(agent_bidirectional_config.agent_bidirectional_examples),
             Some(vec!["text".to_string(), "data".to_string()]),
             Some(vec!["text".to_string(), "data".to_string()]),
         );
@@ -151,21 +164,21 @@ impl SimpleAgentServer {
 
         //////////////////////////////////////////////////////////////////
 
-        let agent_a2a_config = self.agent_a2a_config.clone();
+        let agent_bidirectional_config = self.agent_bidirectional_config.clone();
         // Create HTTP server
-        let bind_address = format!("{}:{}", agent_a2a_config.agent_a2a_host, agent_a2a_config.agent_a2a_http_port);
+        let bind_address = format!("{}:{}", agent_bidirectional_config.agent_bidirectional_host, agent_bidirectional_config.agent_bidirectional_http_port);
 
         println!(
             "🌐 Starting HTTP a2a agent server {} on {}:{}",
-            agent_a2a_config.agent_a2a_name,agent_a2a_config.agent_a2a_host, agent_a2a_config.agent_a2a_http_port
+            agent_bidirectional_config.agent_bidirectional_name,agent_bidirectional_config.agent_bidirectional_host, agent_bidirectional_config.agent_bidirectional_http_port
         );
         println!(
             "📋 Agent card: http://{}:{}/agent-card",
-            agent_a2a_config.agent_a2a_host, agent_a2a_config.agent_a2a_http_port
+            agent_bidirectional_config.agent_bidirectional_host, agent_bidirectional_config.agent_bidirectional_http_port
         );
         println!(
             "🛠️  Skills: http://{}:{}/skills",
-            agent_a2a_config.agent_a2a_host, agent_a2a_config.agent_a2a_http_port
+            agent_bidirectional_config.agent_bidirectional_host, agent_bidirectional_config.agent_bidirectional_http_port
         );
 
         match &self.server_config.storage {
@@ -243,7 +256,7 @@ impl SimpleAgentServer {
     pub async fn register(&self, agent_card:AgentCard) -> Result<(), Box<dyn std::error::Error>> {
         println!("🚀 Registering Agent ...");
 
-        let discovery_url=self.agent_a2a_config.agent_a2a_discovery_url.clone().expect("NO DISCOVERY URL");
+        let discovery_url=self.agent_bidirectional_config.agent_bidirectional_discovery_url.clone().expect("NO DISCOVERY URL");
 
         let register_uri=format!("{}/register",discovery_url);
 

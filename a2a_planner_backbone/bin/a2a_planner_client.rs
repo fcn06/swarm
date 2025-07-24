@@ -2,11 +2,11 @@ use a2a_planner_backbone::a2a_agent_logic::planner_agent::PlannerAgent;
 
 use configuration::AgentPlannerConfig;
 
-use a2a_rs::domain::{Message};
+//use a2a_rs::domain::{Message};
 
 use clap::Parser;
 
-use tracing::{info, error, Level};
+use tracing::{ Level};
 use tracing_subscriber::{
     prelude::*,
     fmt,

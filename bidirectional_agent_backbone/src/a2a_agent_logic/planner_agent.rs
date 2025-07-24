@@ -6,17 +6,19 @@ use uuid::Uuid;
 // Assuming llm_api crate is available and has these
 use llm_api::chat::{ChatLlmInteraction};
 
-use crate::PlannerAgentDefinition;
 use crate::a2a_plan::plan_definition::{
     ExecutionPlan, ExecutionResult, Plan, PlanResponse, PlanStatus, 
 };
 use crate::a2a_plan::plan_execution::A2AClient;
 
-// to update
-use a2a_rs::domain::{Message, Part, TaskState};
+use a2a_rs::domain::{Message, Part, TaskState, AgentCard};
 
 use std::env;
-use configuration::AgentPlannerConfig;
+use configuration::{AgentPlannerConfig, AgentReference, AgentMcpConfig};
+use mcp_agent_backbone::mcp_agent_logic::agent::McpAgent;
+
+use llm_api::tools::Tool;
+
 
 use tracing::{error,warn,info,debug,trace};
 
@@ -27,6 +29,12 @@ pub struct PlannerAgent {
     planner_agent_definition: PlannerAgentDefinition,
     llm_interaction: ChatLlmInteraction,
     client_agents: HashMap<String, A2AClient>,
+    mcp_agent: Option<McpAgent>,
+}
+
+#[derive(Clone)]
+pub struct PlannerAgentDefinition {
+    agent_configs: Vec<AgentReference>,
 }
 
 
@@ -40,7 +48,7 @@ impl PlannerAgent {
         let llm_url = agent_planner_config.agent_planner_llm_url.clone();
 
         // Set API key for LLM
-        let llm_planner_api_key = env::var("LLM_PLANNER_API_KEY").expect("LLM_PLANNER_API_KEY must be set");
+        let llm_planner_api_key = env::var("LLM_BIDIRECTIONAL_API_KEY").expect("LLM_BIDIRECTIONAL_API_KEY must be set");
 
         let llm_interaction= ChatLlmInteraction::new(
         llm_url,
@@ -58,17 +66,18 @@ impl PlannerAgent {
         let mut client_agents = HashMap::new();
 
         debug!("PlannerAgent: Connecting to A2a server agents...");
-        for agent_reference in &planner_agent_definition.agent_configs {
-            // Use agent_info (which implements AgentInfoProvider) to get details for connection
-            let agent_reference = agent_reference.get_agent_reference().await?;
 
+        // Query discovery service for available agents
+        let discovery_url = agent_planner_config.agent_planner_discovery_url.clone().expect("Discovery URL must be set for PlannerAgent");
+        let agents_from_discovery = Self::list_registered_agents(discovery_url.as_str()).await?;
+
+        for agent_card in agents_from_discovery {
             debug!(
-                "PlannerAgent: Connecting to agent '{}' at {}",
-                agent_reference.name, agent_reference.url
+                "PlannerAgent: Connecting to discovered agent '{}' at {}",
+                agent_card.name, agent_card.url
             );
 
-
-            match A2AClient::connect(agent_reference.name.clone(), agent_reference.url.clone())
+            match A2AClient::connect(agent_card.name.clone(), agent_card.url.clone())
                 .await
             {
                 Ok(client) => {
@@ -76,15 +85,12 @@ impl PlannerAgent {
                         "PlannerAgent: Successfully connected to agent '{}' at {}",
                         client.id, client.uri
                     );
-                    // Use the connected client's ID as the key
                     client_agents.insert(client.id.clone(), client);
-
                 }
                 Err(e) => {
-                    // Use details from agent_info for error reporting
                     debug!(
-                        "PlannerAgent: Warning: Failed to connect to A2a agent '{}' at {}: {}",
-                        agent_reference.name, agent_reference.url, e
+                        "PlannerAgent: Warning: Failed to connect to discovered A2a agent '{}' at {}: {}",
+                        agent_card.name, agent_card.url, e
                     );
                 }
             }
@@ -94,36 +100,74 @@ impl PlannerAgent {
             warn!(
                 "PlannerAgent: Warning: No A2a server agents connected, planner capabilities will be limited to direct LLM interaction if any."
             );
-            // Depending on requirements, you might return an error here:
-            // bail!("Critical: Failed to connect to any A2a server agents.");
         }
+
+        // Load MCP agent if specified in planner config
+        let mcp_agent = match agent_planner_config.agent_planner_mcp_config_path.clone() {
+            None => None,
+            Some(path) => {
+                let agent_mcp_config = AgentMcpConfig::load_agent_config(path.as_str()).expect("Error loading MCP config for planner");
+                let mcp_agent = McpAgent::new(agent_mcp_config).await?;
+                Some(mcp_agent)
+            },
+        };
 
         Ok(Self {
             planner_agent_definition,
             llm_interaction,
             client_agents,
+            mcp_agent,
         })
     }
 
+    async fn list_registered_agents(discovery_url: &str) -> Result<Vec<AgentCard>> {
+        let list_uri = format!("{}/list", discovery_url);
+        let response = reqwest::Client::new()
+            .get(list_uri)
+            .send()
+            .await?
+            .json::<Vec<AgentCard>>()
+            .await?;
+        Ok(response)
+    }
 
-    async fn get_available_skills_description(&self) -> String {
-        let mut description = "Available agent skills: \n".to_string();
+    async fn get_available_skills_and_tools_description(&self) -> String {
+        let mut description = "Available agent skills: 
+".to_string();
         if self.client_agents.is_empty() {
-            description.push_str("- No A2a agents connected.\n",);
+            description.push_str("- No A2a agents connected.
+");
         } else {
             for (name, agent) in &self.client_agents {
                 description.push_str(&format!("* Agent_id : '{}' -- ", name));
-                // Access skills directly from the A2AClient struct
                 let skills = agent.get_skills();
                 
                 if skills.is_empty() {
-                    description.push_str(" No specific skills listed.");
+                    description.push_str(" No specific skills listed.
+");
                 } else {
                     for skill in skills {
-                        description.push_str(&format!(" skill.id : '{}' -- skill.description : '{}' \n", skill.id,skill.description.clone()));
+                        description.push_str(&format!(" skill.id : '{}' -- skill.description : '{}' 
+", skill.id,skill.description.clone()));
                     }
                 }
-                
+            }
+        }
+
+        // Add MCP tools description if MCP agent is present
+        if let Some(mcp) = &self.mcp_agent {
+            description.push_str("
+Available MCP Tools: 
+");
+            let tools = mcp.get_available_tools().await;
+            if tools.is_empty() {
+                description.push_str("- No MCP tools available.
+");
+            } else {
+                for tool in tools {
+                    description.push_str(&format!("* Tool Name: '{}' -- Description: '{}' -- Arguments: '{}'
+", tool.name, tool.description, tool.parameters_json_schema));
+                }
             }
         }
         
@@ -200,21 +244,21 @@ impl PlannerAgent {
         info!(
             "PlannerAgent: Creating plan for request ID: {}",
             Uuid::new_v4().to_string()
-        ); // Removed request.id and used a new Uuid
+        ); 
 
-        let skills_description = self.get_available_skills_description().await;
+        let skills_and_tools_description = self.get_available_skills_and_tools_description().await;
 
-        debug!("{}",skills_description );
+        debug!("{}",skills_and_tools_description );
 
         let prompt = format!(
             "You are a planner agent that creates execution plans for user requests.
 
-            You have access to the following agent skills:
+            You have access to the following agent skills and MCP tools:
             {}
 
             User request: {}
 
-            Based on the user request and available skills, create a step-by-step plan to fulfill it.
+            Based on the user request and available skills and tools, create a step-by-step plan to fulfill it.
 
             The plan should be a JSON object with 'plan_summary' (a brief description of the overall plan) and 'tasks' (an array of task objects).
 
@@ -224,9 +268,13 @@ impl PlannerAgent {
 
             - 'description': A clear, concise description of what the task should achieve.
 
-            - 'skill_to_use': (Optional) The specific skill required from an agent (e.g., 'skill_search_web', 'skill_calculate'). If no specific skill is needed or if the task is for the LLM itself to reflect/summarize, this should be null.
+            - 'skill_to_use': (Optional) The specific skill ID required from an A2A agent (e.g., 'skill_search_web', 'skill_calculate'). If a tool is to be used, this should be null.
+
+            - 'tool_to_use': (Optional) The name of the specific MCP tool to use (e.g., 'search_tool', 'calculator'). If a skill is to be used, this should be null.
 
             - 'assigned_agent_id_preference': (Optional) If a specific skill is mentioned, suggest the ID of an agent that provides this skill (e.g., 'agent_search'). This is just a preference, the executor will find a suitable agent.
+
+            - 'tool_parameters': (Optional) If a tool is to be used, a JSON object containing the parameters for the tool call. Example: {{ "query": "weather in London" }}.
 
             - 'dependencies': (Optional) An array of task IDs that must be completed before this task can start. If no dependencies, use an empty array or omit.
 
@@ -235,29 +283,46 @@ impl PlannerAgent {
             Example Plan:
 
             {{
-              \"plan_summary\": \"Search for information and summarize.\",
-              \"tasks\": [
+              "plan_summary": "Search for information and summarize.",
+              "tasks": [
                 {{
-                  \"id\": \"search_web\",
-                  \"description\": \"Search the web for information about the user request.\",
-                  \"skill_to_use\": \"skill_search_web\",
-                  \"assigned_agent_id_preference\": \"agent_search\",
-                  \"dependencies\": [],
-                  \"expected_outcome\": \"Relevant search results.\"
+                  "id": "search_web",
+                  "description": "Search the web for information about the user request.",
+                  "skill_to_use": "skill_search_web",
+                  "tool_to_use": null,
+                  "assigned_agent_id_preference": "agent_search",
+                  "tool_parameters": null,
+                  "dependencies": [],
+                  "expected_outcome": "Relevant search results."
                 }},
                 {{
-                  \"id\": \"summarize_info\",
-                  \"description\": \"Summarize the information found from the web search.\",
-                  \"skill_to_use\": null,
-                  \"assigned_agent_id_preference\": null,
-                  \"dependencies\": [\"search_web\"],
-                  \"expected_outcome\": \"A concise summary.\"
+                  "id": "calculate_sum",
+                  "description": "Calculate the sum of two numbers.",
+                  "skill_to_use": null,
+                  "tool_to_use": "calculator",
+                  "assigned_agent_id_preference": null,
+                  "tool_parameters": {{
+                    "a": 10,
+                    "b": 20
+                  }},                  
+                  "dependencies": [],
+                  "expected_outcome": "The sum of the numbers."
+                }},
+                {{
+                  "id": "summarize_info",
+                  "description": "Summarize the information found from the web search.",
+                  "skill_to_use": null,
+                  "tool_to_use": null,
+                  "assigned_agent_id_preference": null,
+                  "tool_parameters": null,
+                  "dependencies": ["search_web"],
+                  "expected_outcome": "A concise summary."
                 }}]
             }}
 
             RETURN ONLY THE SIMPLE JSON REPRESENTING THE PLAN ON THE SAME FORMAT AS ABOVE.",
 
-            skills_description, self.extract_text_from_message(request).await
+            skills_and_tools_description, self.extract_text_from_message(request).await
         );
 
         // This api returns raw text from llm
@@ -268,8 +333,6 @@ impl PlannerAgent {
             response_content
         );
 
-        // Attempt to parse the LLM response content as JSON
-        // Used to Fails here because the model details his thinking between <think> </think>
         let llm_plan_data: PlanResponse =
             match serde_json::from_str(&response_content.clone().expect("REASON")) {
                 Ok(data) => data,
@@ -293,9 +356,8 @@ impl PlannerAgent {
             self.extract_text_from_message(request).await,
             llm_plan_data.plan_summary,
             llm_plan_data.tasks,
-        ); // Used Uuid::new_v4().to_string() and extracted text
+        ); 
 
-        //println!("PlannerAgent: Plan created with {} tasks.", plan.tasks_definition.len());
         Ok(plan)
     }
 
@@ -310,7 +372,7 @@ impl PlannerAgent {
 
         let mut completed_tasks: HashSet<String> = HashSet::new();
         let mut task_queue: VecDeque<String> = VecDeque::new(); // Tasks ready to execute
-        let  executing_plans: HashMap<String, ExecutionPlan> = HashMap::new();
+        let  _executing_plans: HashMap<String, ExecutionPlan> = HashMap::new();
 
         // Initial population of the queue with tasks that have no dependencies
         for task_def in &plan.tasks_definition {
@@ -320,127 +382,126 @@ impl PlannerAgent {
         }
 
         // Process tasks
-        while !task_queue.is_empty() || !executing_plans.is_empty() {
-            // Submit tasks from the queue that can be started
-            while let Some(task_id) = task_queue.pop_front() {
-                // Check if task is already completed or being executed
-                if completed_tasks.contains(&task_id) || executing_plans.contains_key(&task_id) {
-                    continue; // Skip if already processed
-                }
+        while !task_queue.is_empty() {
+            let task_id = task_queue.pop_front().unwrap();
 
-                let task_def_index = plan
-                    .tasks_definition
-                    .iter()
-                    .position(|t| t.id == task_id)
-                    .context(format!("Task definition {} not found", task_id))?;
-                let task_def = &plan.tasks_definition[task_def_index];
-
-                // Check if all dependencies are met
-                let dependencies_met = task_def
-                    .dependencies
-                    .iter()
-                    .all(|dep_id| completed_tasks.contains(dep_id));
-
-                if dependencies_met {
-                    debug!(
-                        "PlannerAgent: Submitting task '{}': {}",
-                        task_id, task_def.description
-                    );
-
-                    // Construct task description with results of dependencies
-                    let mut full_task_description = task_def.description.clone();
-                    if !task_def.dependencies.is_empty() {
-                        full_task_description.push_str("Context from previous tasks:\n");
-                        for dep_id in &task_def.dependencies {
-                            if let Some(result) = plan.task_results.get(dep_id) {
-                                full_task_description.push_str(&format!(
-                                    "- Result of task '{}': {}\n",
-                                    dep_id, result
-                                ));
-                            }
-                        }
-                    }
-
-                    // Find a suitable agent or determine it's an LLM task
-                    let _assigned_agent_id: Option<String>;
-                    let task_result: Result<String>;
-
-                    if let Some(skill) = &task_def.skill_to_use {
-                        let agent_client = self.find_agent_with_skill(skill, &task_id).await;
-                        match agent_client {
-                            Some(client) => {
-                                _assigned_agent_id = Some(client.id.clone());
-                                task_result = client
-                                    .execute_task(&full_task_description, skill)
-                                    .await
-                                    .map(|r| r);
-                            }
-                            None => {
-                                _assigned_agent_id = None;
-                                task_result = Err(anyhow::anyhow!(
-                                    "No agent found with skill '{}' for task '{}'",
-                                    skill,
-                                    task_id
-                                ));
-                            }
-                        }
-                    } else {
-                        // IMPORTANT : Connect this task to a LLM
-                        // Task requires no specific skill, potentially an LLM reflection task
-                        _assigned_agent_id = None; // No specific agent
-
-                        task_result = Ok(self.llm_interaction.call_api_simple_v2("user".to_string(),full_task_description.to_string()).await?.expect("Improper task description"));
-                    }
-
-
-                    // Process the task result immediately for now (sequential execution)
-                    match task_result {
-                        Ok(result_content) => {
-                            
-                            debug!(
-                                "PlannerAgent: Task '{}' completed successfully.Result : {}",
-                                task_id, result_content
-                            );
-
-                            completed_tasks.insert(task_id.clone());
-                            plan.task_results
-                                .insert(task_id.clone(), result_content.clone()); // Store the result
-
-                            // Update the task_output in the task_definition
-                            if let Some(task_def_mut) =
-                                plan.tasks_definition.get_mut(task_def_index)
-                            {
-                                task_def_mut.task_output = Some(result_content);
-                            }
-
-                            // Add dependent tasks to the queue
-                            for dep_task_def in &plan.tasks_definition {
-                                if dep_task_def.dependencies.contains(&task_id) {
-                                    task_queue.push_back(dep_task_def.id.clone());
-                                }
-                            }
-                        }
-                        Err(e) => {
-                            let error_msg = format!("Task '{}' failed: {}", task_id, e);
-                            error!("PlannerAgent: {}", error_msg);
-                            plan.status =
-                                PlanStatus::Failed(format!("Execution failed at task {}", task_id));
-                            plan.updated_at = Some(Utc::now());
-                            return Err(anyhow::anyhow!(error_msg)); // Stop plan execution on first failure
-                        }
-                    }
-                } else {
-                    // Dependencies not met, push back to queue for later
-                    task_queue.push_back(task_id.clone());
-                }
+            // Check if task is already completed 
+            if completed_tasks.contains(&task_id) {
+                continue; 
             }
 
-            // In a more advanced version, you would poll executing_plans here.
-            // Since we process sequentially above, executing_plans will always be empty.
+            let task_def_index = plan
+                .tasks_definition
+                .iter()
+                .position(|t| t.id == task_id)
+                .context(format!("Task definition {} not found", task_id))?;
+            let task_def = &plan.tasks_definition[task_def_index];
+
+            // Check if all dependencies are met
+            let dependencies_met = task_def
+                .dependencies
+                .iter()
+                .all(|dep_id| completed_tasks.contains(dep_id));
+
+            if dependencies_met {
+                debug!(
+                    "PlannerAgent: Submitting task '{}': {}",
+                    task_id, task_def.description
+                );
+
+                // Construct task description with results of dependencies
+                let mut full_task_description = task_def.description.clone();
+                if !task_def.dependencies.is_empty() {
+                    full_task_description.push_str("Context from previous tasks:
+");
+                    for dep_id in &task_def.dependencies {
+                        if let Some(result) = plan.task_results.get(dep_id) {
+                            full_task_description.push_str(&format!(
+                                "- Result of task '{}': {}
+",
+                                dep_id, result
+                            ));
+                        }
+                    }
+                }
+
+                let task_result: Result<String>;
+
+                if let Some(skill) = &task_def.skill_to_use {
+                    let agent_client = self.find_agent_with_skill(skill, &task_id).await;
+                    match agent_client {
+                        Some(client) => {
+                            task_result = client
+                                .execute_task(&full_task_description, skill)
+                                .await
+                                .map(|r| r);
+                        }
+                        None => {
+                            task_result = Err(anyhow::anyhow!(
+                                "No A2A agent found with skill '{}' for task '{}'",
+                                skill,
+                                task_id
+                            ));
+                        }
+                    }
+                } else if let Some(tool_name) = &task_def.tool_to_use {
+                    if let Some(mcp) = &self.mcp_agent {
+                        let tool_parameters = task_def.tool_parameters.clone().unwrap_or_default();
+                        task_result = mcp.call_tool(tool_name, tool_parameters).await;
+                    } else {
+                        task_result = Err(anyhow::anyhow!(
+                            "MCP agent not initialized, but tool '{}' was requested for task '{}'",
+                            tool_name,
+                            task_id
+                        ));
+                    }
+                } else {
+                    // Task requires no specific skill or tool, potentially an LLM reflection task
+                    task_result = Ok(self.llm_interaction.call_api_simple_v2("user".to_string(),full_task_description.to_string()).await?.expect("Improper task description"));
+                }
+
+                // Process the task result immediately
+                match task_result {
+                    Ok(result_content) => {
+                        
+                        debug!(
+                            "PlannerAgent: Task '{}' completed successfully. Result : {}",
+                            task_id, result_content
+                        );
+
+                        completed_tasks.insert(task_id.clone());
+                        plan.task_results
+                            .insert(task_id.clone(), result_content.clone()); 
+
+                        if let Some(task_def_mut) =
+                            plan.tasks_definition.get_mut(task_def_index)
+                        {
+                            task_def_mut.task_output = Some(result_content);
+                        }
+
+                        // Add dependent tasks to the queue
+                        for dep_task_def in &plan.tasks_definition {
+                            if dep_task_def.dependencies.contains(&task_id) && !completed_tasks.contains(&dep_task_def.id) {
+                                task_queue.push_back(dep_task_def.id.clone());
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        let error_msg = format!("Task '{}' failed: {}", task_id, e);
+                        error!("PlannerAgent: {}", error_msg);
+                        plan.status =
+                            PlanStatus::Failed(format!("Execution failed at task {}", task_id));
+                        plan.updated_at = Some(Utc::now());
+                        return Err(anyhow::anyhow!(error_msg)); 
+                    }
+                }
+            } else {
+                // Dependencies not met, push back to queue for later
+                task_queue.push_back(task_id.clone());
+            }
         }
 
-        // After the loop, check if the plan is completed or if there are pending tasks due to uncompleted dependencies or other issues.
-        let all_tasks_completed = completed_tasks.len() == plan.tasks_definition.len(); // Check against original task definitions
+        let all_tasks_completed = completed_tasks.len() == plan.tasks_definition.len(); 
 
         if all_tasks_completed {
             plan.status = PlanStatus::Completed;
@@ -450,7 +511,6 @@ impl PlannerAgent {
                 plan.request_id
             );
         } else if matches!(plan.status, PlanStatus::InProgress) {
-            // If not all completed and not already marked as failed
             let unfinished_tasks: Vec<_> = plan
                 .tasks_definition
                 .iter()
@@ -471,12 +531,9 @@ impl PlannerAgent {
 
     async fn find_agent_with_skill(&self, skill: &str, _task_id: &str) -> Option<&A2AClient> {
 
-        // 1. Try to find the agent with appropriate skill 
         for (agent_id, agent) in &self.client_agents {
             info!("PlannerAgent: agent_id : '{}' with skill '{}'.",agent_id, skill);
-            // Access skills directly from the A2AClient struct
             if agent.has_skill(skill) {
-                // Use the has_skill method
                 info!(
                     "PlannerAgent: Found agent '{}' with skill '{}'.",
                     agent_id, skill
@@ -485,68 +542,45 @@ impl PlannerAgent {
             }
         }
 
-         // 2. If no agent with the specific skill is found, try to find the default agent
-         warn!("PlannerAgent: No agent found with skill '{}'. Attempting to find default agent.", skill);
-
-         for agent_ref_config in &self.planner_agent_definition.agent_configs {
-             if agent_ref_config.is_default == Some(true) {
-                 // We need to find the A2AClient instance associated with this default SimpleAgentReference
-                 // We can do this by matching the name or ID. Assuming client.id is agent_reference.name
-                 if let Some(default_agent_client) = self.client_agents.get(&agent_ref_config.name) {
-                     info!(
-                         "PlannerAgent: Found default agent '{}' as fallback.",
-                         default_agent_client.id
-                     );
-                     return Some(default_agent_client);
-                 }
-             }
-         }
- 
-         // 3. If no agent with the skill and no default agent are found
-         warn!("PlannerAgent: No suitable agent (skill-matching or default) found for skill '{}'.", skill);
+         warn!("PlannerAgent: No agent found with skill '{}'.", skill);
          None
     }
 
     async fn summarize_results(&self, plan: &mut Plan) -> Result<String> {
 
         info!("PlannerAgent: Summarizing results for plan ID: {}", plan.id);
-        let mut context = format!("User's initial request: {}\n", plan.user_query);
+        let mut context = format!("User's initial request: {}
+", plan.user_query);
         context.push_str(&format!(
-            "Plan ID: {}\nOverall Plan Summary by LLM: {}\nPlan Status: {:?}\nTasks executed:\n",
+            "Plan ID: {}
+Overall Plan Summary by LLM: {}
+Plan Status: {:?}
+Tasks executed:
+",
             plan.id, plan.plan_summary, plan.status
         ));
 
-        // To include task results in summary, you would need to store them during execution.
-        // Assuming for now we can just list the tasks and their final status.
-        // A more complete solution would store task results in the Plan struct or a related structure.
-
-        // Sort tasks by their original definition order for a consistent summary
         let  _sorted_tasks_defs = plan.tasks_definition.clone();
-        // Assuming TaskDefinition has a way to maintain original order or we use the order from plan.tasks_definition directly
-        // For now, let's just iterate through tasks_definition as is.
 
         for task_def in &plan.tasks_definition {
-            // In a real implementation, you would fetch the execution result for this task_def.id
-            // For this functional version, we'll just show the status and description.
 
             let task_execution_status = match plan.status {
-                PlanStatus::Completed => TaskState::Completed, // Assuming all are completed if plan is completed
-                PlanStatus::Failed(_) => TaskState::Failed, // Simplified: tasks might not have individual failure reasons here
-                _ => TaskState::Working, // Or determine individual task status if stored
+                PlanStatus::Completed => TaskState::Completed, 
+                PlanStatus::Failed(_) => TaskState::Failed, 
+                _ => TaskState::Working, 
             };
 
             context.push_str(&format!(
-                "- Task ID: {}, Description: {}, Status: {:?}, Skill: {:?}",
+                "- Task ID: {}, Description: {}, Status: {:?}, Skill: {:?}, Tool: {:?}",
                 task_def.id,
                 task_def.description,
                 task_execution_status,
-                task_def.skill_to_use.as_deref().unwrap_or("N/A")
+                task_def.skill_to_use.as_deref().unwrap_or("N/A"),
+                task_def.tool_to_use.as_deref().unwrap_or("N/A")
             ));
 
-            // Include the task output if available
             if let Some(output) = plan.task_results.get(&task_def.id) {
-               // context.push_str(&format!(", Output: \"{}\"", output.replace('\n', " "))); // Replace newlines for cleaner output
-                context.push_str(&format!(", Output: \"{}\"", output)); // Replace newlines for cleaner output
+                context.push_str(&format!(", Output: "{}"", output)); 
             }
         }
 
@@ -558,14 +592,8 @@ impl PlannerAgent {
             context.push_str("The plan is still in progress. Provide a brief update based on the plan summary and tasks.");
         }
 
-        ////////////////////////////////////////////////////////////////////////////////////////////////
-        // Generate answer based on Context
-        ////////////////////////////////////////////////////////////////////////////////////////////////
-        
         let summary = self.llm_interaction.call_api_simple_v2("user".to_string(),context.to_string()).await?.expect("Improper Summary");
         
-        ////////////////////////////////////////////////////////////////////////////////////////////////
-
         plan.final_summary = Some(summary.clone());
         plan.updated_at = Some(Utc::now());
         debug!("PlannerAgent: Summary generated.");

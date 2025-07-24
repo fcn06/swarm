@@ -3,7 +3,7 @@ use configuration::AgentA2aConfig;
 
 use clap::Parser;
 
-use tracing::{info, error, Level};
+use tracing::{ Level};
 use tracing_subscriber::{
     prelude::*,
     fmt,

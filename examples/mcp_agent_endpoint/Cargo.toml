@@ -1,5 +1,5 @@
 [package]
-name = "mcp_agent_endpoint"
+name = "example_mcp_agent_endpoint"
 version = "0.1.0"
 edition = "2024"
 
@@ -28,12 +28,6 @@ toml = { workspace = true }
 clap = { workspace = true }
 
 
-[profile.dev]
-opt-level = 0
-
-[profile.release]
-opt-level = 3
-
 [[example]]
 name = "mcp_agent_endpoint"
-path = "src/main.rs"
+path = "src/mcp_agent_endpoint.rs"

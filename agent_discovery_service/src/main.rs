@@ -1,35 +1,81 @@
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
-use serde::{Deserialize, Serialize};
-use warp::Filter;
+use axum::{
+    Json,
+    Router,
+    extract::{State,Form},
+    http::StatusCode,
+    response::{IntoResponse, Response,Html}, // Use IntoResponse for better error handling
+    routing::{get, post},
+};
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
-struct AgentInfo {
-    id: String,
-    address: String,
-    skills: Vec<String>,
-}
+use a2a_rs::domain::AgentCard;
+
+use serde::{Deserialize, Serialize};
+
+
+// https://github.com/tokio-rs/axum/blob/main/examples/form/src/main.rs
 
 #[tokio::main]
-async fn main() {
-    let agents: Arc<Mutex<HashMap<String, AgentInfo>>> = Arc::new(Mutex::new(HashMap::new()));
+async fn main() -> anyhow::Result<()> {
+    let agents: Arc<Mutex<HashMap<String, AgentCard>>> = Arc::new(Mutex::new(HashMap::new()));
 
-    let agents_filter = warp::any().map(move || Arc::clone(&agents));
+    // Build our application with a route
+    let app = Router::new()
+        .route("/register", post(register_agent))
+        .route("/agents", get(list_agents))
+        .with_state(agents);
 
-    let register_agent = warp::post()
-        .and(warp::path("register"))
-        .and(warp::body::json())
-        .and(agents_filter.clone())
-        .map(|agent_info: AgentInfo, agents: Arc<Mutex<HashMap<String, AgentInfo>>>| {
-            let mut agents = agents.lock().unwrap();
-            println!("Registering agent: {:?}", agent_info);
-            agents.insert(agent_info.id.clone(), agent_info);
-            warp::reply::json(&"Agent registered successfully")
-        });
+    // Run our app with hyper
+        let listener = tokio::net::TcpListener::bind("0.0.0.0:4000").await?;
+        println!("Server started");
+        axum::serve(listener, app).await?;
+        Ok(())
 
-    let routes = register_agent;
+}
 
-    println!("Discovery service started on 127.0.0.1:3030");
-    warp::serve(routes).run(([127, 0, 0, 1], 3030)).await;
+async fn register_agent(
+    State(agents): State<Arc<Mutex<HashMap<String, AgentCard>>>>,
+    Json(agent_card): Json<AgentCard>,
+) -> Json<String> {
+    let mut agents = agents.lock().unwrap();
+    //println!("Registering agent: {}", agent_card.name);
+    agents.insert(agent_card.name.clone(), agent_card);
+    Json("Agent registered successfully".to_string())
+}
+
+async fn list_agents(
+    State(agents): State<Arc<Mutex<HashMap<String, AgentCard>>>>,
+) -> Json<Vec<AgentCard>> {
+    let agents = agents.lock().unwrap();
+    let agent_card_list: Vec<AgentCard> = agents.values().cloned().collect();
+    println!("Listing agents: {:?}", agent_card_list);
+    Json(agent_card_list)
+}
+
+async fn show_form() -> Html<&'static str> {
+    Html(
+        r#"
+        <!doctype html>
+        <html>
+            <head></head>
+            <body>
+                <form action="/" method="post">
+                    <label for="name">
+                        Enter your name:
+                        <input type="text" name="name">
+                    </label>
+
+                    <label>
+                        Enter your email:
+                        <input type="text" name="email">
+                    </label>
+
+                    <input type="submit" value="Subscribe!">
+                </form>
+            </body>
+        </html>
+        "#,
+    )
 }

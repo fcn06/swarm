@@ -8,8 +8,17 @@
 agent_a2a_name="Generic Agent"
 agent_a2a_host="127.0.0.1"
 agent_a2a_http_port="8080"
+
 # Future use. Websocket is not supported
 agent_a2a_ws_port="8081"
+
+#################################################################
+# Future use : It would make sense to have a discovery service
+# so that planner agent can dynamically discover agents to
+# connect to
+#################################################################
+agent_a2a_discovery_url="http://127.0.0.1:4000"
+
 
 #################################################################
 # Purpose and high level skills

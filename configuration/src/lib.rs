@@ -13,6 +13,7 @@ pub struct AgentA2aConfig {
     pub agent_a2a_host: String,
     pub agent_a2a_http_port: String,
     pub agent_a2a_ws_port: String,
+    pub agent_a2a_discovery_url: Option<String>,
     pub agent_a2a_system_prompt: Option<String>,
     pub agent_a2a_version: String,
     pub agent_a2a_description: String,
@@ -109,6 +110,7 @@ pub struct AgentPlannerConfig {
     pub agent_planner_llm_url: String,
     pub agent_planner_discovery_url: Option<String>, // future use
     pub agent_planner_agents_references:Vec<SimpleAgentReference>,
+    //pub agent_planner_mcp_config_path: Option<String>,
 }
 
 impl AgentPlannerConfig {
@@ -118,6 +120,37 @@ impl AgentPlannerConfig {
         let config_content = fs::read_to_string(path)?;
         let config: AgentPlannerConfig = toml::from_str(&config_content)?;
         //debug!("Loaded agent configuration: {:?}", config);
+        Ok(config)
+    }
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct AgentBidirectionalConfig {
+    pub agent_bidirectional_name: String,
+    pub agent_bidirectional_host: String,
+    pub agent_bidirectional_http_port: String,
+    pub agent_bidirectional_ws_port: String,
+    pub agent_bidirectional_discovery_url: Option<String>,
+    pub agent_bidirectional_system_prompt: Option<String>,
+    pub agent_bidirectional_version: String,
+    pub agent_bidirectional_description: String,
+    pub agent_bidirectional_skill_id: String,
+    pub agent_bidirectional_skill_name: String,
+    pub agent_bidirectional_skill_description: String,
+    pub agent_bidirectional_model_id: String,
+    pub agent_bidirectional_llm_url: String,
+    pub agent_bidirectional_mcp_config_path: Option<String>,
+    pub agent_bidirectional_planner_config_path: Option<String>,
+    pub agent_bidirectional_doc_url: Option<String>,
+    pub agent_bidirectional_tags: Vec<String>,
+    pub agent_bidirectional_examples: Vec<String>,
+}
+
+impl AgentBidirectionalConfig {
+    /// Loads agent configuration from a TOML file.
+    pub fn load_agent_config(path: &str) -> anyhow::Result<AgentBidirectionalConfig> {
+        let config_content = fs::read_to_string(path)?;
+        let config: AgentBidirectionalConfig = toml::from_str(&config_content)?;
         Ok(config)
     }
 }

@@ -8,13 +8,13 @@ edition = "2024"
 crate-type = ["rlib"]
 
 [dependencies]
-#reqwest = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 anyhow = { workspace = true }
 
 toml = { workspace = true }
 
-
+reqwest = { workspace = true }
+a2a-rs= { workspace = true }
 
 

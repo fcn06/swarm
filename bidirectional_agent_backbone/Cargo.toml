@@ -5,6 +5,8 @@ edition = "2021"
 
 [dependencies]
 a2a-rs= { workspace = true }
+rmcp = { workspace = true }
+
 # Internal crates
 mcp_agent_backbone = { workspace = true }
 configuration = { workspace = true }

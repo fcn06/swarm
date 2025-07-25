@@ -1,3 +1,8 @@
+use anyhow::Result;
+use llm_api::chat::Message;
+
+//use serde_json::Value;
+
 //use log::{debug, error, info,trace, warn};
 use tracing::{info, error,warn,trace, debug};
 use std::env;
@@ -10,7 +15,8 @@ use rmcp::RoleClient;
 use rmcp::model::InitializeRequestParam;
 use rmcp::service::RunningService;
 
-use llm_api::chat::{ChatLlmInteraction, ChatCompletionRequest, ChatCompletionResponse, Choice, Message, ToolChoice};
+use llm_api::chat::{ChatLlmInteraction, ChatCompletionRequest, ChatCompletionResponse, Choice, ToolChoice};
+
 use llm_api::tools::Tool;
 
 use configuration::AgentMcpConfig;
@@ -80,6 +86,11 @@ impl McpAgent {
             }
 
         )
+    }
+
+    /// Returns a clone of the available tools.
+    pub fn get_available_tools(&self) -> Vec<Tool> {
+        self.llm_all_tool.clone()
     }
 
     /// Push a new message to be processed by the mcp agent
@@ -295,4 +306,11 @@ impl McpAgent {
         self.execute_loop().await
     }
 
+    pub async fn submit_user_text(&self, user_text: String) -> Result<String> {
+        // This is a placeholder implementation.
+        // In a real scenario, this would involve a more complex interaction
+        // with the LLM and tool execution based on the user_text.
+        info!("MCP Agent received user text: {}", user_text);
+        Ok(format!("MCP agent processed: {}", user_text))
+    }
 }

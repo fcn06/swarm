@@ -3,7 +3,6 @@ use configuration::AgentBidirectionalConfig;
 
 use tracing::{ Level};
 use tracing_subscriber::{
-    prelude::*,
     fmt,
     layer::Layer,
     Registry, filter
@@ -15,7 +14,7 @@ mod a2a_agent_logic;
 mod a2a_plan;
 
 #[tokio::main]
-async fn main() -> Result<()> {
+async fn main() -> Result<(), Box<dyn std::error::Error>>{
     // set tracing
     let subscriber = FmtSubscriber::builder()
         .with_max_level(Level::INFO)
@@ -28,7 +27,7 @@ async fn main() -> Result<()> {
 
     // Create and start the server
     let server = a2a_agent_logic::server::BidirectionalAgentServer::new(agent_bidirectional_config).await?;
-    server.start_all().await?;
+    server.start_all().await;
 
     Ok(())
 }

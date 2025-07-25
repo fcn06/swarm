@@ -6,9 +6,7 @@ use uuid::Uuid;
 // Assuming llm_api crate is available and has these
 use llm_api::chat::{ChatLlmInteraction};
 
-use crate::a2a_plan::plan_definition::{
-     ExecutionResult, Plan, PlanResponse, PlanStatus, 
-};
+use crate::a2a_plan::plan_definition::{ExecutionResult, Plan, PlanResponse, PlanStatus};
 use crate::a2a_plan::plan_execution::A2AClient;
 
 use a2a_rs::domain::{Message, Part, TaskState, AgentCard};
@@ -19,6 +17,8 @@ use mcp_agent_backbone::mcp_agent_logic::agent::McpAgent;
 
 use llm_api::tools::Tool;
 use configuration::SimpleAgentReference;
+
+use rmcp::model::{CallToolRequestParam, CallToolResult, Annotated, RawContent};
 
 use tracing::{error,warn,info,debug,trace};
 
@@ -33,7 +33,7 @@ pub struct PlannerAgent {
 }
 
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone)]
 pub struct PlannerAgentDefinition {
     pub agent_configs: Vec<SimpleAgentReference>, // Info to connect to agents
 }
@@ -160,14 +160,14 @@ impl PlannerAgent {
             description.push_str("
 Available MCP Tools: 
 ");
-            let tools = mcp.get_available_tools().await;
+            let tools = mcp.get_available_tools();
             if tools.is_empty() {
                 description.push_str("- No MCP tools available.
 ");
             } else {
                 for tool in tools {
                     description.push_str(&format!("* Tool Name: '{}' -- Description: '{}' -- Arguments: '{}'
-", tool.name, tool.description, tool.parameters_json_schema));
+", tool.function.name, tool.function.description, serde_json::to_string(&tool.function.parameters).unwrap_or_else(|_| "{}".to_string())));
                 }
             }
         }
@@ -291,7 +291,7 @@ Available MCP Tools:
                   \"description\": \"Search the web for information about the user request.\",
                   \"skill_to_use\": \"skill_search_web\",
                   \"tool_to_use\": null,
-                  \"assigned_agent_id_preference\": \"agent_search\",
+                  \"assigned_agent_id_preference\": null,
                   \"tool_parameters\": null,
                   \"dependencies\": [],
                   \"expected_outcome\": \"Relevant search results.\"
@@ -373,7 +373,7 @@ Available MCP Tools:
 
         let mut completed_tasks: HashSet<String> = HashSet::new();
         let mut task_queue: VecDeque<String> = VecDeque::new(); // Tasks ready to execute
-        let  _executing_plans: HashMap<String, ExecutionPlan> = HashMap::new();
+        let  _executing_plans: HashMap<String, String> = HashMap::new();
 
         // Initial population of the queue with tasks that have no dependencies
         for task_def in &plan.tasks_definition {
@@ -448,7 +448,24 @@ Available MCP Tools:
                 } else if let Some(tool_name) = &task_def.tool_to_use {
                     if let Some(mcp) = &self.mcp_agent {
                         let tool_parameters = task_def.tool_parameters.clone().unwrap_or_default();
-                        task_result = mcp.call_tool(tool_name, tool_parameters).await;
+                        let arguments_map = if tool_parameters.is_object() {
+                            Some(tool_parameters.as_object().unwrap().clone())
+                        } else {
+                            None
+                        };
+                        let call_tool_request_param = CallToolRequestParam { 
+                            name: tool_name.to_string().into(), 
+                            arguments: arguments_map,
+                        };
+                        task_result = mcp.mcp_client.call_tool(call_tool_request_param).await.map(|r: CallToolResult| {
+                            r.content.into_iter().filter_map(|annotated_content| {
+                                if let RawContent::Text(text) = annotated_content.raw {
+                                    Some(text)
+                                } else {
+                                    None
+                                }
+                            }).collect::<Vec<String>>().join("")
+                        }).map_err(|e| anyhow::anyhow!(e));
                     } else {
                         task_result = Err(anyhow::anyhow!(
                             "MCP agent not initialized, but tool '{}' was requested for task '{}'",
@@ -581,7 +598,7 @@ Tasks executed:
             ));
 
             if let Some(output) = plan.task_results.get(&task_def.id) {
-                context.push_str(&format!(", Output: \"{}\"", output)); 
+                context.push_str(&format!(", Output: "{}"", output)); 
             }
         }
 

@@ -1,7 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-//use log::{debug, info};
 use std::fs; // Assuming you might want logging here too
+
+use a2a_rs::domain::AgentCard;
 
 //////////////////////////////////////////////////////////////////////
 // NEW VERSION OF AGENT CONFIG
@@ -68,37 +69,6 @@ impl AgentMcpConfig {
 }
 
 
-///////////////////////////////////////////////////////////////
-// SIMPLE AGENT REFERENCE IMPLEMENTATION
-///////////////////////////////////////////////////////////////
-
-// Agent info provider implementation
-//#[derive(Clone)]
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SimpleAgentReference {
-    pub name: String,
-    pub url: String,
-    pub is_default:Option<bool>,
-}
-
-impl SimpleAgentReference {
-    pub fn new(name: String, url: String) -> anyhow::Result<SimpleAgentReference> {
-        // Create the agent card
-        Ok(SimpleAgentReference {
-            name: name,
-            url: url,
-            is_default:None,
-        })
-    }
-}
-
-impl SimpleAgentReference {
-    pub async fn get_agent_reference(&self) -> anyhow::Result<SimpleAgentReference> {
-        Ok(self.clone())
-    }
-}
-
-
 #[derive(Deserialize, Debug, Clone)]
 pub struct AgentPlannerConfig {
     pub agent_planner_name: String,
@@ -110,7 +80,7 @@ pub struct AgentPlannerConfig {
     pub agent_planner_llm_url: String,
     pub agent_planner_discovery_url: Option<String>, // future use
     pub agent_planner_agents_references:Vec<SimpleAgentReference>,
-    //pub agent_planner_mcp_config_path: Option<String>,
+    pub agent_planner_mcp_config_path: Option<String>,
 }
 
 impl AgentPlannerConfig {
@@ -153,4 +123,120 @@ impl AgentBidirectionalConfig {
         let config: AgentBidirectionalConfig = toml::from_str(&config_content)?;
         Ok(config)
     }
+}
+
+///////////////////////////////////////////////////////////////
+// SIMPLE AGENT REFERENCE IMPLEMENTATION
+///////////////////////////////////////////////////////////////
+
+// Agent info provider implementation
+//#[derive(Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SimpleAgentReference {
+    pub name: String,
+    pub url: String,
+    pub is_default:Option<bool>,
+}
+
+impl SimpleAgentReference {
+    pub fn new(name: String, url: String) -> anyhow::Result<SimpleAgentReference> {
+        // Create the agent card
+        Ok(SimpleAgentReference {
+            name: name,
+            url: url,
+            is_default:None,
+        })
+    }
+}
+
+impl SimpleAgentReference {
+    pub async fn get_agent_reference(&self) -> anyhow::Result<SimpleAgentReference> {
+        Ok(self.clone())
+    }
+}
+
+///////////////////////////////////////////////////////////////
+// INTERACTION WITH DISCOVERY SERVICE
+///////////////////////////////////////////////////////////////
+
+
+pub trait DiscoveryServiceInteraction {
+    //async fn register(&self, agent_card:AgentCard) -> Result<(), Box<dyn std::error::Error>> ;
+    fn register(&self, agent_card:AgentCard) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> + Send ;
+}
+
+
+impl DiscoveryServiceInteraction for AgentA2aConfig {
+    /// Start both HTTP and WebSocket servers (simplified for now)
+    async fn register(&self, agent_card:AgentCard) -> Result<(), Box<dyn std::error::Error>> {
+        println!("🚀 Registering Agent ...");
+
+        let discovery_url=self.agent_a2a_discovery_url.clone().expect("NO DISCOVERY URL");
+
+        let register_uri=format!("{}/register",discovery_url);
+
+        let agent_registered = reqwest::Client::new()
+        .post(register_uri)
+        .json(&agent_card)
+        .send()
+        .await;
+
+        match agent_registered {
+            Ok(response) => { println!("Successfully registered server agent: {:?}", response);}
+            Err(e) => {
+                if e.is_connect() {
+                    eprintln!("Connection error: The target server is not up or reachable. Details: {:?}", e);
+                } else if e.is_timeout() {
+                    eprintln!("Request timed out: {:?}", e);
+                } else if e.is_status() {
+                    // Handle HTTP status errors (e.g., 404, 500)
+                    eprintln!("HTTP status error: {:?}", e.status());
+                } else {
+                    eprintln!("An unexpected reqwest error occurred: {:?}", e);
+                }
+                //return Err(e);
+            }
+        }
+
+        Ok(())
+    }
+
+}
+
+
+impl DiscoveryServiceInteraction for AgentPlannerConfig {
+    /// Start both HTTP and WebSocket servers (simplified for now)
+    async fn register(&self, agent_card:AgentCard) -> Result<(), Box<dyn std::error::Error>> {
+        println!("🚀 Registering Agent ...");
+
+        let discovery_url=self.agent_planner_discovery_url.clone().expect("NO DISCOVERY URL");
+
+        let register_uri=format!("{}/register",discovery_url);
+
+        let agent_registered = reqwest::Client::new()
+        .post(register_uri)
+        .json(&agent_card)
+        .send()
+        .await;
+
+        match agent_registered {
+            Ok(response) => { println!("Successfully registered server agent: {:?}", response);}
+            Err(e) => {
+                if e.is_connect() {
+                    eprintln!("Connection error: The target server is not up or reachable. Details: {:?}", e);
+                } else if e.is_timeout() {
+                    eprintln!("Request timed out: {:?}", e);
+                } else if e.is_status() {
+                    // Handle HTTP status errors (e.g., 404, 500)
+                    eprintln!("HTTP status error: {:?}", e.status());
+                } else {
+                    eprintln!("An unexpected reqwest error occurred: {:?}", e);
+                }
+                //return Err(e);
+            }
+        }
+
+        Ok(())
+    }
+
 }

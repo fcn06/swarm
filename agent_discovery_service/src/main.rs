@@ -12,7 +12,7 @@ use axum::{
 
 use a2a_rs::domain::AgentCard;
 
-use serde::{Deserialize, Serialize};
+
 
 
 // https://github.com/tokio-rs/axum/blob/main/examples/form/src/main.rs
@@ -54,6 +54,7 @@ async fn list_agents(
     Json(agent_card_list)
 }
 
+#[allow(dead_code)]
 async fn show_form() -> Html<&'static str> {
     Html(
         r#"

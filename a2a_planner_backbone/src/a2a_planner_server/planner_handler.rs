@@ -84,7 +84,8 @@ impl SimplePlannerAgentHandler {
         &self.storage
     }
 
-    #[warn(dead_code)]
+    //#[warn(dead_code)]
+    #[allow(dead_code)]
     fn a2a_message_to_llm_message(&self, a2a_message: &Message) -> Result<Message_Llm, A2AError> {
         // Extract user query
         let user_query = a2a_message

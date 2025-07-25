@@ -160,7 +160,7 @@ impl BidirectionalAgentServer {
             Some(vec!["text".to_string(), "data".to_string()]),
         );
 
-        self.register(agent_info.get_agent_card().await?).await?;
+        //self.register(agent_info.get_agent_card().await?).await?;
 
         //////////////////////////////////////////////////////////////////
 
@@ -252,44 +252,6 @@ impl BidirectionalAgentServer {
         self.start_http().await
     }
 
-    /// Start both HTTP and WebSocket servers (simplified for now)
-    pub async fn register(&self, agent_card:AgentCard) -> Result<(), Box<dyn std::error::Error>> {
-        println!("🚀 Registering Agent ...");
-
-        let discovery_url=self.agent_bidirectional_config.agent_bidirectional_discovery_url.clone().expect("NO DISCOVERY URL");
-
-        let register_uri=format!("{}/register",discovery_url);
-
-        let agent_registered = reqwest::Client::new()
-        .post(register_uri)
-        .json(&agent_card)
-        .send()
-        .await;
-
-        match agent_registered {
-            Ok(response) => { println!("Successfully registered server agent: {:?}", response);}
-            Err(e) => {
-                if e.is_connect() {
-                    eprintln!("Connection error: The target server is not up or reachable. Details: {:?}", e);
-                } else if e.is_timeout() {
-                    eprintln!("Request timed out: {:?}", e);
-                } else if e.is_status() {
-                    // Handle HTTP status errors (e.g., 404, 500)
-                    eprintln!("HTTP status error: {:?}", e.status());
-                } else {
-                    eprintln!("An unexpected reqwest error occurred: {:?}", e);
-                }
-                //return Err(e);
-            }
-        }
-
-        Ok(())
-    }
-
-    /// Start both HTTP and WebSocket servers (simplified for now)
-    pub async fn list_registered_agents(&self) -> Result<(), Box<dyn std::error::Error>> {
-        println!("🚀 List Registered Agents ...");
-        Ok(())
-    }
+    
 
 }

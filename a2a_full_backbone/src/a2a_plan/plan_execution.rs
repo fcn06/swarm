@@ -1,17 +1,12 @@
-use anyhow::{anyhow, Result};
-use async_trait::async_trait;
-use url::Url;
-
 use a2a_rs::{
     HttpClient,
     domain::{ Message, Part,AgentSkill},
     services::AsyncA2AClient,
 };
-
-use tracing::{info,debug};
+use anyhow::Result;
 
 use std::sync::Arc;
-
+use tracing::{info,debug};
 
 /////////////////////////////////////////////////////////
 // Client to connect to a2a server

@@ -95,32 +95,32 @@ impl AgentPlannerConfig {
 }
 
 #[derive(Deserialize, Debug, Clone)]
-pub struct AgentBidirectionalConfig {
-    pub agent_bidirectional_name: String,
-    pub agent_bidirectional_host: String,
-    pub agent_bidirectional_http_port: String,
-    pub agent_bidirectional_ws_port: String,
-    pub agent_bidirectional_discovery_url: Option<String>,
-    pub agent_bidirectional_system_prompt: Option<String>,
-    pub agent_bidirectional_version: String,
-    pub agent_bidirectional_description: String,
-    pub agent_bidirectional_skill_id: String,
-    pub agent_bidirectional_skill_name: String,
-    pub agent_bidirectional_skill_description: String,
-    pub agent_bidirectional_model_id: String,
-    pub agent_bidirectional_llm_url: String,
-    pub agent_bidirectional_mcp_config_path: Option<String>,
-    pub agent_bidirectional_planner_config_path: Option<String>,
-    pub agent_bidirectional_doc_url: Option<String>,
-    pub agent_bidirectional_tags: Vec<String>,
-    pub agent_bidirectional_examples: Vec<String>,
+pub struct AgentFullConfig {
+    pub agent_full_name: String,
+    pub agent_full_host: String,
+    pub agent_full_http_port: String,
+    pub agent_full_ws_port: String,
+    pub agent_full_discovery_url: Option<String>,
+    pub agent_full_system_prompt: Option<String>,
+    pub agent_full_version: String,
+    pub agent_full_description: String,
+    pub agent_full_skill_id: String,
+    pub agent_full_skill_name: String,
+    pub agent_full_skill_description: String,
+    pub agent_full_model_id: String,
+    pub agent_full_llm_url: String,
+    pub agent_full_mcp_config_path: Option<String>,
+    pub agent_full_agents_references:Vec<SimpleAgentReference>,
+    pub agent_full_doc_url: Option<String>,
+    pub agent_full_tags: Vec<String>,
+    pub agent_full_examples: Vec<String>,
 }
 
-impl AgentBidirectionalConfig {
+impl AgentFullConfig {
     /// Loads agent configuration from a TOML file.
-    pub fn load_agent_config(path: &str) -> anyhow::Result<AgentBidirectionalConfig> {
+    pub fn load_agent_config(path: &str) -> anyhow::Result<AgentFullConfig> {
         let config_content = fs::read_to_string(path)?;
-        let config: AgentBidirectionalConfig = toml::from_str(&config_content)?;
+        let config: AgentFullConfig = toml::from_str(&config_content)?;
         Ok(config)
     }
 }
@@ -210,6 +210,44 @@ impl DiscoveryServiceInteraction for AgentPlannerConfig {
         println!("🚀 Registering Agent ...");
 
         let discovery_url=self.agent_planner_discovery_url.clone().expect("NO DISCOVERY URL");
+
+        let register_uri=format!("{}/register",discovery_url);
+
+        let agent_registered = reqwest::Client::new()
+        .post(register_uri)
+        .json(&agent_card)
+        .send()
+        .await;
+
+        match agent_registered {
+            Ok(response) => { println!("Successfully registered server agent: {:?}", response);}
+            Err(e) => {
+                if e.is_connect() {
+                    eprintln!("Connection error: The target server is not up or reachable. Details: {:?}", e);
+                } else if e.is_timeout() {
+                    eprintln!("Request timed out: {:?}", e);
+                } else if e.is_status() {
+                    // Handle HTTP status errors (e.g., 404, 500)
+                    eprintln!("HTTP status error: {:?}", e.status());
+                } else {
+                    eprintln!("An unexpected reqwest error occurred: {:?}", e);
+                }
+                //return Err(e);
+            }
+        }
+
+        Ok(())
+    }
+
+}
+
+
+impl DiscoveryServiceInteraction for AgentFullConfig {
+    /// Start both HTTP and WebSocket servers (simplified for now)
+    async fn register(&self, agent_card:AgentCard) -> Result<(), Box<dyn std::error::Error>> {
+        println!("🚀 Registering Agent ...");
+
+        let discovery_url=self.agent_full_discovery_url.clone().expect("NO DISCOVERY URL");
 
         let register_uri=format!("{}/register",discovery_url);
 

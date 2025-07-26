@@ -110,6 +110,19 @@ Now, let's fire up some agents\!
 ```
   *Remember to replace "What is the weather in Boston?" with your own query\!*
 
+* Full Agent Server .(Integrated agent, still WIP):  
+  Ask the Planner to achieve a goal by providing a user query.  
+
+```bash
+  # Run compiled binary.
+  # LLM_FULL_API_KEY needs to be defined upfront.
+  # It needs to be compatible with llm url defined in config file for planner agent (Gemini, Groq or whatever else that you use) 
+  # You can define log level as well. Default is warn
+  ./target/release/full_agent_server
+```
+
+
+
 
 ## **Under the Hood: Swarm.rs Crate Breakdown**
 
@@ -117,6 +130,7 @@ The swarm project is composed of several specialized sub-crates:
 
 * `a2a_agent_backbone`: The core of the framework. Implement an A2A agent server that can if needed incorporate MCP runtime for external interactions. It can be connected to its own LLM 
 * `a2a_planner_backbone`: The brain for the A2A Planner. It connects to declared A2A agents, understands their skills, creates a plan, and executes it to achieve your goals. Available as a standalone agent, as well as an A2A agent server. It can be connected to its own LLM 
+* `a2a_full_backbone`: An agent that can connect to other agents AND also use tools directly. It connects to declared A2A agents, understands their skills, connect to MCP server, and understand its tools, then  creates a plan, and executes it to achieve your goals. Available as a standalone agent, as well as an A2A agent server. It can be connected to its own LLM 
 * `configuration`: Manages all your Swarm.rs configuration files.  
 * `llm_api`: Provides a convenient interface for interacting with various Large Language Models via an OpenAI-compatible API.  
 * `mcp_agent_backbone`: A runtime to interact with MCP server. Designed to be integrated into an A2A agent, granting him capability to connect to external set of tools. The MCP runtime can be connected to its own LLM. Note: An external mcp\_server (like the illustrative project or Apify) is needed for these agents to function.  
@@ -131,7 +145,6 @@ Swarm.rs is a project born out of discovery and exploration\! While not producti
 
 We're continuously working on improvements, including:
 
-* Implementation of a Bi-Directional agent, that will be able to use his tools and also other available agents to fulfill its requests
 * Implementation of a simple UI for testing purpose, to interact with an a2a agent ( simple server  or planner server)
 * Refactoring: Continuously improving code clarity and maintainability.  
 * Unit Tests: Enhancing robustness and reliability.

@@ -16,10 +16,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /************************************************/ 
 
     // In our config simple a2a agent respond to port 8080
-    let client = HttpClient::new("http://localhost:8080".to_string());
+    //let client = HttpClient::new("http://localhost:8080".to_string());
     
     // In our config planner of planners respond to port 9080
-    //let client = HttpClient::new("http://localhost:9080".to_string());
+    let client = HttpClient::new("http://localhost:9080".to_string());
 
     /************************************************/
     /* First Task                                   */

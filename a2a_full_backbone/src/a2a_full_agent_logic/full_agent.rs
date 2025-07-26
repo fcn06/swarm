@@ -7,13 +7,15 @@ use uuid::Uuid;
 use llm_api::chat::{ChatLlmInteraction};
 
 use crate::a2a_plan::plan_definition::{
-    ExecutionPlan, ExecutionResult, Plan, PlanResponse, PlanStatus, 
+    ExecutionResult, Plan, PlanResponse, PlanStatus, 
 };
 use crate::a2a_plan::plan_execution::A2AClient;
 
 use mcp_agent_backbone::mcp_agent_logic::agent::McpAgent;
 
-use rmcp::model::{CallToolRequestParam,CallToolResult,RawContent};
+//use rmcp::model::{CallToolRequestParam,CallToolResult,RawContent};
+use rmcp::model::{CallToolRequestParam};
+
 
 use configuration::SimpleAgentReference;
 use configuration::AgentMcpConfig;
@@ -26,7 +28,7 @@ use configuration::AgentFullConfig;
 
 use tracing::{error,warn,info,debug,trace};
 
-use std::error::Error;
+//use std::error::Error;
 
 
 /// Agent that that can interact with other available agents, and also embed MCP runtime if needed
@@ -327,15 +329,10 @@ impl FullAgent {
                 Ok(data) => data,
                 Err(e) => {
                     warn!(
-                        "PlannerAgent: Failed to parse LLM plan response as JSON: {}",
-                        e
-                    );
+                        "PlannerAgent: Failed to parse LLM plan response as JSON: {}",e);
                     warn!("PlannerAgent: LLM Raw Response: {:?}", response_content);
                     bail!(
-                        "LLM returned invalid plan format: {:?}. Raw: {:?}",
-                        e,
-                        response_content
-                    );
+                        "LLM returned invalid plan format: {:?}. Raw: {:?}",e,response_content);
                 }
             };
 
@@ -353,9 +350,7 @@ impl FullAgent {
      // to be fine tuned and better tested
      async fn execute_plan(&mut self, plan: &mut Plan) -> Result<()> {
         trace!(
-            "FullAgent: Starting plan execution for request ID: {}",
-            plan.request_id
-        );
+            "FullAgent: Starting plan execution for request ID: {}",plan.request_id);
         plan.status = PlanStatus::InProgress;
         plan.updated_at = Some(Utc::now());
 
@@ -401,15 +396,11 @@ impl FullAgent {
                 // Construct task description with results of dependencies
                 let mut full_task_description = task_def.description.clone();
                 if !task_def.dependencies.is_empty() {
-                    full_task_description.push_str("Context from previous tasks:
-");
+                    full_task_description.push_str("Context from previous tasks:");
                     for dep_id in &task_def.dependencies {
                         if let Some(result) = plan.task_results.get(dep_id) {
                             full_task_description.push_str(&format!(
-                                "- Result of task '{}': {}
-",
-                                dep_id, result
-                            ));
+                                "- Result of task '{}': {}",dep_id, result));
                         }
                     }
                 }
@@ -427,10 +418,7 @@ impl FullAgent {
                         }
                         None => {
                             task_result = Err(anyhow::anyhow!(
-                                "No A2A agent found with skill '{}' for task '{}'",
-                                skill,
-                                task_id
-                            ));
+                                "No A2A agent found with skill '{}' for task '{}'",skill,task_id));
                         }
                     }
                 } else if let Some(tool_name) = &task_def.tool_to_use {
@@ -448,15 +436,10 @@ impl FullAgent {
                         task_result =
                             serde_json::to_string(&tool_result.content).map_err(|e| {
                                 anyhow::anyhow!(
-                                    "MCP deserialization error : '{}' ",
-                                    e)
-                            });
+                                    "MCP deserialization error : '{}' ",e)});
                     } else {
                         task_result = Err(anyhow::anyhow!(
-                            "MCP agent not initialized, but tool '{}' was requested for task '{}'",
-                            tool_name,
-                            task_id
-                        ));
+                            "MCP agent not initialized, but tool '{}' was requested for task '{}'",tool_name,task_id));
                     }
                 } else {
                     // Task requires no specific skill or tool, potentially an LLM reflection task
@@ -468,9 +451,7 @@ impl FullAgent {
                     Ok(result_content) => {
                         
                         debug!(
-                            "PlannerAgent: Task '{}' completed successfully. Result : {}",
-                            task_id, result_content
-                        );
+                            "PlannerAgent: Task '{}' completed successfully. Result : {}",task_id, result_content);
 
                         completed_tasks.insert(task_id.clone());
                         plan.task_results
@@ -510,9 +491,7 @@ impl FullAgent {
             plan.status = PlanStatus::Completed;
             plan.updated_at = Some(Utc::now());
             debug!(
-                "PlannerAgent: Plan execution completed successfully for request ID: {}",
-                plan.request_id
-            );
+                "PlannerAgent: Plan execution completed successfully for request ID: {}",plan.request_id);
         } else if matches!(plan.status, PlanStatus::InProgress) {
             let unfinished_tasks: Vec<_> = plan
                 .tasks_definition
@@ -521,9 +500,7 @@ impl FullAgent {
                 .map(|t| t.id.clone())
                 .collect();
             let failure_reason = format!(
-                "Plan execution finished, but not all tasks completed. Unfinished: {:?}",
-                unfinished_tasks
-            );
+                "Plan execution finished, but not all tasks completed. Unfinished: {:?}",unfinished_tasks);
             warn!("PlannerAgent: {}", failure_reason);
             plan.status = PlanStatus::Failed(failure_reason);
             plan.updated_at = Some(Utc::now());
@@ -541,10 +518,7 @@ impl FullAgent {
             // Access skills directly from the A2AClient struct
             if agent.has_skill(skill) {
                 // Use the has_skill method
-                info!(
-                    "FullAgent: Found agent '{}' with skill '{}'.",
-                    agent_id, skill
-                );
+                info!("FullAgent: Found agent '{}' with skill '{}'.",agent_id, skill);
                 return Some(agent);
             }
         }
@@ -575,14 +549,8 @@ impl FullAgent {
     async fn summarize_results(&self, plan: &mut Plan) -> Result<String> {
 
         info!("FullAgent: Summarizing results for plan ID: {}", plan.id);
-        let mut context = format!("User's initial request: {}
-", plan.user_query);
-        context.push_str(&format!(
-            "Plan ID: {}
-Overall Plan Summary by LLM: {}
-Plan Status: {:?}
-Tasks executed:
-",
+        let mut context = format!("User's initial request: {}", plan.user_query);
+        context.push_str(&format!("Plan ID: {}\nOverall Plan Summary by LLM: {}\nPlan Status: {:?}\nTasks executed:",
             plan.id, plan.plan_summary, plan.status
         ));
 
@@ -615,7 +583,6 @@ Tasks executed:
 
             // Include the task output if available
             if let Some(output) = plan.task_results.get(&task_def.id) {
-               // context.push_str(&format!(", Output: "{}"", output.replace('', " "))); // Replace newlines for cleaner output
                 context.push_str(&format!(", Output: \"{}\"", output)); 
             }
         }
@@ -666,7 +633,5 @@ Tasks executed:
             let execution_result = self.handle_user_request(user_req).await;
             execution_result
         }
-
-
 
 }

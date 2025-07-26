@@ -48,4 +48,4 @@ agent_a2a_llm_url="https://generativelanguage.googleapis.com/v1beta/openai/chat/
 # You can say the agent to include a MCP runtime agent
 # you just define the configuration file to use
 #################################################################
-agent_a2a_mcp_config_path="configuration/agent_mcp_config.toml"
+#agent_a2a_mcp_config_path="configuration/agent_mcp_config.toml"

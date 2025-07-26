@@ -54,7 +54,7 @@ agent_full_discovery_url="http://127.0.0.1:4000"
 # You can say the agent to include a MCP runtime agent
 # you just define the configuration file to use
 #################################################################
-agent_full_mcp_config_path="configuration/agent_mcp_config.toml"
+#agent_full_mcp_config_path="configuration/agent_mcp_config.toml"
 
 
 #################################################################

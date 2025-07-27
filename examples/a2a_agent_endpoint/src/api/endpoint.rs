@@ -22,6 +22,8 @@ use llm_api::chat::Message as Message_Llm;
 
 use crate::AppState;
 
+use std::fs;
+
 
 // Define a custom error type for API responses
 #[derive(Serialize)]
@@ -51,10 +53,14 @@ pub async fn run_endpoint(app_state: AppState, uri: String) -> Result<(), Box<dy
     Ok(())
 }
 
+
 // basic handler that responds with a static string
-async fn root() -> &'static str {
-    "Hello, World! Agent is running."
+async fn root() -> Result<impl IntoResponse, ApiError> {
+    // retrieves root html page. to be improved
+    let index_text= fs::read_to_string("./site/index.html").unwrap();
+    Ok(index_text)
 }
+
 
 // Updated handler to accept AppState
 async fn post_msg(

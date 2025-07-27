@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Very Simple Demo of a web UI calling a REST LLM endpoint</title>
+</head>
+<body>
+<h1>Very Simple demo of UI calling a REST endpoint to interact with A2A Agents</h1>
+
+<br>
+
+    <input type="text" id="text_query"  placeholder="Enter your query here" size="80" />
+    <button type="button" id="post_query"  >Post Query</button>
+    <button type="button" id="reset_all"  >Reset</button>
+
+<br>
+
+
+<section id="section"></section>
+<script>
+
+        document.getElementById("post_query").onclick=async() => {
+          await chat();
+        };
+
+        document.getElementById("reset_all").onclick= function() {
+          document.getElementById("section").innerHTML ="";
+        };
+
+
+     async  function chat() {
+
+        var urlLocalServer = 'http://127.0.0.1:3030/msg';
+        var text_area = document.getElementById("text_query");
+
+        var obj = {"role": "user", "content": text_area.value};
+
+        const myJSON = JSON.stringify(obj);
+
+        document.getElementById("section").innerHTML += "<br><br><b>" + text_area.value + "</b><br><br>";
+
+        text_area.value="";
+
+
+        const response = await fetch(urlLocalServer, {
+            method: "POST", // *GET, POST, PUT, DELETE, etc.
+            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body:myJSON,
+          });
+
+        const data = await response.json();
+        document.getElementById("section").innerHTML += data.content;
+     }
+
+
+</script>
+</body>
+</html>

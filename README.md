@@ -81,7 +81,8 @@ Now, let's fire up some agents\!
 
 ```bash
   # Run compiled binary.
-  # LLM_A2A_API_KEY (for normal agent) and LLM_MCP_API_KEY (for mcp embedded if any) needs to be defined upfront
+  # LLM_A2A_API_KEY (for normal agent)
+  # An LLM_MCP_API_KEY is the API Key to enable LLM for the MCP Runtime. It needs to be defined upfront if an MCP Runtime is embedded in the agent. it can be the same as LLM_A2A_API_KEY
   # They need to be compatible with llm_url defined in config file for a2a agents and mcp runtime(Gemini, Groq or whatever else that you use) 
   # You can define log level as well. Default Level is warn
   ./target/release/simple_agent_server --config-file "configuration/agent_a2a_config.toml" --log-level "warn"
@@ -94,7 +95,7 @@ Now, let's fire up some agents\!
 ```bash
   # Run compiled binary.
   # LLM_FULL_API_KEY needs to be defined upfront.
-  # LLM_MCP_API_KEY needs to be defined upfront if an MCP is embedded in Full agent
+   # An LLM_MCP_API_KEY is the API Key to enable LLM for the MCP Runtime. It needs to be defined upfront if an MCP Runtime is embedded in the full agent. it can be the same as LLM_FULL_API_KEY
   # It needs to be compatible with llm url defined in config file for planner agent (Gemini, Groq or whatever else that you use) 
   # You can define log level as well. Default is warn
   ./target/release/full_agent_server
@@ -113,7 +114,7 @@ The swarm project is composed of several specialized sub-crates:
 * `agent_discovery_service`: An optional http service. Each agent register to this service. It then exposes an endpoint to list all available agents.  
 * `examples`: Contain mulitple illustrative examples to interact with swarm
     * `mcp_agent_endpoint`: A testing utility for MCP runtime to receive and process requests through a MCP server. 
-    * `mcp_a2a_endpoint`: A testing utility to interact directly with an A2A agent through rest API
+    * `a2a_agent_endpoint`: A testing utility to interact directly with an A2A agent through rest API
     * `mcp_server`: A MCP server exposing three tools, mostly for testing purpose. 
 
 ## **Road Ahead & How You Can Contribute**
@@ -123,7 +124,7 @@ Swarm.rs is a project born out of discovery and exploration\! While not producti
 We're continuously working on improvements, including:
 
 * Implementation of a simple UI for testing purpose, to interact with an a2a agent ( simple server  or planner server)
-* Refactoring: Continuously improving code clarity and maintainability.  
+* Refactoring: Continuously improving code clarity and maintainability.  (Refactoring of simple A2A agent is next task, as well as removal of planner sub crate)
 * Unit Tests: Enhancing robustness and reliability.
 
 We're eager for your comments, suggestions, and contributions\! Whether it's a bug report, a feature idea, or a pull request, your input helps shape the future of Swarm.rs.

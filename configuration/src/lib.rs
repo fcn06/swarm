@@ -70,31 +70,6 @@ impl AgentMcpConfig {
 
 
 #[derive(Deserialize, Debug, Clone)]
-pub struct AgentPlannerConfig {
-    pub agent_planner_name: String,
-    pub agent_planner_host: String,
-    pub agent_planner_http_port: String,
-    pub agent_planner_ws_port: String,
-    pub agent_planner_system_prompt: String,
-    pub agent_planner_model_id: String,
-    pub agent_planner_llm_url: String,
-    pub agent_planner_discovery_url: Option<String>, // future use
-    pub agent_planner_agents_references:Vec<SimpleAgentReference>,
-    pub agent_planner_mcp_config_path: Option<String>,
-}
-
-impl AgentPlannerConfig {
-    /// Loads agent configuration from a TOML file.
-    pub fn load_agent_config(path: &str) -> anyhow::Result<AgentPlannerConfig> {
-        //info!("Loading agent configuration from: {}", path);
-        let config_content = fs::read_to_string(path)?;
-        let config: AgentPlannerConfig = toml::from_str(&config_content)?;
-        //debug!("Loaded agent configuration: {:?}", config);
-        Ok(config)
-    }
-}
-
-#[derive(Deserialize, Debug, Clone)]
 pub struct AgentFullConfig {
     pub agent_full_name: String,
     pub agent_full_host: String,
@@ -172,44 +147,6 @@ impl DiscoveryServiceInteraction for AgentA2aConfig {
         println!("🚀 Registering Agent ...");
 
         let discovery_url=self.agent_a2a_discovery_url.clone().expect("NO DISCOVERY URL");
-
-        let register_uri=format!("{}/register",discovery_url);
-
-        let agent_registered = reqwest::Client::new()
-        .post(register_uri)
-        .json(&agent_card)
-        .send()
-        .await;
-
-        match agent_registered {
-            Ok(response) => { println!("Successfully registered server agent: {:?}", response);}
-            Err(e) => {
-                if e.is_connect() {
-                    eprintln!("Connection error: The target server is not up or reachable. Details: {:?}", e);
-                } else if e.is_timeout() {
-                    eprintln!("Request timed out: {:?}", e);
-                } else if e.is_status() {
-                    // Handle HTTP status errors (e.g., 404, 500)
-                    eprintln!("HTTP status error: {:?}", e.status());
-                } else {
-                    eprintln!("An unexpected reqwest error occurred: {:?}", e);
-                }
-                //return Err(e);
-            }
-        }
-
-        Ok(())
-    }
-
-}
-
-
-impl DiscoveryServiceInteraction for AgentPlannerConfig {
-    /// Start both HTTP and WebSocket servers (simplified for now)
-    async fn register(&self, agent_card:AgentCard) -> Result<(), Box<dyn std::error::Error>> {
-        println!("🚀 Registering Agent ...");
-
-        let discovery_url=self.agent_planner_discovery_url.clone().expect("NO DISCOVERY URL");
 
         let register_uri=format!("{}/register",discovery_url);
 

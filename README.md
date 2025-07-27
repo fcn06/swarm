@@ -76,7 +76,7 @@ To enable MCP features, you need to have an MCP server up and running. There is 
 
 Now, let's fire up some agents\!
 
-* A2A Agent Server (your individual intelligent assistants):  
+* Simple STand Alone A2A Agent Server (your individual intelligent assistant).  
   You can run multiple A2A agents, each with its own configuration.  ( In the example, the a2a agent embeds a MCP agent )
 
 ```bash
@@ -123,8 +123,8 @@ Swarm.rs is a project born out of discovery and exploration\! While not producti
 
 We're continuously working on improvements, including:
 
-* Implementation of a simple UI for testing purpose, to interact with an a2a agent ( simple server  or planner server)
-* Refactoring: Continuously improving code clarity and maintainability.  (Refactoring of simple A2A agent is next task, as well as removal of planner sub crate)
+* Implementation of a simple UI for testing purpose, to interact with an a2a agent ( a2a agent or full agent )
+* Refactoring: Continuously improving code clarity and maintainability.  (Refactoring of simple A2A agent is next task)
 * Unit Tests: Enhancing robustness and reliability.
 
 We're eager for your comments, suggestions, and contributions\! Whether it's a bug report, a feature idea, or a pull request, your input helps shape the future of Swarm.rs.

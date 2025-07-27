@@ -1,13 +1,15 @@
+
 use axum::{
     Json,
     Router,
-    extract::State,
+    extract::{State,Form},
     http::StatusCode,
-    response::{IntoResponse, Response}, // Use IntoResponse for better error handling
+    response::{IntoResponse, Response,Html}, // Use IntoResponse for better error handling
     routing::{get, post},
 };
+
 use serde::{Deserialize, Serialize};
-use tracing::{info, error};
+use tracing::{info, error,debug};
 
 
 use a2a_rs::{
@@ -33,7 +35,9 @@ impl IntoResponse for ApiError {
     }
 }
 
-pub async fn run_endpoint(app_state: AppState) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn run_endpoint(app_state: AppState, uri: String) -> Result<(), Box<dyn std::error::Error>> {
+    
+    //let uri="0.0.0.0:3000".to_string();
     info!("Initializing API endpoint...");
 
     let app = Router::new()
@@ -41,8 +45,7 @@ pub async fn run_endpoint(app_state: AppState) -> Result<(), Box<dyn std::error:
         .route("/msg", post(post_msg))
         .with_state(app_state.clone()); // Pass the cloned AppState
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await?;
-    info!("API Listener bound to 0.0.0.0:3000");
+    let listener = tokio::net::TcpListener::bind(uri).await?;
     axum::serve(listener, app).await?;
 
     Ok(())
@@ -123,4 +126,31 @@ async fn extract_text_from_message( message: &Message) -> String {
         })
         .collect::<Vec<String>>()
         .join("")
+}
+
+#[allow(dead_code)]
+async fn show_form() -> Html<&'static str> {
+    Html(
+        r#"
+        <!doctype html>
+        <html>
+            <head></head>
+            <body>
+                <form action="/" method="post">
+                    <label for="name">
+                        Enter your name:
+                        <input type="text" name="name">
+                    </label>
+
+                    <label>
+                        Enter your email:
+                        <input type="text" name="email">
+                    </label>
+
+                    <input type="submit" value="Subscribe!">
+                </form>
+            </body>
+        </html>
+        "#,
+    )
 }

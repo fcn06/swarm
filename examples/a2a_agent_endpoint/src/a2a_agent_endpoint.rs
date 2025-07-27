@@ -30,6 +30,10 @@ struct Args {
     config_file: String,
     #[clap(long, default_value = "warn")]
     log_level: String,
+    #[clap(long, default_value = "0.0.0.0:3000")]
+    uri: String,
+    #[clap(long, default_value = "http://localhost:8080")]
+    a2a_uri: String,
 }
 
 
@@ -75,13 +79,15 @@ let args = Args::parse();
     /************************************************/ 
 
     /************************************************/
-    /* Loading A2A Config File                      */
+    /* Connecting to the A2A Agent                  */
     /************************************************/ 
 
-    let a2a_client = HttpClient::new("http://localhost:8080".to_string());
+    let a2a_uri=args.a2a_uri;
+    info!("A2A URI: {}", a2a_uri);
+    let a2a_client = HttpClient::new(a2a_uri);
 
     /************************************************/
-    /* A2A Agent Launched                           */
+    /* Connected to A2A agent                       */
     /************************************************/ 
 
     /************************************************/
@@ -93,9 +99,14 @@ let args = Args::parse();
         a2a_client:Arc::new(a2a_client),
     };
 
+
+    //let uri="0.0.0.0:3000".to_string();
+    let uri=args.uri;
+    info!("URI: {}", uri);
+
     // Run the endpoint, passing the combined state
     info!("Starting API endpoint...");
-    let _ = run_endpoint(app_state).await; // Pass AppState to run_endpoint
+    let _ = run_endpoint(app_state,uri).await; // Pass AppState to run_endpoint
 
     /************************************************/
     /* Endpoint launched                            */

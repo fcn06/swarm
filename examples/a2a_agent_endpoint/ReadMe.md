@@ -1,21 +1,16 @@
-MCP Agent Endpoint to interact directly with MCP runtime
+A2A Agent Endpoint to interact directly with an A2A Agent
 
 To compile it
 
 ```bash
-cargo build --release --example mcp_agent_endpoint
+cargo build --release --example a2a_agent_endpoint
 ```
 
 To run it you need do the following things : 
 
-Declare API key for LLM server that will manage your tools
-```bash
-export LLM_MCP_API_KEY="<YOUR-MCP-API-KEY>"
-```
-
 Then run the server :
 ```bash
-./target/release/examples/mcp_agent_endpoint &
+./target/release/examples/a2a_agent_endpoint &
 ```
 
 Here is an example call to this REST Endpoint :

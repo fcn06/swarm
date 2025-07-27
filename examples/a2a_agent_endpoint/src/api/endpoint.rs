@@ -58,48 +58,69 @@ async fn post_msg(
     State(state): State<AppState>, // Extract the AppState
     Json(payload): Json<Message_Llm>,
 ) -> Result<impl IntoResponse, ApiError> {
+    
     // Return Result for error handling
-    info!("Received message: {:?}", payload);
+    debug!("Received message: {:?}", payload);
 
     let a2a_client = state.a2a_client.clone();
 
-    let task_id = format!("task-{}", uuid::Uuid::new_v4());
-
+    // retrieving the message from user query
+    // Sample call : 
+    // curl -d '{"role":"user", "content":"What are the details of customer_id 1234 ?"}' -H "Content-Type: application/json" -X POST http://localhost:3000/msg
     let message_id = uuid::Uuid::new_v4().to_string();
-
-    // todo:to be modified to pass the exact query
     let message = Message::user_text(
-        "What is the weather like in Boston ?".to_string(),
+        payload.content.unwrap(),
         message_id,
     );
 
     // Send a task message
-    println!("Sending message to task...");
+    debug!("Sending message to task...");
+    let task_id = format!("task-{}", uuid::Uuid::new_v4());
     let task = a2a_client
         .send_task_message(&task_id, &message, None, Some(50))
-        .await.unwrap();
-    println!("Got response with status: {:?}", task.status.state);
+        .await
+        .unwrap();
+    
+
+    debug!("Got response with status: {:?}", task.status.state);
 
     if let Some(response_message) = task.status.message {
-        println!("Agent response:");
-        for part in response_message.parts {
-            match part {
-                Part::Text { text, .. } => println!("  {}", text),
-                _ => println!("  [Non-text content]"),
-            }
-        }
+        
+        let assistant_response=extract_text_from_message(&response_message).await;
+
+        Ok((
+            StatusCode::OK,
+            Json(Message_Llm {
+                // Using OK instead of CREATED
+                role: "assistant".to_string(), // Use config for role
+                content: Some(assistant_response),
+                tool_call_id: None,
+                tool_calls:None
+            }),
+        ))
+
+    } else {
+        error!("No response message received");
+        Err(ApiError {
+            message: "No response message received".to_string(),
+        })
     }
 
-    Ok((
-        StatusCode::OK,
-        Json(Message_Llm {
-            // Using OK instead of CREATED
-            role: "assistant".to_string(), // Use config for role
-            content: Some("Done".to_string()),
-            tool_call_id: None,
-            tool_calls:None
-        }),
-    ))
-
    
+}
+
+// Helper function to extract text from a Message
+async fn extract_text_from_message( message: &Message) -> String {
+    message
+        .parts
+        .iter()
+        .filter_map(|part| {
+            if let Part::Text { text, metadata: _ } = part {
+                Some(text.to_string())
+            } else {
+                None
+            }
+        })
+        .collect::<Vec<String>>()
+        .join("")
 }

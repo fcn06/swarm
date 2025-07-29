@@ -8,7 +8,7 @@ Whether you're a Rust enthusiast, an AI developer, or just curious about multi-a
 
 ## **🚀 Getting Started & Prerequisites**
 
-Ready to dive in? Here's how to get your first Swarm.rs components up and running.
+Ready to dive in? Here's how to get your first Swarm components up and running.
 
 **1. Install Rust:** If you don't have Rust installed, follow the instructions on the [official Rust website](https://www.rust-lang.org/tools/install).
 
@@ -60,7 +60,29 @@ The `configuration` directory is your go-to for customizing agent behavior. Here
 
 ## **🚀 Launching Your Agents**
 
-Let's fire up some agents! Remember to set the required API key environment variables (e.g., `LLM_A2A_API_KEY`, `LLM_FULL_API_KEY`, `LLM_MCP_API_KEY`) before running the commands.
+Getting your Swarm agents up and running is straightforward. We highly recommend using the companion `swarm_launcher` project for a streamlined experience, especially for multi-agent setups.
+
+### **✨ Option 1: Simplified Launch with `swarm_launcher` (Recommended)**
+
+`swarm_launcher` provides easy-to-use scripts and configuration examples to quickly deploy and orchestrate your Swarm agents, simplifying environment variable management and setup.
+
+**Get started with `swarm_launcher`:** [https://github.com/fcn06/swarm_launcher](https://github.com/fcn06/swarm_launcher)
+
+**Quick Example with `swarm_launcher`:**
+(Assuming you have `swarm_launcher` cloned and built from its repository)
+
+```bash
+# Navigate to your swarm_launcher directory
+cd path/to/swarm_launcher
+
+# Example: Launch a basic A2A agent (check swarm_launcher's README for available scenarios)
+./script_execution.sh --scenario simple_a2a_agent
+```
+*(Note: Refer to the `swarm_launcher` repository for detailed setup and scenario instructions.)*
+
+### **⚙️ Option 2: Manual Launching**
+
+For those who prefer direct control or specific debugging, here are the commands to manually launch individual agents. Remember to set the required API key environment variables (e.g., `LLM_A2A_API_KEY`, `LLM_FULL_API_KEY`, `LLM_MCP_API_KEY`) *before* running these commands.
 
 *   **Simple Standalone A2A Agent Server:** Your individual intelligent assistant. You can run multiple A2A agents, each with its own configuration. (The example A2A agent embeds an MCP agent.)
 
@@ -90,7 +112,7 @@ The Swarm project is composed of several specialized sub-crates, each serving a 
 
 *   `a2a_agent_backbone`: Provides the foundational code for a simple A2A agent. It can incorporate an MCP runtime for external interactions and connect to its own LLM.
 *   `a2a_full_backbone`: The core of the orchestrating Full Agent. It connects to declared A2A agents and an MCP server, understands their skills and tools, creates, and executes plans to achieve your goals. It also connects to its own LLM.
-*   `configuration`: Manages all Swarm.rs configuration files, making it easy to customize agent behavior.
+*   `configuration`: Manages all Swarm configuration files, making it easy to customize agent behavior.
 *   `llm_api`: Offers a convenient interface for interacting with various Large Language Models via an OpenAI-compatible API.
 *   `mcp_agent_backbone`: A runtime designed to be integrated into an A2A agent, granting it the capability to connect to an external set of tools via an MCP server. It can be connected to its own LLM.
 *   `agent_discovery_service`: An optional HTTP service where agents can register themselves. It exposes an endpoint to list all available agents, facilitating dynamic discovery.
@@ -101,7 +123,7 @@ The Swarm project is composed of several specialized sub-crates, each serving a 
 
 ## **🗺️ Road Ahead & How You Can Contribute**
 
-Swarm.rs is a project born out of discovery and exploration! While not production-ready, it's a fantastic playground for understanding how these protocols can be combined to build powerful agentic systems.
+Swarm is currently a project for discovery and exploration! While not production-ready, it's a fantastic playground for understanding how these protocols can be combined to build powerful agentic systems. We are actively enhancing its capabilities and robustness.
 
 We're continuously working on improvements, including:
 
@@ -109,7 +131,7 @@ We're continuously working on improvements, including:
 *   **Code Refactoring:** Continuously improving code clarity and maintainability (e.g., refactoring of `simple_a2a_agent` is the next task).
 *   **Unit Tests:** Enhancing robustness and reliability across the codebase.
 
-We're eager for your comments, suggestions, and contributions! Whether it's a bug report, a feature idea, or a pull request, your input helps shape the future of Swarm.rs. Join our community and help us build the next generation of intelligent agent orchestration!
+We're eager for your comments, suggestions, and contributions! Whether it's a bug report, a feature idea, or a pull request, your input helps shape the future of Swarm. Join our community and help us build the next generation of intelligent agent orchestration!
 
 ## **🙏 Special Thanks**
 

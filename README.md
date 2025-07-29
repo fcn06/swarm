@@ -4,22 +4,22 @@
 
 Swarm.rs is a Rust project that empowers you to build and orchestrate intelligent agents. Think of it as a control center for your digital assistants, allowing them to communicate, collaborate, and tackle complex tasks together.
 
-We combine two powerful communication protocols ( MCP and A2A) , and an orchestration capability:
+We combine two powerful communication protocols ( MCP and A2A) , and an orchestration capability.
 
-* MCP (Model Context Protocol): For agents to interact with external services and data sources. Imagine your agents querying a weather API or accessing a database\!  
-
-* A2A (Agent-to-Agent Protocol): A very simple autonomous A2A agent, that can implement a MCP runtime.
-
-* A Full A2A Agent. It can connect to various other A2A agents. It can implement a MCP runtime. It creates a plan based on tools and skills available in order to fulfill the request.
+With this project you can launch simple ai agents, you can supercharge them with MCP capabilities, and you can also create a multi agents system.
 
 Whether you're a Rust enthusiast, an AI developer, or just curious about multi-agent systems, we invite you to explore Swarm\!
 
-## **Why Swarm?**
 
-* Rust-powered performance and safety: Build robust and efficient agent systems.  
-* Flexible architecture: Easily integrate with external services and create collaborative agent networks.  
-* Intuitive orchestration: The Planner simplifies complex multi-agent workflows.  
-* Open for collaboration: We're actively developing and welcome your ideas and contributions\!
+## **The base components of the swarm project**
+
+The base components of the swarm project are:
+
+* A2A (Agent-to-Agent Protocol): A very simple autonomous A2A agent, that can implement a MCP runtime.
+
+* MCP Runtime (A runtime that implements Model Context Protocol): For agents to interact with external services and data sources. Imagine your agents querying a weather API or accessing a database\!  
+
+* A Full A2A Agent. It can connect to various other A2A agents. It can implement a MCP runtime. It creates a plan based on tools and skills available in order to fulfill the request.
 
 ## **How It Works: A Glimpse into the Architecture**
 
@@ -37,11 +37,10 @@ The diagram below illustrates how our agents, powered by MCP and A2A, interact u
 
 If needed for experimentation purpose, an MCP Server is provided in the examples section.
 
-## **Getting Started: Join the Swarm\!**
+
+## **Getting Started and Prerequisites**
 
 Ready to dive in? Here's how to get your first Swarm.rs components up and running.
-
-### **Prerequisites**
 
 To enable your agents to think and communicate, you'll need access to an OpenAI-compatible chat completion API.
 
@@ -114,7 +113,7 @@ The swarm project is composed of several specialized sub-crates:
 * `agent_discovery_service`: An optional http service. Each agent register to this service. It then exposes an endpoint to list all available agents.  
 * `examples`: Contain mulitple illustrative examples to interact with swarm
     * `mcp_agent_endpoint`: A testing utility for MCP runtime to receive and process requests through a MCP server. 
-    * `a2a_agent_endpoint`: A testing utility to interact directly with an A2A agent through rest API
+    * `a2a_agent_endpoint`: A testing utility to interact directly with an A2A agent through rest API. Also implements a simple UI to interact with your agents. Very useful for testing your config.
     * `mcp_server`: A MCP server exposing three tools, mostly for testing purpose. 
 
 ## **Road Ahead & How You Can Contribute**
@@ -128,6 +127,7 @@ We're continuously working on improvements, including:
 * Unit Tests: Enhancing robustness and reliability.
 
 We're eager for your comments, suggestions, and contributions\! Whether it's a bug report, a feature idea, or a pull request, your input helps shape the future of Swarm.rs.
+
 
 ## **Special Thanks**
 

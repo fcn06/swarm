@@ -1,5 +1,5 @@
-//! A simple HTTP client example
-//! The same logic needs to be implemented in planner agent
+//! A simple HTTP client example to test the A2A client.
+
 
 use a2a_rs::{
     HttpClient,

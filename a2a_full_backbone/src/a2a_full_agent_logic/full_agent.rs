@@ -68,13 +68,13 @@ impl FullAgent {
         // retrieve the agents available from config
           let mut client_agents = HashMap::new();
   
-          debug!("PlannerAgent: Connecting to A2a server agents...");
+          debug!("Full Agent: Connecting to A2a server agents...");
           for agent_reference in &agents_references {
               // Use agent_info (which implements AgentInfoProvider) to get details for connection
               let agent_reference = agent_reference.get_agent_reference().await?;
   
               debug!(
-                  "PlannerAgent: Connecting to agent '{}' at {}",
+                  "FullAgent: Connecting to agent '{}' at {}",
                   agent_reference.name, agent_reference.url
               );
   
@@ -84,7 +84,7 @@ impl FullAgent {
               {
                   Ok(client) => {
                       debug!(
-                          "PlannerAgent: Successfully connected to agent '{}' at {}",
+                          "FullAgent: Successfully connected to agent '{}' at {}",
                           client.id, client.uri
                       );
                       // Use the connected client's ID as the key
@@ -94,7 +94,7 @@ impl FullAgent {
                   Err(e) => {
                       // Use details from agent_info for error reporting
                       debug!(
-                          "PlannerAgent: Warning: Failed to connect to A2a agent '{}' at {}: {}",
+                          "FullAgent: Warning: Failed to connect to A2a agent '{}' at {}: {}",
                           agent_reference.name, agent_reference.url, e
                       );
                   }
@@ -103,7 +103,7 @@ impl FullAgent {
   
           if client_agents.is_empty() && !agents_references.is_empty() {
               warn!(
-                  "PlannerAgent: Warning: No A2a server agents connected, planner capabilities will be limited to direct LLM interaction if any."
+                  "FullAgent: Warning: No A2a server agents connected, planner capabilities will be limited to direct LLM interaction if any."
               );
               // Depending on requirements, you might return an error here:
               // bail!("Critical: Failed to connect to any A2a server agents.");
@@ -320,7 +320,7 @@ impl FullAgent {
         let response_content = self.llm_interaction.call_api_simple_v2("user".to_string(),prompt.to_string()).await?;
 
         info!(
-            "PlannerAgent: LLM responded with plan content:{:?}",
+            "FullAgent: LLM responded with plan content:{:?}",
             response_content
         );
 
@@ -329,8 +329,8 @@ impl FullAgent {
                 Ok(data) => data,
                 Err(e) => {
                     warn!(
-                        "PlannerAgent: Failed to parse LLM plan response as JSON: {}",e);
-                    warn!("PlannerAgent: LLM Raw Response: {:?}", response_content);
+                        "FullAgent: Failed to parse LLM plan response as JSON: {}",e);
+                    warn!("FullAgent: LLM Raw Response: {:?}", response_content);
                     bail!(
                         "LLM returned invalid plan format: {:?}. Raw: {:?}",e,response_content);
                 }
@@ -451,7 +451,7 @@ impl FullAgent {
                     Ok(result_content) => {
                         
                         debug!(
-                            "PlannerAgent: Task '{}' completed successfully. Result : {}",task_id, result_content);
+                            "FullAgent: Task '{}' completed successfully. Result : {}",task_id, result_content);
 
                         completed_tasks.insert(task_id.clone());
                         plan.task_results
@@ -472,7 +472,7 @@ impl FullAgent {
                     }
                     Err(e) => {
                         let error_msg = format!("Task '{}' failed: {}", task_id, e);
-                        error!("PlannerAgent: {}", error_msg);
+                        error!("FullAgent: {}", error_msg);
                         plan.status =
                             PlanStatus::Failed(format!("Execution failed at task {}", task_id));
                         plan.updated_at = Some(Utc::now());
@@ -491,7 +491,7 @@ impl FullAgent {
             plan.status = PlanStatus::Completed;
             plan.updated_at = Some(Utc::now());
             debug!(
-                "PlannerAgent: Plan execution completed successfully for request ID: {}",plan.request_id);
+                "FullAgent: Plan execution completed successfully for request ID: {}",plan.request_id);
         } else if matches!(plan.status, PlanStatus::InProgress) {
             let unfinished_tasks: Vec<_> = plan
                 .tasks_definition
@@ -501,7 +501,7 @@ impl FullAgent {
                 .collect();
             let failure_reason = format!(
                 "Plan execution finished, but not all tasks completed. Unfinished: {:?}",unfinished_tasks);
-            warn!("PlannerAgent: {}", failure_reason);
+            warn!("FullAgent: {}", failure_reason);
             plan.status = PlanStatus::Failed(failure_reason);
             plan.updated_at = Some(Utc::now());
         }
@@ -541,7 +541,7 @@ impl FullAgent {
          }
  
          // 3. If no agent with the skill and no default agent are found
-         warn!("PlannerAgent: No suitable agent (skill-matching or default) found for skill '{}'.", skill);
+         warn!("FullAgent: No suitable agent (skill-matching or default) found for skill '{}'.", skill);
          None
     }
 
@@ -605,7 +605,7 @@ impl FullAgent {
 
         plan.final_summary = Some(summary.clone());
         plan.updated_at = Some(Utc::now());
-        debug!("PlannerAgent: Summary generated.");
+        debug!("FullAgent: Summary generated.");
 
         Ok(summary)
     }

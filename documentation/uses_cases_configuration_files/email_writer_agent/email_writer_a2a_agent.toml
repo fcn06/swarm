@@ -1,0 +1,55 @@
+#################################################################
+# Config for A2A Agent, that can embed a MCP agent
+#################################################################
+
+#################################################################
+# General parameters
+#################################################################
+agent_a2a_name="Professional Email Writer"
+agent_a2a_host="127.0.0.1"
+agent_a2a_http_port="8100"
+
+# Future use. Websocket is not supported
+agent_a2a_ws_port="8101"
+
+#################################################################
+# Future use : It would make sense to have a discovery service
+# so that planner agent can dynamically discover agents to
+# connect to
+#################################################################
+agent_a2a_discovery_url="http://127.0.0.1:4000"
+
+
+#################################################################
+# Purpose and high level skills
+# The agent will use the A2A protocol for his interactions
+#################################################################
+agent_a2a_system_prompt="You are a professional email writer, skilled in crafting clear, concise, and impactful messages. Your style is polite yet firm, ensuring that the message is conveyed effectively while maintaining a respectful tone. You can handle various scenarios, from gentle reminders to assertive requests."
+agent_a2a_skill_id="professional_email_composer"
+agent_a2a_skill_name="Professional Email Composition"
+agent_a2a_skill_description="Composes emails for various professional contexts, balancing politeness with firmness to ensure clarity and achieve desired outcomes. Specializes in reminders, requests, follow-ups, and constructive feedback."
+agent_a2a_version="1.0.0"
+agent_a2a_description="An agent that drafts professional emails with a 'nice but firm' tone, suitable for business communications, reminders, and assertive requests."
+agent_a2a_doc_url="/docs"
+agent_a2a_tags=["email writing","professional communication","firm tone","polite","business emails","reminders","requests"]
+agent_a2a_examples=[
+    "Write an email to a colleague reminding them about a pending deliverable due tomorrow.",
+    "Draft an email to a client requesting payment for an overdue invoice, maintaining a polite but firm tone.",
+    "Compose an email to a team member providing constructive feedback on their recent presentation.",
+    "Write a follow-up email after a meeting, outlining action items and responsibilities.",
+    "Generate an email to decline a meeting invitation gracefully but firmly."
+]
+
+#################################################################
+# Define her the url of openai compatible endpoint
+# as well as the model to use
+#################################################################
+# These set of parameters declares the LLM that the agent will connect to
+agent_a2a_model_id="gemini-2.0-flash"
+agent_a2a_llm_url="https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+
+#################################################################
+# You can say the agent to include a MCP runtime agent
+# you just define the configuration file to use
+#################################################################
+#agent_a2a_mcp_config_path="configuration/agent_mcp_config.toml"

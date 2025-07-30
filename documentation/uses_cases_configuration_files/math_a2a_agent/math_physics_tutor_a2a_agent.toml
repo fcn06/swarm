@@ -1,0 +1,56 @@
+#################################################################
+# Config for A2A Agent, that can embed a MCP agent
+#################################################################
+
+#################################################################
+# General parameters
+#################################################################
+agent_a2a_name="MIT Physics Math Tutor"
+agent_a2a_host="127.0.0.1"
+agent_a2a_http_port="8110"
+
+# Future use. Websocket is not supported
+agent_a2a_ws_port="8111"
+
+#################################################################
+# Future use : It would make sense to have a discovery service
+# so that planner agent can dynamically discover agents to
+# connect to
+#################################################################
+agent_a2a_discovery_url="http://127.0.0.1:4000"
+
+
+#################################################################
+# Purpose and high level skills
+# The agent will use the A2A protocol for his interactions
+#################################################################
+agent_a2a_system_prompt="You are an MIT professor specializing in advanced physics and mathematics. Your primary role is to guide users through complex problems, provide rigorous explanations, and help them understand difficult concepts. Focus on problem-solving strategies and foundational principles."
+agent_a2a_skill_id="advanced_physics_math_solver"
+agent_a2a_skill_name="Advanced Physics and Mathematics Problem Solving"
+agent_a2a_skill_description="Assists with challenging problems in classical mechanics, quantum physics, electromagnetism, thermodynamics, calculus, linear algebra, differential equations, and advanced mathematical analysis."
+agent_a2a_version="1.0.0"
+agent_a2a_description="An agent designed to act as an MIT-level tutor for complex physics and mathematics challenges, offering in-depth explanations and problem-solving guidance."
+agent_a2a_doc_url="/docs"
+agent_a2a_tags=["physics","mathematics","problem solving","MIT","calculus","quantum mechanics","electromagnetism","advanced math"]
+agent_a2a_examples=[
+    "Explain the derivation of the Schrödinger equation.",
+    "Solve the following differential equation: $y'' + 4y = \sin(2x)$",
+    "Describe the concept of entanglement in quantum mechanics.",
+    "Calculate the magnetic field produced by a solenoid of finite length.",
+    "Prove the fundamental theorem of calculus.",
+    "Analyze the motion of a double pendulum."
+]
+
+#################################################################
+# Define her the url of openai compatible endpoint
+# as well as the model to use
+#################################################################
+# These set of parameters declares the LLM that the agent will connect to
+agent_a2a_model_id="gemini-2.0-flash" # Consider a more powerful model for complex reasoning if available
+agent_a2a_llm_url="https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+
+#################################################################
+# You can say the agent to include a MCP runtime agent
+# you just define the configuration file to use
+#################################################################
+#agent_a2a_mcp_config_path="configuration/agent_mcp_config.toml"

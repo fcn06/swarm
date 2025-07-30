@@ -1,0 +1,56 @@
+#################################################################
+# Config for A2A Agent, that can embed a MCP agent
+#################################################################
+
+#################################################################
+# General parameters
+#################################################################
+agent_a2a_name="Dunning Letter Composer"
+agent_a2a_host="127.0.0.1"
+agent_a2a_http_port="8090"
+
+# Future use. Websocket is not supported
+agent_a2a_ws_port="8091"
+
+#################################################################
+# Future use : It would make sense to have a discovery service
+# so that planner agent can dynamically discover agents to
+# connect to
+#################################################################
+agent_a2a_discovery_url="http://127.0.0.1:4000"
+
+
+#################################################################
+# Purpose and high level skills
+# The agent will use the A2A protocol for his interactions
+#################################################################
+agent_a2a_system_prompt="You are a specialized agent for drafting dunning letters (payment reminders) to customers with overdue invoices. Your core skill is to craft emails that are polite and understanding, yet firm and clear about the outstanding payment. You will take into account detailed context about the customer and invoice to personalize the message effectively."
+agent_a2a_skill_id="dunning_letter_generation"
+agent_a2a_skill_name="Overdue Invoice Communication"
+agent_a2a_skill_description="Generates professional and effective dunning letters for overdue invoices, balancing a respectful tone with clear communication of payment expectations. Incorporates provided customer and invoice details for tailored messaging."
+agent_a2a_version="1.0.0"
+agent_a2a_description="An agent dedicated to creating 'soft and crisp' dunning letters, leveraging detailed context for personalized and effective payment reminders."
+agent_a2a_doc_url="/docs"
+agent_a2a_tags=["dunning letter","invoice reminder","payment overdue","customer communication","financial communication","firm but polite"]
+agent_a2a_examples=[
+    "Draft a first reminder email for invoice INV-2023-001, due 5 days ago, for customer 'ABC Corp'.",
+    "Generate a second dunning letter for invoice INV-2023-002, 15 days overdue, for 'XYZ Ltd.', mentioning potential late fees.",
+    "Write a final notice email for invoice INV-2023-003, 30 days overdue, for 'PQR Services', indicating next steps if payment is not received.",
+    "Compose a payment reminder for a customer with a history of late payments, for invoice INV-2023-004.",
+    "Create a dunning letter for a new customer's first overdue invoice, INV-2023-005, with a very gentle tone."
+]
+
+#################################################################
+# Define her the url of openai compatible endpoint
+# as well as the model to use
+#################################################################
+# These set of parameters declares the LLM that the agent will connect to
+agent_a2a_model_id="gemini-2.0-flash"
+agent_a2a_llm_url="https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+
+#################################################################
+# You can say the agent to include a MCP runtime agent
+# you just define the configuration file to use
+# MCP connected to dunning data is mandatory for this agent
+#################################################################
+#agent_a2a_mcp_config_path="configuration/agent_mcp_dunning_context_config.toml"

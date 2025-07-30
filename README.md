@@ -6,6 +6,20 @@ Tired of siloed AI agents? Swarm empowers you to build, connect, and orchestrate
 
 Whether you're a Rust enthusiast, an AI developer, or just curious about multi-agent systems, Swarm provides a flexible and powerful framework for your agentic applications!
 
+## **🌐 How It Works: A Glimpse into the Architecture**
+
+The diagram below illustrates how our agents, powered by MCP and A2A, interact under the guidance of the Full Agent. This architecture allows agents to communicate with each other to achieve sub-goals, connect to the outside world, and execute complex plans.
+
+<p align="center" width="80%">
+    <img width="80%" src="./documentation/A2a_Mcp_High_level_architecture.png">
+</p>
+
+*   **MCP RunTime:** Connects agents to external tools and services (e.g., fetching real-time data, interacting with APIs).
+*   **A2A Agents:** Specialized agents handling specific tasks, capable of embedding an MCP runtime.
+*   **Full Agent:** The "brain" of the operation. It understands the overall goal, breaks it down, accesses skills from other A2A agents and tools from the MCP middleware, and directs the execution of the plan.
+
+*(Note: An optional MCP Server is provided in the `examples` section for testing purposes.)*
+
 ## **🚀 Getting Started & Prerequisites**
 
 Ready to dive in? Here's how to get your first Swarm components up and running.
@@ -30,19 +44,6 @@ Swarm is built around three key intelligent agent components:
 *   **MCP Runtime (Model Context Protocol):** 🛠️ A powerful runtime that enables agents to interact with external services and data sources. Imagine your agents querying a weather API or accessing a database!
 *   **Full Agent:** 🧠 An advanced A2A agent that acts as an orchestrator. It connects to various other A2A agents and an MCP server, understands their available skills and tools, creates a plan based on a user request, and executes it. This enables complex agentic network designs.
 
-## **🌐 How It Works: A Glimpse into the Architecture**
-
-The diagram below illustrates how our agents, powered by MCP and A2A, interact under the guidance of the Full Agent. This architecture allows agents to communicate with each other to achieve sub-goals, connect to the outside world, and execute complex plans.
-
-<p align="center" width="80%">
-    <img width="80%" src="./documentation/A2a_Mcp_High_level_architecture.png">
-</p>
-
-*   **MCP RunTime:** Connects agents to external tools and services (e.g., fetching real-time data, interacting with APIs).
-*   **A2A Agents:** Specialized agents handling specific tasks, capable of embedding an MCP runtime.
-*   **Full Agent:** The "brain" of the operation. It understands the overall goal, breaks it down, accesses skills from other A2A agents and tools from the MCP middleware, and directs the execution of the plan.
-
-*(Note: An optional MCP Server is provided in the `examples` section for testing purposes.)*
 
 ## **⚙️ Configuration Details**
 
@@ -113,6 +114,7 @@ The Swarm project is composed of several specialized sub-crates, each serving a 
 *   `a2a_agent_backbone`: Provides the foundational code for a simple A2A agent. It can incorporate an MCP runtime for external interactions and connect to its own LLM.
 *   `a2a_full_backbone`: The core of the orchestrating Full Agent. It connects to declared A2A agents and an MCP server, understands their skills and tools, creates, and executes plans to achieve your goals. It also connects to its own LLM.
 *   `configuration`: Manages all Swarm configuration files, making it easy to customize agent behavior.
+*   `documentation`: Contains a series of example of toml config file for all sort of agents ( weather forecast, customer domain, web scraper, joke telling,...)
 *   `llm_api`: Offers a convenient interface for interacting with various Large Language Models via an OpenAI-compatible API.
 *   `mcp_agent_backbone`: A runtime designed to be integrated into an A2A agent, granting it the capability to connect to an external set of tools via an MCP server. It can be connected to its own LLM.
 *   `agent_discovery_service`: An optional HTTP service where agents can register themselves. It exposes an endpoint to list all available agents, facilitating dynamic discovery.

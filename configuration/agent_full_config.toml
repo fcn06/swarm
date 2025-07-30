@@ -37,8 +37,6 @@ agent_full_examples=["What is the weather like in Boston?","What is address of c
 # Define her the url of openai compatible endpoint 
 # as well as the model to use
 #################################################################
-#agent_planner_model_id="qwen/qwen3-32b"
-#agent_planner_llm_url="https://api.groq.com/openai/v1/chat/completions"
 agent_full_model_id="gemini-2.0-flash"
 agent_full_llm_url="https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
 

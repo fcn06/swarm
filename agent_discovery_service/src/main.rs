@@ -4,18 +4,13 @@ use std::sync::{Arc, Mutex};
 use axum::{
     Json,
     Router,
-    extract::{State,Form},
-    http::StatusCode,
-    response::{IntoResponse, Response,Html}, // Use IntoResponse for better error handling
+    extract::{State},
     routing::{get, post},
 };
 
 use a2a_rs::domain::AgentCard;
 
 
-
-
-// https://github.com/tokio-rs/axum/blob/main/examples/form/src/main.rs
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -54,29 +49,3 @@ async fn list_agents(
     Json(agent_card_list)
 }
 
-#[allow(dead_code)]
-async fn show_form() -> Html<&'static str> {
-    Html(
-        r#"
-        <!doctype html>
-        <html>
-            <head></head>
-            <body>
-                <form action="/" method="post">
-                    <label for="name">
-                        Enter your name:
-                        <input type="text" name="name">
-                    </label>
-
-                    <label>
-                        Enter your email:
-                        <input type="text" name="email">
-                    </label>
-
-                    <input type="submit" value="Subscribe!">
-                </form>
-            </body>
-        </html>
-        "#,
-    )
-}

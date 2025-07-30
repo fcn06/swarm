@@ -73,7 +73,6 @@ auth = ["dep:jsonwebtoken", "dep:oauth2", "dep:openidconnect", "dep:reqwest"]
 full = ["http-client",  "http-server", "tracing", "auth"]
 
 
-
 [[bin]]
 name = "simple_agent_server"
 path = "bin/simple_agent_server.rs"

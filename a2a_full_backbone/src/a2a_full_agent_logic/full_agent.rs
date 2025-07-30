@@ -34,7 +34,7 @@ use tracing::{error,warn,info,debug,trace};
 /// Agent that that can interact with other available agents, and also embed MCP runtime if needed
 #[derive(Clone)]
 pub struct FullAgent {
-    agent_full_config: AgentFullConfig,
+    //agent_full_config: AgentFullConfig, // possible future use
     agents_references: Vec<SimpleAgentReference>,
     llm_interaction: ChatLlmInteraction,
     client_agents: HashMap<String, A2AClient>,
@@ -120,7 +120,7 @@ impl FullAgent {
           };
   
           Ok(Self {
-            agent_full_config,
+            //agent_full_config,
             agents_references,
             llm_interaction,
             client_agents,

@@ -88,8 +88,8 @@ For those who prefer direct control or specific debugging, here are the commands
 
     ```bash
     # Run compiled binary.
-    # LLM_A2A_API_KEY: API Key for the A2A agent's LLM.
-    # LLM_MCP_API_KEY: Optional API Key for the embedded MCP Runtime's LLM (can be the same as A2A).
+    # LLM_A2A_API_KEY: API Key for the A2A agent\'s LLM.
+    # LLM_MCP_API_KEY: Optional API Key for the embedded MCP Runtime\'s LLM (can be the same as A2A).
     # Both API keys must be compatible with llm_url defined in the config file.
     # You can define log level (default is "warn").
     ./target/release/simple_agent_server --config-file "configuration/agent_a2a_config.toml" --log-level "warn"
@@ -99,8 +99,8 @@ For those who prefer direct control or specific debugging, here are the commands
 
     ```bash
     # Run compiled binary.
-    # LLM_FULL_API_KEY: API Key for the Full Agent's LLM.
-    # LLM_MCP_API_KEY: Optional API Key for the embedded MCP Runtime's LLM (can be the same as Full Agent).
+    # LLM_FULL_API_KEY: API Key for the Full Agent\'s LLM.
+    # LLM_MCP_API_KEY: Optional API Key for the embedded MCP Runtime\'s LLM (can be the same LLM as Full Agent).
     # Both API keys must be compatible with llm_url defined in the config file.
     # You can define log level (default is "warn").
     ./target/release/full_agent_server
@@ -127,8 +127,8 @@ Swarm is currently a project for discovery and exploration! While not production
 
 We're continuously working on improvements, including:
 
-*   **UI Implementation:** Developing a simple UI for interacting with A2A agents (both `simple_agent_server` and `full_agent_server`).
-*   **Code Refactoring:** Continuously improving code clarity and maintainability (e.g., refactoring of `simple_a2a_agent` is the next task).
+*   **Use Cases:** Detailing a number of concrete use cases.
+*   **Code Refactoring:** Continuously improving code clarity and maintainability.
 *   **Unit Tests:** Enhancing robustness and reliability across the codebase.
 
 We're eager for your comments, suggestions, and contributions! Whether it's a bug report, a feature idea, or a pull request, your input helps shape the future of Swarm. Join our community and help us build the next generation of intelligent agent orchestration!

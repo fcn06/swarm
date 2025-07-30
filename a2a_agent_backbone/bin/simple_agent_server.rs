@@ -1,4 +1,4 @@
-use a2a_agent_backbone::a2a_agent_logic::server::SimpleAgentServer;
+use a2a_agent_backbone::a2a_agent_server::agent_server::SimpleAgentServer;
 use configuration::AgentA2aConfig;
 
 use clap::Parser;

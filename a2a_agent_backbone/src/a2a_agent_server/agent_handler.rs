@@ -7,6 +7,7 @@
 //! and compose it with the storage implementations directly.
 
 use std::sync::{Arc};
+use tokio::sync::Mutex;
 
 use async_trait::async_trait;
 
@@ -23,8 +24,7 @@ use a2a_rs::{
 };
 
 use llm_api::chat::Message as Message_Llm;
-use llm_api::chat::{ChatLlmInteraction};
-use mcp_agent_backbone::mcp_agent_logic::agent::McpAgent;
+use crate::a2a_agent_logic::simple_agent::SimpleAgent;
 
 
 /// Simple agent handler that coordinates all business capability traits
@@ -43,32 +43,33 @@ use mcp_agent_backbone::mcp_agent_logic::agent::McpAgent;
 ///
 #[derive(Clone)]
 pub struct SimpleAgentHandler {
-    llm_interaction: ChatLlmInteraction,
-    mcp_agent:Option<McpAgent>,
-    /// Task storage that implements all the business capabilities
+    simple_agent: Arc<Mutex<SimpleAgent>>,
     storage: Arc<InMemoryTaskStorage>,
 }
 
 impl SimpleAgentHandler {
     /// Create a new simple agent handler
-    pub fn new(llm_interaction: ChatLlmInteraction,mcp_agent:Option<McpAgent>) -> Self {
+    pub fn new(simple_agent:SimpleAgent) -> Self {
+
         println!("Creating SimpleAgentHandler");
-        SimpleAgentHandler{
-            llm_interaction:llm_interaction,
-            mcp_agent:mcp_agent,
+        Self {
+            simple_agent: Arc::new(Mutex::new(simple_agent)),
             storage: Arc::new(InMemoryTaskStorage::new()),
         }
+
     }
 
     /// Create with a custom storage implementation
     pub fn with_storage(
-        llm_interaction: ChatLlmInteraction,mcp_agent:Option<McpAgent>,
+        simple_agent:SimpleAgent,
         storage: InMemoryTaskStorage,
     ) -> Self {
-        SimpleAgentHandler{
-        llm_interaction,
-        mcp_agent,
-        storage:Arc::new(storage)}
+       
+        Self {
+            simple_agent: Arc::new(Mutex::new(simple_agent)),
+            storage: Arc::new(storage),
+        }
+
     }
 
     /// Get a reference to the underlying storage
@@ -137,26 +138,11 @@ impl AsyncMessageHandler for SimpleAgentHandler {
 
         //println!("Task Created : {:#?}",task.clone());
 
-        /////////////////////////////////////////////////////////////
-        // todo : can be cleaner, and simpler
-        // this would create a problem if the mcp agent cannot find answer
-        /////////////////////////////////////////////////////////////
 
-        let response =if self.mcp_agent.is_none() {
-                self.llm_interaction.call_api_simple("user".to_string(),llm_msg.content.expect("Empty Message").to_string()).await.unwrap()
-
-        } else {
-                self.mcp_agent.clone().unwrap().run_agent_internal(llm_msg.clone())
-                .await
-                // todo : make it more robust
-                .unwrap()
-        };
+          // Place her user query handler
+          let mut simple_agent = self.simple_agent.lock().await;
+          let response = simple_agent.handle_user_request(llm_msg.clone()).await;
            
-
-        // if there is no MCP agent attached to the agent, plan a direct LLM call
-
-        /////////////////////////////////////////////////////////////
-
         // Convert the message Back to A2A Message
         // todo : make it resilient and remove unwrap()
         let response_message = self.llm_message_to_a2a_message(response.unwrap())?;

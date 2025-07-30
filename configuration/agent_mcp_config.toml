@@ -16,7 +16,8 @@ agent_mcp_max_loops = 5
 
 #################################################################
 # Parameters of the MCP middleware to connect to
-# You can define an API Key here to connect to this mcp server
+# You can define an MCP Server API Key here 
+# to connect to this mcp server
 #################################################################
 agent_mcp_server_url="http://localhost:8000/sse"
 agent_mcp_server_api_key="<YOUR_API_KEY>"

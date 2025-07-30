@@ -50,9 +50,9 @@ The `configuration` directory is your go-to for customizing agent behavior. Here
 
 | File Name                | Purpose                                                                                |
 | :----------------------- | :------------------------------------------------------------------------------------- |
-| `agent_a2a_config.toml`  | Configures A2A server agents, including optional embedded MCP agents.                    |
-| `agent_mcp_config.toml`  | Configures the MCP runtime settings.                                                     |
-| `agent_full_config.toml` | Configures the orchestrating Full Agent.                                                 |
+| `agent_a2a_config.toml`  | Configures A2A simple agents, including optional embedded MCP agents                   |
+| `agent_mcp_config.toml`  | Configures the MCP runtime settings.                                                   |
+| `agent_full_config.toml` | Configures the Full Agent, including capabilities of using tools and skills                                                                                                              |
 
 **LLM Models:** We've found `qwen/qwen3-32b` to be highly effective, especially for MCP interactions. Each agent can connect to its own LLM. URLs are parameterized in the config files, while API keys need to be injected at runtime as environment variables.
 

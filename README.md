@@ -153,6 +153,8 @@ We're continuously working on improvements, including:
 
 *   **Use Cases:** Detailing a number of concrete use cases.
 *   **Code Refactoring:** Continuously improving code clarity and maintainability.
+*   **Memory** Capability to store all request from all agents.
+*   **Asynchronous Processing** Leveraging Tokio to enable agents to process requests from multiple clients in parallel.
 *   **Unit Tests:** Enhancing robustness and reliability across the codebase.
 
 We're eager for your comments, suggestions, and contributions! Whether it's a bug report, a feature idea, or a pull request, your input helps shape the future of Swarm. Join our community and help us build the next generation of intelligent agent orchestration!

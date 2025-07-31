@@ -143,7 +143,7 @@ The Swarm project is composed of several specialized sub-crates, each serving a 
 *   `examples`: Contains multiple illustrative examples to help you interact with Swarm:
     *   `mcp_agent_endpoint`: A testing utility for an MCP runtime to receive and process requests through an MCP server.
     *   `a2a_agent_endpoint`: A testing utility to interact directly with an A2A agent via a REST API. Also includes a simple UI for testing your configuration.
-    *   `mcp_server`: A basic MCP server exposing three tools, primarily for testing purposes.
+    *   `mcp_server`: A basic MCP server exposing three tools, primarily for testing purposes. You can start separately one instance on one port with one of these three tools ( weather, customer, url scraping), or the three tools together.
 
 ## **🗺️ Road Ahead & How You Can Contribute**
 

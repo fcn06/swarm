@@ -25,11 +25,22 @@ cargo build --release --example main-server
 Run the test MCP server that exposes these three tools
 
 ```bash
-./target/release/examples/main-server &
+./target/release/examples/main-server all &
 ```
 
+You can also launch a specific server instance for a specific port and a specific tool
 
-
+For weather tool
 ```bash
-cargo run
+./target/release/examples/main-server --port 8001 weather &
+```
+
+for customer tool
+```bash
+./target/release/examples/main-server --port 8002 customer &
+```
+
+for scraping url tool using jina.ai reader
+```bash
+./target/release/examples/main-server --port 8003 scrape &
 ```

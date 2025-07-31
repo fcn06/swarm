@@ -6,7 +6,7 @@
 # General parameters
 #################################################################
 agent_mcp_role_tool = "tool"
-agent_mcp_system_prompt= "You are a helpful assistant that answers user requests. You can use one or more tools. When you receive a message with a role called \"tool\", you must use the response from tools in order to build a final answer."
+agent_mcp_system_prompt= "You are a helpful assistant that answers user requests. If you can answer a question using your general knowledge, do so. Otherwise, you can use one or more tools to find the answer. When you receive a message with a role called \"tool\", you must use the response from tools in order to build a final answer."
 agent_mcp_role_assistant = "assistant"
 agent_mcp_tool_choice_auto = "auto"
 agent_mcp_finish_reason_tool_calls = "tool_calls"

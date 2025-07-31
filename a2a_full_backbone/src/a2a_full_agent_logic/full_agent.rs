@@ -244,7 +244,7 @@ impl FullAgent {
         let prompt = format!(
             "You are a planner agent that creates execution plans for user requests.
 
-            You have access to the following agent skills and MCP tools:
+            On top of your own skills, you have access to the following agent skills and MCP tools:
             {}
 
             User request: {}

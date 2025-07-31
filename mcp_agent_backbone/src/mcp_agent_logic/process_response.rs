@@ -77,15 +77,23 @@ pub fn process_response(
            
         }
         _ => {
-            // Handle other finish reasons
+            // Handle other finish reasons: capture content if available
             eprintln!("Unhandled finish reason: {}", choice.finish_reason);
-            if let Some(content) = &choice.message.content {
+            let final_msg = if let Some(content) = &choice.message.content {
                 println!("Assistant Message (Partial/Error?): {}", content);
-            }
+                Some(Message {
+                    role: "assistant".to_string(),
+                    content: Some(content.clone()),
+                    tool_call_id: None,
+                    tool_calls: None,
+                })
+            } else {
+                None
+            };
             AgentResponse {
                 should_exit: true,
                 nb_loop: loop_number,
-                final_message: None,
+                final_message: final_msg,
             }
         }
     }

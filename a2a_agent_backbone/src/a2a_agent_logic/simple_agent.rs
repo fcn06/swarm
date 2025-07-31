@@ -57,7 +57,7 @@ impl SimpleAgent{
     pub async fn handle_user_request(&mut self, user_request: Message_Llm) -> anyhow::Result<Message_Llm> {
        
 
-        // MCP Runtime needs to be improved and be able to also answer a question outside of the scope of tools
+        // use MCP LLM to answer if there is a MCP runtime, Agent LLM otherwise 
         let response =if self.mcp_agent.is_none() {
                 self.llm_interaction.call_api_simple("user".to_string(),user_request.content.expect("Empty Message").to_string()).await.unwrap()
 

@@ -258,7 +258,8 @@ impl McpAgent {
                 other_reason => {
                     warn!("Unhandled finish reason '{}', exiting loop.", other_reason);
                     if let Some(content) = &choice.message.content {
-                        if !content.trim().is_empty() && final_message.is_none() {
+                        //if !content.trim().is_empty() && final_message.is_none() {
+                        if !content.trim().is_empty() { // Removed the `&& final_message.is_none()` part
                             final_message = Some(Message {
                                 role: self.agent_mcp_config.agent_mcp_role_assistant.clone(),
                                 content: Some(content.clone()),

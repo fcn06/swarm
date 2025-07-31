@@ -22,7 +22,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     //let client = HttpClient::new("http://localhost:9080".to_string());
 
     /************************************************/
-    /* First Task                                   */
+    /* First Task (query related to weather)       */
     /************************************************/ 
     // Generate a task ID
     let task_id = format!("task-{}", uuid::Uuid::new_v4());
@@ -66,16 +66,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /************************************************/ 
 
     /************************************************/
-    /* Second Task                                  */
+    /* Second Task (query related to customer)      */
     /************************************************/ 
 
     let task_id_2 = format!("task-{}", uuid::Uuid::new_v4());
 
     // Create a message
-    //let message = Message::user_text("Hello, A2A agent! How are you today?".to_string());
     let message_id_2 = uuid::Uuid::new_v4().to_string();
-    //let message_2 = Message::user_text("What are details of Customer 1234 ?".to_string(),message_id_2);
-    let message_2 = Message::user_text("What are the benefits of rust ?".to_string(), message_id_2);
+    let message_2 = Message::user_text("What are details of Customer 1234 ?".to_string(),message_id_2);
 
     // Send a task message
     println!("Sending message to task...");
@@ -83,7 +81,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let task_2 = client
         .send_task_message(&task_id_2, &message_2, None, Some(50))
         .await?;
-    println!("Got response with status: {:?}", task.status.state);
+    println!("Got response with status: {:?}", task_2.status.state);
 
     if let Some(response_message_2) = task_2.status.message {
         println!("Agent response:");
@@ -106,6 +104,49 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     /************************************************/
     /* End of Second Task                           */
+    /************************************************/ 
+
+    /************************************************/
+    /* Third Task  (Query unrelated to tools)       */
+    /************************************************/ 
+
+    let task_id_3 = format!("task-{}", uuid::Uuid::new_v4());
+
+    // Create a message
+    //let message = Message::user_text("Hello, A2A agent! How are you today?".to_string());
+    let message_id_3 = uuid::Uuid::new_v4().to_string();
+    //let message_2 = Message::user_text("What are details of Customer 1234 ?".to_string(),message_id_2);
+    let message_3 = Message::user_text("What are the benefits of rust ?".to_string(), message_id_3);
+
+    // Send a task message
+    println!("Sending message to task...");
+
+    let task_3 = client
+        .send_task_message(&task_id_3, &message_3, None, Some(50))
+        .await?;
+    println!("Got response with status: {:?}", task_3.status.state);
+
+    if let Some(response_message_3) = task_3.status.message {
+        println!("Agent response:");
+        for part in response_message_3.parts {
+            match part {
+                Part::Text { text, .. } => println!("  {}", text),
+                _ => println!("  [Non-text content]"),
+            }
+        }
+    }
+
+    // Get the task again to verify it's stored
+    println!("Retrieving task...");
+    let task_3 = client.get_task(&task_id_3, None).await?;
+    println!(
+        "Retrieved task with ID: {} and state: {:?}",
+        task_3.id, task_3.status.state
+    );
+
+
+    /************************************************/
+    /* End of Third Task                           */
     /************************************************/ 
 
     Ok(())

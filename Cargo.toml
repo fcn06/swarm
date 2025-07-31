@@ -11,10 +11,12 @@ mcp_agent_backbone = { path = "./mcp_agent_backbone" }
 a2a_agent_backbone = { path = "./a2a_agent_backbone" }
 
 # For rmcp and a2a-rs, in the future, I may have to pin a revision number because this crate is evolving rapidly with significant number of breaking changes
-#rmcp= { git = "https://github.com/modelcontextprotocol/rust-sdk.git", features = ["client", "transport-sse-client", "transport-child-process", "tower","reqwest"] ,rev="73188eff6fcc8fc152949ac1d5df0439607ba3ad"}
+#rmcp= { git = "https://github.com/modelcontextprotocol/rust-sdk.git", features = ["client","transport-sse-client", "transport-child-process","reqwest"] , rev="0a9a0a0b1f234bd296459fc98b41fd6215c8e3a9"}
+#a2a-rs= { git = "https://github.com/EmilLindfors/a2a-rs.git" , features=["server","http-server","client","http-client","tracing"], rev="2cf954129de8b4cc3b3146780877e508fa34c00c" }
 
-rmcp= { git = "https://github.com/modelcontextprotocol/rust-sdk.git", features = ["client","transport-sse-client", "transport-child-process","reqwest"] , rev="0a9a0a0b1f234bd296459fc98b41fd6215c8e3a9"}
+rmcp= { git = "https://github.com/modelcontextprotocol/rust-sdk.git", features = ["client","transport-sse-client", "transport-child-process","reqwest"] }
 a2a-rs= { git = "https://github.com/EmilLindfors/a2a-rs.git" , features=["server","http-server","client","http-client","tracing"] }
+
 
 reqwest = { version = "0.12", features = ["json","rustls-tls"] }
 rustls="0.23"

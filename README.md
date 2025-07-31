@@ -40,7 +40,7 @@ cargo build --release
 
 Swarm is built around three key intelligent agent components:
 
-*   **A2A Agent (Agent-to-Agent Protocol):** 🗣️ A simple, autonomous agent capable of direct communication with other A2A agents. It can also integrate an MCP Runtime for external interactions.
+*   **A2A Agent (Agent-to-Agent Protocol):** 🗣️ A simple, autonomous agent capable of direct communication with other A2A agents. It can also integrate an MCP Runtime for external interactions and connect to its own LLM.
 *   **MCP Runtime (Model Context Protocol):** 🛠️ A powerful runtime that enables agents to interact with external services and data sources. Imagine your agents querying a weather API or accessing a database!
 *   **Full Agent:** 🧠 An advanced A2A agent that acts as an orchestrator. It connects to various other A2A agents and an MCP server, understands their available skills and tools, creates a plan based on a user request, and executes it. This enables complex agentic network designs.
 
@@ -89,22 +89,44 @@ For those who prefer direct control or specific debugging, here are the commands
 
     ```bash
     # Run compiled binary.
-    # LLM_A2A_API_KEY: API Key for the A2A agent\'s LLM.
-    # LLM_MCP_API_KEY: Optional API Key for the embedded MCP Runtime\'s LLM (can be the same as A2A).
+    # LLM_A2A_API_KEY: API Key for the A2A agent's LLM.
+    # LLM_MCP_API_KEY: Optional API Key for the embedded MCP Runtime's LLM (can be the same as A2A).
     # Both API keys must be compatible with llm_url defined in the config file.
     # You can define log level (default is "warn").
     ./target/release/simple_agent_server --config-file "configuration/agent_a2a_config.toml" --log-level "warn"
+    ```
+
+    To emphasize how simple it is to use swarm to launch an agent, here is a code snippet:
+    ```rust
+    // load a2a config file and initialize appropriateruntime
+    let agent_a2a_config = AgentA2aConfig::load_agent_config(&args.config_file);
+  
+    // Create the modern server, and pass the runtime elements
+    let server = SimpleAgentServer::new(agent_a2a_config.expect("Incorrect A2A config file")).await?;
+
+    println!("🌐 Starting HTTP server only...");
+    server.start_http().await?;
     ```
 
 *   **Full Agent Server (Orchestrator):** Ask the Full Agent to achieve a goal by providing a user query. This agent can connect to other A2A agents and MCP tools.
 
     ```bash
     # Run compiled binary.
-    # LLM_FULL_API_KEY: API Key for the Full Agent\'s LLM.
-    # LLM_MCP_API_KEY: Optional API Key for the embedded MCP Runtime\'s LLM (can be the same LLM as Full Agent).
+    # LLM_FULL_API_KEY: API Key for the Full Agent's LLM.
+    # LLM_MCP_API_KEY: Optional API Key for the embedded MCP Runtime's LLM (can be the same LLM as Full Agent).
     # Both API keys must be compatible with llm_url defined in the config file.
     # You can define log level (default is "warn").
     ./target/release/full_agent_server
+    ```
+
+    To emphasize how simple it is to use swarm to launch a full agent, here is a code snippet:
+    ```rust
+    // load a2a config file and initialize appropriateruntime
+    let agent_full_config = AgentFullConfig::load_agent_config(&args.config_file);
+    let server=FullAgentServer::new(agent_full_config.expect("REASON")).await?;
+
+    println!("🌐 Starting HTTP server only...");
+    server.start_http().await?;
     ```
 
 ## **🔬 Under the Hood: Swarm.rs Crate Breakdown**

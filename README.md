@@ -157,6 +157,10 @@ We're continuously working on improvements, including:
 
 We're eager for your comments, suggestions, and contributions! Whether it's a bug report, a feature idea, or a pull request, your input helps shape the future of Swarm. Join our community and help us build the next generation of intelligent agent orchestration!
 
+## **⭐ Show Your Support**
+
+If you find Swarm useful or interesting, please consider starring our repository! Your support helps us continue to develop and improve this project.
+
 ## **🙏 Special Thanks**
 
 We heavily rely on and appreciate the fantastic work of these actively developed crates:

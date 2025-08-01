@@ -14,9 +14,7 @@ The diagram below illustrates how our agents, powered by MCP and A2A, interact u
     <img width="60%" src="./documentation/A2a_Mcp_High_level_architecture.png">
 </p>
 
-*   **MCP RunTime:** Connects agents to external tools and services (e.g., fetching real-time data, interacting with APIs).
-*   **A2A Agents:** Specialized agents handling specific tasks, capable of embedding an MCP runtime.
-*   **Full Agent:** The "brain" of the operation. It understands the overall goal, breaks it down, accesses skills from other A2A agents and tools from the MCP middleware, and directs the execution of the plan.
+For a detailed description of Swarm's core components, refer to the "Core Components of Swarm" section below.
 
 *(Note: An optional MCP Server is provided in the `examples` section for testing purposes.)*
 

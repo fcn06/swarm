@@ -5,6 +5,14 @@ Then we will ask specific questions targetting one set of tools at a time to all
 A script will come later to automate execution.
 
 **************************************************************************
+ALL THE BELOW EXAMPLES ARE CONFIGURED WITH GEMENI, for both agents and MCP
+You should get an API key
+This is the api that we will be targetting
+https://generativelanguage.googleapis.com/v1beta/openai/chat/completions
+**************************************************************************
+
+
+**************************************************************************
 THESE COMMANDS HAVE TO BE SENT FROM THE ROOT OF THE REPOSITORY
 **************************************************************************
 

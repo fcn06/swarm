@@ -57,15 +57,15 @@ agent_full_discovery_url="http://127.0.0.1:4000"
 # across these A2A agents.
 #################################################################
 [[agent_full_agents_references]]
-name = "agent_search"
+name = "agent_scraping"
 url = "http://127.0.0.1:8081"
 is_default=true
 
 [[agent_full_agents_references]]
 name = "weather_agent"
-url = "http://127.0.0.1:8082"
+url = "http://127.0.0.1:8083"
 
 [[agent_full_agents_references]]
 name = "customer_agent"
-url = "http://127.0.0.1:8083"
+url = "http://127.0.0.1:8085"
 

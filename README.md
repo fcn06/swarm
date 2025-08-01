@@ -20,7 +20,21 @@ For a detailed description of Swarm's core components, refer to the "Core Compon
 
 ## **🚀 Quickstart into an example : Multi-Agent Orchestration Use Case:**
 
-To jumpstart your engagement with Swarm, explore concrete multi-agent orchestration use cases. The `documentation/use_case_combined_agents` directory contains a `list of commands to be executed` from the root of the `swarm` repository, detailing these scenarios.
+To jumpstart your engagement with Swarm, explore concrete multi-agent orchestration use cases. 
+The `documentation/use_case_combined_agents` directory contains a script that will :
+*   Launch three test MCP servers, each owning one tool ( one to get customer data, one to get weather and one to scrape an url)
+*   Launch Three stand alone a2a agent, each connecting to one mcp server
+*   Launch one a2a full agent that acts as coordinator of the three others
+*   Send three requests to the coordinator ( one request about customer, one about data and one generic)
+
+
+To make it easy, we created a script, to be launched from the root of swarm crate.
+```bash
+export LLM_A2A_API_KEY=<YOUR-GEMINI-API-KEY>
+export LLM_MCP_API_KEY=<YOUR-GEMINI-API-KEY>
+export LLM_FULL_API_KEY=<YOUR-GEMINI-API-KEY>
+./documentation/use_case_combined_agents/run_all_commands.sh 
+```
 
 ## **🚀 Getting Started & Prerequisites**
 

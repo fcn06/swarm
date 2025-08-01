@@ -10,8 +10,8 @@ Whether you're a Rust enthusiast, an AI developer, or just curious about multi-a
 
 The diagram below illustrates how our agents, powered by MCP and A2A, interact under the guidance of the Full Agent. This architecture allows agents to communicate with each other to achieve sub-goals, connect to the outside world, and execute complex plans.
 
-<p align="center" width="80%">
-    <img width="80%" src="./documentation/A2a_Mcp_High_level_architecture.png">
+<p align="center" width="60%">
+    <img width="60%" src="./documentation/A2a_Mcp_High_level_architecture.png">
 </p>
 
 *   **MCP RunTime:** Connects agents to external tools and services (e.g., fetching real-time data, interacting with APIs).
@@ -19,6 +19,10 @@ The diagram below illustrates how our agents, powered by MCP and A2A, interact u
 *   **Full Agent:** The "brain" of the operation. It understands the overall goal, breaks it down, accesses skills from other A2A agents and tools from the MCP middleware, and directs the execution of the plan.
 
 *(Note: An optional MCP Server is provided in the `examples` section for testing purposes.)*
+
+## **🚀 Quickstart into an example : Multi-Agent Orchestration Use Case:**
+
+To jumpstart your engagement with Swarm, explore concrete multi-agent orchestration use cases. The `documentation/use_case_combined_agents` directory contains a `list of commands to be executed` from the root of the `swarm` repository, detailing these scenarios.
 
 ## **🚀 Getting Started & Prerequisites**
 
@@ -69,9 +73,6 @@ Getting your Swarm agents up and running is straightforward. We highly recommend
 
 **Get started with `swarm_launcher`:** [https://github.com/fcn06/swarm_launcher](https://github.com/fcn06/swarm_launcher)
 
-**Discover Multi-Agent Orchestration Use Cases:**
-
-To jumpstart your engagement with Swarm, explore concrete multi-agent orchestration use cases. The `documentation/use_case_combined_agents` directory contains a `list of commands to be executed` from the root of the `swarm` repository, detailing these scenarios.
 
 **Quick Example with `swarm_launcher`:**
 (Assuming you have `swarm_launcher` cloned and built from its repository)

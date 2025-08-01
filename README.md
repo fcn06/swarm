@@ -69,6 +69,10 @@ Getting your Swarm agents up and running is straightforward. We highly recommend
 
 **Get started with `swarm_launcher`:** [https://github.com/fcn06/swarm_launcher](https://github.com/fcn06/swarm_launcher)
 
+**Discover Multi-Agent Orchestration Use Cases:**
+
+To jumpstart your engagement with Swarm, explore concrete multi-agent orchestration use cases. The `documentation/use_case_combined_agents` directory contains a `list of commands to be executed` from the root of the `swarm` repository, detailing these scenarios.
+
 **Quick Example with `swarm_launcher`:**
 (Assuming you have `swarm_launcher` cloned and built from its repository)
 

@@ -4,6 +4,9 @@ And an orchestrator connected to three previously defined agents
 Then we will ask specific questions targetting one set of tools at a time to all four agents
 A script will come later to automate execution.
 
+**************************************************************************
+THESE COMMANDS HAVE TO BE SENT FROM THE ROOT OF THE REPOSITORY
+**************************************************************************
 
 A) Compile the project
 
@@ -25,9 +28,10 @@ C) Launch three MCP server, each with individual tool on three different ports
 D) Launch three agents listening on three different ports (8081,8083,8085), each using mcp config
 Export LLM_A2A_API_KEY and LLM_MCP_API_KEY beforehand
 
-./target/release/simple_agent_server  --config-file "documentation/use_case_combined_agents/customer_domain_agent_a2a_config.toml" &
-./target/release/simple_agent_server  --config-file "documentation/use_case_combined_agents/weather_agent_a2a_config.toml" &
-./target/release/simple_agent_server  --config-file "documentation/use_case_combined_agents/web_scraper_agent_a2a_config.toml" &
+
+./target/release/simple_agent_server  --config-file "documentation/use_case_combined_agents/weather_a2a_agent_config.toml" &
+./target/release/simple_agent_server  --config-file "documentation/use_case_combined_agents/customer_domain_a2a_agent_config.toml" &
+./target/release/simple_agent_server  --config-file "documentation/use_case_combined_agents/web_scraper_a2a_agent.toml" &
 
 
 E) Launch full agent listening on port 9080, connected to three individual agents

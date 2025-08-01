@@ -6,17 +6,38 @@ use a2a_rs::{
     domain::{Message, Part},
     services::AsyncA2AClient,
 };
+use clap::{Parser};
+
+#[derive(Parser, Debug)]
+#[clap(author, version, about, long_about = None)]
+struct Args {
+    /// Host to bind the server to
+    #[clap(long, default_value = "127.0.0.1")]
+    host: String,
+    /// Configuration file path (TOML format)
+    #[clap(long, default_value = "8080")]
+    port: String,
+}
+
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     
+    // Parse command-line arguments
+    let args = Args::parse();
+
     /************************************************/
     /* Sample A2A client either responding to       */
     /* A simple A2A Server or A2A Planner Agent     */
     /************************************************/ 
 
+    let bind_address = format!("http://{}:{}", args.host, args.port);
+    println!("Server listening on: {}", bind_address);
+
+    let client = HttpClient::new(bind_address.to_string());
+
     // In our config simple a2a agent respond to port 8080
-    let client = HttpClient::new("http://localhost:8080".to_string());
+    //let client = HttpClient::new("http://localhost:8080".to_string());
     
     // In our config planner of planners respond to port 9080
     //let client = HttpClient::new("http://localhost:9080".to_string());

@@ -29,10 +29,14 @@ The `documentation/use_case_combined_agents` directory contains a script that wi
 
 
 To make it easy, we created a script, to be launched from the root of swarm crate.
+
 ```bash
 export LLM_A2A_API_KEY=<YOUR-GEMINI-API-KEY>
+
 export LLM_MCP_API_KEY=<YOUR-GEMINI-API-KEY>
+
 export LLM_FULL_API_KEY=<YOUR-GEMINI-API-KEY>
+
 ./documentation/use_case_combined_agents/run_all_commands.sh 
 ```
 

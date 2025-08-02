@@ -11,7 +11,7 @@ Whether you're a Rust enthusiast, an AI developer, or just curious about multi-a
 The diagram below illustrates how our agents, powered by MCP and A2A, interact under the guidance of the Full Agent. This architecture allows agents to communicate with each other to achieve sub-goals, connect to the outside world, and execute complex plans.
 
 <p align="center" width="60%">
-    <img width="60%" src="./documentation/A2a_Mcp_High_level_architecture.png">
+    <img width="60%" src="./documentation/illustrations/Multi_agent_System.png">
 </p>
 
 For a detailed description of Swarm's core components, refer to the "Core Components of Swarm" section below.

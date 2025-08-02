@@ -3,7 +3,7 @@
 ## **Why Swarm?**
 
 Tired of siloed AI agents? Swarm empowers you to build, connect, and orchestrate intelligent agents in Rust, allowing them to communicate, collaborate, and tackle complex tasks together. 
-We combine two powerful communication protocols (MCP and A2A) and an orchestration capability to create a control center for your digital assistants. Swarm enable a **recursive design** , so that you can create, according to business value, a sophisticated network of agents.
+We combine two powerful communication protocols (MCP and A2A) and an orchestration capability to create a control center for your digital assistants. Swarm enables **recursive design**. You can create, according to business value, a sophisticated network of agents.
 
 Whether you're a Rust enthusiast, an AI developer, or just curious about multi-agent systems, Swarm provides a flexible and powerful framework for your agentic applications!
 

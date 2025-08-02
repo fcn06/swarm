@@ -81,30 +81,7 @@ The `configuration` directory is your go-to for customizing agent behavior. Here
 
 ## **🚀 Launching Your Agents**
 
-Getting your Swarm agents up and running is straightforward. We highly recommend using the companion `swarm_launcher` project for a streamlined experience, especially for multi-agent setups.
-
-### **✨ Option 1: Simplified Launch with `swarm_launcher` (Recommended)**
-
-`swarm_launcher` provides easy-to-use scripts and configuration examples to quickly deploy and orchestrate your Swarm agents, simplifying environment variable management and setup.
-
-**Get started with `swarm_launcher`:** [https://github.com/fcn06/swarm_launcher](https://github.com/fcn06/swarm_launcher)
-
-
-**Quick Example with `swarm_launcher`:**
-(Assuming you have `swarm_launcher` cloned and built from its repository)
-
-```bash
-# Navigate to your swarm_launcher directory
-cd path/to/swarm_launcher
-
-# Example: Launch a basic A2A agent (check swarm_launcher's README for available scenarios)
-./script_execution.sh --scenario simple_a2a_agent
-```
-*(Note: Refer to the `swarm_launcher` repository for detailed setup and scenario instructions.)*
-
-### **⚙️ Option 2: Manual Launching**
-
-For those who prefer direct control or specific debugging, here are the commands to manually launch individual agents. Remember to set the required API key environment variables (e.g., `LLM_A2A_API_KEY`, `LLM_FULL_API_KEY`, `LLM_MCP_API_KEY`) *before* running these commands.
+Getting your Swarm agents up and running is straightforward. For maximum flexibility and programmatic control, you can launch individual agents directly. Remember to set the required API key environment variables (e.g., `LLM_A2A_API_KEY`, `LLM_FULL_API_KEY`, `LLM_MCP_API_KEY`) *before* running these commands.
 
 *   **Simple Standalone A2A Agent Server:** Your individual intelligent assistant. You can run multiple A2A agents, each with its own configuration. (The example A2A agent embeds an MCP agent.)
 
@@ -117,16 +94,25 @@ For those who prefer direct control or specific debugging, here are the commands
     ./target/release/simple_agent_server --config-file "configuration/agent_a2a_config.toml" --log-level "warn"
     ```
 
-    To emphasize how simple it is to use swarm to launch an agent, here is a code snippet:
+    To emphasize how simple it is to use Swarm to launch an agent programmatically, here is a code snippet:
     ```rust
-    // load a2a config file and initialize appropriateruntime
-    let agent_a2a_config = AgentA2aConfig::load_agent_config(&args.config_file);
-  
-    // Create the modern server, and pass the runtime elements
-    let server = SimpleAgentServer::new(agent_a2a_config.expect("Incorrect A2A config file")).await?;
+    use configuration::AgentA2aConfig;
+    use a2a_agent_backbone::a2a_agent_logic::server::SimpleAgentServer;
 
-    println!("🌐 Starting HTTP server only...");
-    server.start_http().await?;
+    #[tokio::main]
+    async fn main() -> Result<(), Box<dyn std::error::Error>> {
+        // Load A2A config file
+        let agent_a2a_config = AgentA2aConfig::load_agent_config("configuration/agent_a2a_config.toml")
+            .expect("Incorrect A2A config file");
+      
+        // Create the agent server
+        let server = SimpleAgentServer::new(agent_a2a_config).await?;
+
+        println!("🌐 Starting HTTP server only...");
+        server.start_http().await?;
+
+        Ok(())
+    }
     ```
 
 *   **Full Agent Server (Orchestrator):** Ask the Full Agent to achieve a goal by providing a user query. This agent can connect to other A2A agents and MCP tools.
@@ -137,17 +123,28 @@ For those who prefer direct control or specific debugging, here are the commands
     # LLM_MCP_API_KEY: Optional API Key for the embedded MCP Runtime's LLM (can be the same LLM as Full Agent).
     # Both API keys must be compatible with llm_url defined in the config file.
     # You can define log level (default is "warn").
-    ./target/release/full_agent_server
+    ./target/release/full_agent_server --config-file "configuration/agent_full_config.toml" --log-level "warn"
     ```
 
-    To emphasize how simple it is to use swarm to launch a full agent, here is a code snippet:
+    To emphasize how simple it is to use Swarm to launch a full agent programmatically, here is a code snippet:
     ```rust
-    // load a2a config file and initialize appropriateruntime
-    let agent_full_config = AgentFullConfig::load_agent_config(&args.config_file);
-    let server=FullAgentServer::new(agent_full_config.expect("REASON")).await?;
+    use configuration::AgentFullConfig;
+    use a2a_full_backbone::a2a_full_server::full_server::FullAgentServer;
 
-    println!("🌐 Starting HTTP server only...");
-    server.start_http().await?;
+    #[tokio::main]
+    async fn main() -> Result<(), Box<dyn std::error::Error>> {
+        // Load Full agent config file
+        let agent_full_config = AgentFullConfig::load_agent_config("configuration/agent_full_config.toml")
+            .expect("Incorrect Full Agent config file");
+        
+        // Create the full agent server
+        let server = FullAgentServer::new(agent_full_config).await?;
+    
+        println!("🌐 Starting HTTP server only...");
+        server.start_http().await?;
+        
+        Ok(())
+    }
     ```
 
 ## **🔬 Under the Hood: Swarm.rs Crate Breakdown**
@@ -157,7 +154,7 @@ The Swarm project is composed of several specialized sub-crates, each serving a 
 *   `a2a_agent_backbone`: Provides the foundational code for a simple A2A agent. It can incorporate an MCP runtime for external interactions and connect to its own LLM.
 *   `a2a_full_backbone`: The core of the orchestrating Full Agent. It connects to declared A2A agents and an MCP server, understands their skills and tools, creates, and executes plans to achieve your goals. It also connects to its own LLM.
 *   `configuration`: Manages all Swarm configuration files, making it easy to customize agent behavior.
-*   `documentation`: Contains a series of example of toml config file for all sort of agents ( weather forecast, customer domain, web scraper, joke telling,...)
+*   `documentation`: Contains a series of example of toml config file for all sort of agents ( weather forecast, customer domain, web scraper, joke telling,...).
 *   `llm_api`: Offers a convenient interface for interacting with various Large Language Models via an OpenAI-compatible API.
 *   `mcp_agent_backbone`: A runtime designed to be integrated into an A2A agent, granting it the capability to connect to an external set of tools via an MCP server. It can be connected to its own LLM.
 *   `agent_discovery_service`: An optional HTTP service where agents can register themselves. It exposes an endpoint to list all available agents, facilitating dynamic discovery.

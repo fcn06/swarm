@@ -52,10 +52,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create a message
     //let message = Message::user_text("Hello, A2A agent! How are you today?".to_string());
     let message_id = uuid::Uuid::new_v4().to_string();
+
+    // It is extremely sensitive to the description of the MCP services
+    // it says it can deliver CURRENT weather, and so the agent understands he cannot deliver forecast through this tool
+    /* 
     let message = Message::user_text(
         "What is the weather like in Boston ?".to_string(),
         message_id,
     );
+    */
+
+    let message = Message::user_text(
+        "What is the current weather in Boston ?".to_string(),
+        message_id,
+    );
+
 
     // Send a task message
     println!("Sending message to task...");

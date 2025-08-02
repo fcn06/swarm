@@ -168,11 +168,11 @@ Swarm is currently a project for discovery and exploration! While not production
 
 We're continuously working on improvements, including:
 
-*   **Use Cases:** Detailing a number of concrete use cases.
 *   **Code Refactoring:** Continuously improving code clarity and maintainability.
+*   **Unit Tests:** Enhancing robustness and reliability across the codebase.
 *   **Memory & State Management** Capability to store all request from all agents, and to facilitate communication through the agent network.
 *   **Scalable & Asynchronous Communication** Leveraging Tokio to enable agents to process requests from multiple clients in parallel.
-*   **Unit Tests:** Enhancing robustness and reliability across the codebase.
+*   **Improved UI** Improve the UI to interact with any kind of agent.
 
 We're eager for your comments, suggestions, and contributions! Whether it's a bug report, a feature idea, or a pull request, your input helps shape the future of Swarm. Join our community and help us build the next generation of intelligent agent orchestration!
 

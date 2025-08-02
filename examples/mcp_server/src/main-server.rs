@@ -4,6 +4,16 @@ use tracing_subscriber::{
     util::SubscriberInitExt,
     {self},
 };
+
+use tracing::{info, error, Level};
+use tracing_subscriber::{
+    prelude::*,
+    fmt,
+    layer::Layer,
+    Registry, filter
+};
+
+
 mod common;
 use common::customer_mcp_service::CustomerMcpService;
 use common::general_mcp_service::GeneralMcpService;
@@ -22,6 +32,8 @@ struct Args {
     /// Configuration file path (TOML format)
     #[clap(long, default_value = "8000")]
     port: String,
+    #[clap(long, default_value = "warn")]
+    log_level: String,
     #[clap(subcommand)]
     command: Commands,
 }
@@ -40,19 +52,49 @@ enum Commands {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    tracing_subscriber::registry()
-        .with(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "debug".to_string().into()),
-        )
-        .with(tracing_subscriber::fmt::layer())
-        .init();
+
 
     // Parse command-line arguments
     let args = Args::parse();
 
+       /************************************************/
+    /* Setting proper log level. Default is INFO    */
+    /************************************************/ 
+    let log_level = match args.log_level.as_str() {
+        "trace" => Level::TRACE,
+        "debug" => Level::DEBUG,
+        "info" => Level::INFO,
+        "warn" => Level::WARN,
+        "error" => Level::ERROR,
+        _ => Level::WARN,
+    };
+
+    let subscriber = Registry::default()
+    .with(
+        // stdout layer, to view everything in the console
+        fmt::layer()
+            .compact()
+            .with_ansi(true)
+            .with_filter(filter::LevelFilter::from_level(log_level))
+    );
+
+    tracing::subscriber::set_global_default(subscriber).unwrap();
+
+    /************************************************/
+    /* End of Setting proper log level              */
+    /************************************************/ 
+
+
+    /************************************************/
+    /* Defining on each port to listen to           */
+    /************************************************/ 
+
     let bind_address = format!("{}:{}", args.host, args.port);
     println!("Server listening on: {}", bind_address);
+
+    /************************************************/
+    /*  Defining which tools to enable , and launch */
+    /************************************************/ 
 
     let ct = match args.command {
         Commands::Weather => SseServer::serve(bind_address.parse()?)
@@ -68,6 +110,10 @@ async fn main() -> anyhow::Result<()> {
             .await?
             .with_service(GeneralMcpService::new),
     };
+    
+    /************************************************/
+    /*  Server launched                             */
+    /************************************************/ 
 
     tokio::signal::ctrl_c().await?;
     ct.cancel();

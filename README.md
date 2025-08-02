@@ -2,7 +2,8 @@
 
 ## **Why Swarm?**
 
-Tired of siloed AI agents? Swarm empowers you to build, connect, and orchestrate intelligent agents in Rust, allowing them to communicate, collaborate, and tackle complex tasks together. We combine two powerful communication protocols (MCP and A2A) and an orchestration capability to create a control center for your digital assistants.
+Tired of siloed AI agents? Swarm empowers you to build, connect, and orchestrate intelligent agents in Rust, allowing them to communicate, collaborate, and tackle complex tasks together. 
+We combine two powerful communication protocols (MCP and A2A) and an orchestration capability to create a control center for your digital assistants. Swarm enable a **recursive design** , so that you can create, according to business value, a sophisticated network of agents.
 
 Whether you're a Rust enthusiast, an AI developer, or just curious about multi-agent systems, Swarm provides a flexible and powerful framework for your agentic applications!
 
@@ -22,11 +23,13 @@ For a detailed description of Swarm's core components, refer to the "Core Compon
 
 To jumpstart your engagement with Swarm, explore concrete multi-agent orchestration use cases. 
 The `documentation/use_case_combined_agents` directory contains a script that will :
-*   Launch three test MCP servers, each owning one tool ( one to get customer data, one to get weather and one to scrape an url)
-*   Launch Three stand alone a2a agent, each connecting to one mcp server
+
+*   Launch Three stand alone a2a agent, each connecting to its own instance of mcp server each giving access to one tool
 *   Launch one a2a full agent that acts as coordinator of the three others
 *   Send three requests to the coordinator ( one request about customer, one about data and one generic)
 
+Through your terminal, you will see logs of agents and mcp servers. 
+And you will see how the coordinator answer to user requests
 
 To make it easy, we created a script, to be launched from the root of swarm crate.
 
@@ -62,7 +65,7 @@ Swarm is built around three key intelligent agent components:
 
 *   **A2A Agent (Agent-to-Agent Protocol):** 🗣️ A simple, autonomous agent capable of direct communication with other A2A agents. It can also integrate an MCP Runtime for external interactions and connect to its own LLM.
 *   **MCP Runtime (Model Context Protocol):** 🛠️ A powerful runtime that enables agents to interact with external services and data sources. Imagine your agents querying a weather API or accessing a database!
-*   **Full Agent:** 🧠 An advanced A2A agent that acts as an orchestrator. It connects to various other A2A agents and an MCP server, understands their available skills and tools, creates a plan based on a user request, and executes it. This enables complex agentic network designs.
+*   **Full Agent:** 🧠 An advanced A2A agent that acts as an orchestrator. It connects to various other A2A agents and an MCP server, understands their available skills and tools, creates a plan based on a user request, and executes it. Because a Full Agent is also an A2A agent, this allows for the creation of complex, hierarchical agent swarms where agents can be a part of multiple orchestration layers.
 
 
 ## **⚙️ Configuration Details**

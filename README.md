@@ -2,7 +2,8 @@
 
 ## **Why Swarm?**
 
-Tired of siloed AI agents? Swarm empowers you to build, connect, and orchestrate intelligent agents in Rust, allowing them to communicate, collaborate, and tackle complex tasks together. 
+Imagine a team of digital assistants: one for customer service, another for data analysis, and a third for web scraping. Swarm is the framework that lets them work together seamlessly...Swarm empowers you to build, connect, and orchestrate intelligent agents in Rust, allowing them to communicate, collaborate, and tackle complex tasks together.
+
 We combine two powerful communication protocols (MCP and A2A) and an orchestration capability to create a control center for your digital assistants. Swarm enables **recursive design**. You can create, according to business value, a sophisticated network of agents.
 
 Whether you're a Rust enthusiast, an AI developer, or just curious about multi-agent systems, Swarm provides a flexible and powerful framework for your agentic applications!
@@ -21,27 +22,22 @@ For a detailed description of Swarm's core components, refer to the "Core Compon
 
 ## **🚀 Quickstart into an example : Multi-Agent Orchestration Use Case:**
 
-To jumpstart your engagement with Swarm, explore concrete multi-agent orchestration use cases. 
-The `documentation/use_case_combined_agents` directory contains a script that will :
+We create a scenario to illustrate capabilities of the framework. 
 
-*   Launch Three stand alone a2a agent, each connecting to its own instance of mcp server each giving access to one tool
-*   Launch one a2a full agent that acts as coordinator of the three others
-*   Send three requests to the coordinator ( one request about customer, one about data and one generic)
+It is located in `documentation/use_case_combined_agents`. You will be able to find all the config files to support the scenario.
 
-Through your terminal, you will see logs of agents and mcp servers. 
-And you will see how the coordinator answer to user requests
+You should see logs from three MCP servers, three A2A agents, and the coordinating Full Agent. The script will then send three requests, and you will see the full agent orchestrate the response.
 
 To make it easy, we created a script, to be launched from the root of swarm crate.
 
 ```bash
 export LLM_A2A_API_KEY=<YOUR-GEMINI-API-KEY>
-
 export LLM_MCP_API_KEY=<YOUR-GEMINI-API-KEY>
-
 export LLM_FULL_API_KEY=<YOUR-GEMINI-API-KEY>
 
 ./documentation/use_case_combined_agents/run_all_commands.sh 
 ```
+We hope that this quickstart will enable you to build your own scenario very easily
 
 ## **🚀 Getting Started & Prerequisites**
 
@@ -174,8 +170,8 @@ We're continuously working on improvements, including:
 
 *   **Use Cases:** Detailing a number of concrete use cases.
 *   **Code Refactoring:** Continuously improving code clarity and maintainability.
-*   **Memory** Capability to store all request from all agents.
-*   **Asynchronous Processing** Leveraging Tokio to enable agents to process requests from multiple clients in parallel.
+*   **Memory & State Management** Capability to store all request from all agents, and to facilitate communication through the agent network.
+*   **Scalable & Asynchronous Communication** Leveraging Tokio to enable agents to process requests from multiple clients in parallel.
 *   **Unit Tests:** Enhancing robustness and reliability across the codebase.
 
 We're eager for your comments, suggestions, and contributions! Whether it's a bug report, a feature idea, or a pull request, your input helps shape the future of Swarm. Join our community and help us build the next generation of intelligent agent orchestration!

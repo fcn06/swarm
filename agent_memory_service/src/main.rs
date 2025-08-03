@@ -21,9 +21,20 @@ use tracing_subscriber::{
 use clap::Parser;
 
 use serde::{Serialize,Deserialize};
+use chrono::Utc;
 
-// Todo:Create a MemoryService that could be embedded in agents
-// coupled with a stand alone rest service so that it can multiplex messages from all agents
+
+// create a MemoryService struct, along with dedicated methods
+// create a light bin file that will launch server through server.start()
+
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct AgentData {
+    pub agent_id: String,
+    pub content: String,
+    pub summary: Option<String>,
+    pub interaction_type: String,
+}
 
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -35,6 +46,7 @@ pub struct MemoryEntry {
     pub summary: Option<String>,
     pub interaction_type: String,
 }
+
 
 /// Application state holding configurations
 #[derive(Clone)] // AppState needs to be Clone to be used as Axum state
@@ -131,11 +143,25 @@ async fn root() -> &'static str {
 
 async fn add_memory(
     State(state): State<AppState>, // Extract the AppState
-    Json(payload_memory_entry): Json<MemoryEntry>,
+    Json(payload_agent_data): Json<AgentData>,
 ) -> Json<MemoryEntry> {
 
-    info!("Received add_memory request: {:?}", payload_memory_entry);
-    Json(payload_memory_entry)
+    info!("Received add_memory request: {:?}", payload_agent_data);
+
+    let db_memory = state.db_memory.to_owned();
+   
+    let memory_entry_updated=MemoryEntry{
+        id:uuid::Uuid::new_v4().to_string(),
+        agent_id:payload_agent_data.agent_id.clone(),
+        timestamp:Utc::now().to_rfc3339(),
+        content:payload_agent_data.content.clone(),
+        summary:None,
+        interaction_type:payload_agent_data.interaction_type.clone(),
+    };
+
+    db_memory.insert(memory_entry_updated.id.clone(), memory_entry_updated.clone());
+
+    Json(memory_entry_updated)
    
 }
 
@@ -144,7 +170,15 @@ async fn list_memories(
 ) -> Json<Vec<MemoryEntry>> {
 
     info!("Received list_memories request");
-    let memories: Vec<MemoryEntry>=Vec::new();
+
+    let db_memory = state.db_memory.to_owned();
+
+    let mut memories: Vec<MemoryEntry> = Vec::new();
+
+    for entry in db_memory.iter() {
+        memories.push(entry.value().clone());
+    }
+
     Json(memories)
 
 }

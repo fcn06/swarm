@@ -174,7 +174,13 @@ We're continuously working on improvements, including:
 *   **Scalable & Asynchronous Communication** Leveraging Tokio to enable agents to process requests from multiple clients in parallel.
 *   **Improved UI** Improve the UI to interact with any kind of agent.
 
-We're eager for your comments, suggestions, and contributions! Whether it's a bug report, a feature idea, or a pull request, your input helps shape the future of Swarm. Join our community and help us build the next generation of intelligent agent orchestration!
+
+We're eager for your comments, suggestions, and contributions! 
+Whether it's a bug report, a feature idea, or a pull request, your input helps shape the future of Swarm. 
+
+You an also contribute by suggesting configuration files that you have been using to support your use case, as well as models you have been using for your experimentations
+
+Join our community and help us build the next generation of intelligent agent orchestration!
 
 ## **⭐ Show Your Support**
 

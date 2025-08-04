@@ -22,8 +22,8 @@ pub struct AgentA2aConfig {
     pub agent_a2a_skill_name: String,
     pub agent_a2a_skill_description: String,
     pub agent_a2a_model_id: String,
-    pub agent_a2a_llm_url: String,
-    pub agent_a2a_mcp_config_path: Option<String>,
+    pub agent_a2a_llm_url: String, // This is the LLM that will manage interactions with A2A agent. LLM_A2A_API_KEY is connected to this one
+    pub agent_a2a_mcp_config_path: Option<String>, // The path of the configuration for the MCP runtime
     pub agent_a2a_doc_url: Option<String>,
     pub agent_a2a_tags: Vec<String>,
     pub agent_a2a_examples: Vec<String>,
@@ -40,6 +40,7 @@ impl AgentA2aConfig {
     }
 }
 
+// The configuration for the MCP runtime
 #[derive(Deserialize, Debug, Clone)]
 pub struct AgentMcpConfig {
     //pub agent_mcp_system_prompt: String,
@@ -50,9 +51,9 @@ pub struct AgentMcpConfig {
     pub agent_mcp_finish_reason_stop: String,
     pub agent_mcp_max_loops: u32, // Use appropriate type
     pub agent_mcp_server_url: Option<String>,
-    pub agent_mcp_server_api_key:Option<String>,
+    pub agent_mcp_server_api_key:Option<String>, // this is the API-key to connect to your mcp server
     pub agent_mcp_model_id: String,
-    pub agent_mcp_llm_url: String,
+    pub agent_mcp_llm_url: String, // This is the LLM that will manage interactions with MCP server. LLM_MCP_API_KEY is connected to this one
     pub agent_mcp_system_prompt: String,
     pub agent_mcp_endpoint_url: Option<String>, // This will come from command line or instance config
 }
@@ -68,7 +69,9 @@ impl AgentMcpConfig {
     }
 }
 
-
+// Config file is mostly the same as the one for stand alone agent
+// only list of agents connected to full agent is additional
+// todo:refactor 
 #[derive(Deserialize, Debug, Clone)]
 pub struct AgentFullConfig {
     pub agent_full_name: String,
@@ -83,9 +86,9 @@ pub struct AgentFullConfig {
     pub agent_full_skill_name: String,
     pub agent_full_skill_description: String,
     pub agent_full_model_id: String,
-    pub agent_full_llm_url: String,
-    pub agent_full_mcp_config_path: Option<String>,
-    pub agent_full_agents_references:Vec<SimpleAgentReference>,
+    pub agent_full_llm_url: String, // This is the LLM that will manage interactions with Full agent. LLM_FULL_API_KEY is connected to this one
+    pub agent_full_mcp_config_path: Option<String>, // The path of the configuration for the MCP runtime
+    pub agent_full_agents_references:Vec<SimpleAgentReference>, // List all agents connected to full agents
     pub agent_full_doc_url: Option<String>,
     pub agent_full_tags: Vec<String>,
     pub agent_full_examples: Vec<String>,
@@ -132,6 +135,7 @@ impl SimpleAgentReference {
 
 ///////////////////////////////////////////////////////////////
 // INTERACTION WITH DISCOVERY SERVICE
+// to be moved to the discovery service crate
 ///////////////////////////////////////////////////////////////
 
 

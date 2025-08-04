@@ -17,3 +17,8 @@ clap={ workspace = true }
 uuid={workspace=true}
 
 dashmap = { version = "6", features = ["serde"] }
+
+
+[[bin]]
+name = "memory_service"
+path = "bin/launch_memory_service.rs"

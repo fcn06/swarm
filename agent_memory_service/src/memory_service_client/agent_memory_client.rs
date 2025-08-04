@@ -5,14 +5,14 @@ use serde::{Serialize, Deserialize};
 use crate::{AgentData, MemoryEntry};
 
 #[derive(Debug)]
-pub struct AgentServiceClient {
+pub struct AgentMemoryServiceClient {
     memory_service_url: String,
     client: Client,
 }
 
-impl AgentServiceClient {
+impl AgentMemoryServiceClient {
     pub fn new(memory_service_url: String) -> Self {
-        AgentServiceClient {
+        AgentMemoryServiceClient {
             memory_service_url,
             client: Client::new(),
         }

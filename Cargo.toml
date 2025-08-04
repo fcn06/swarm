@@ -1,9 +1,9 @@
 [workspace]
 resolver = "3"
 
-members = [ "configuration","llm_api","mcp_agent_backbone","a2a_agent_backbone","agent_discovery_service","a2a_full_backbone","examples/*"]
+# members = [ "configuration","llm_api","mcp_agent_backbone","a2a_agent_backbone","agent_discovery_service","a2a_full_backbone","examples/*"]
 # enable as well agent_memory_service. Will become main when finalized
-# members = [ "configuration","llm_api","mcp_agent_backbone","a2a_agent_backbone","agent_discovery_service","agent_memory_service","a2a_full_backbone","examples/*"]
+members = [ "configuration","llm_api","mcp_agent_backbone","a2a_agent_backbone","agent_discovery_service","agent_memory_service","a2a_full_backbone","examples/*"]
 
 
 [workspace.dependencies]

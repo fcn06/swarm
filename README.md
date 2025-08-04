@@ -173,6 +173,7 @@ We're continuously working on improvements, including:
 *   **Memory & State Management** Capability to store all request from all agents, and to facilitate communication through the agent network.
 *   **Scalable & Asynchronous Communication** Leveraging Tokio to enable agents to process requests from multiple clients in parallel.
 *   **Improved UI** Improve the UI to interact with any kind of agent.
+*   **Test with Llama.cpp Server** Test with llama.cpp server so that we can connect all kind of fine tuned models for single domain agents.
 
 
 We're eager for your comments, suggestions, and contributions! 

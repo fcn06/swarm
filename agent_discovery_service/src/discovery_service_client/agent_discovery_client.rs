@@ -12,14 +12,14 @@ pub struct AgentDiscoveryServiceClient {
 }
 
 impl AgentDiscoveryServiceClient {
-    pub fn new(memory_service_url: String) -> Self {
+    pub fn new(discovery_service_url: String) -> Self {
         AgentDiscoveryServiceClient {
             discovery_service_url,
             client: Client::new(),
         }
     }
 
-    pub async fn register(&self, agent_card: AgentCard) -> Result<AgentCard, Error> {
+    pub async fn register(&self, agent_card: AgentCard) -> Result<String, Error> {
 
         let url = format!("{}/register", self.discovery_service_url);
         
@@ -28,27 +28,7 @@ impl AgentDiscoveryServiceClient {
             .send()
             .await?;
 
-        response.json::<AgentCard>().await
-    }
-
-
-    // register an agent
-    pub async fn register_v2(&self, agent_card: AgentCard) -> Result<AgentCard, Error> {
-
-        let url = format!("{}/register", self.discovery_service_url);
-        
-        let agent_registered = = self.client.post(&url)
-            .json(&agent_card)
-            .send()
-            .await?;
-
-            match agent_registered {
-                Ok(response) => { 
-                    println!("Successfully registered server agent: {:?}", response);
-                    response.json::<AgentCard>().await
-                }
-                Err(e) => {e}
-            }
+        response.json::<String>().await
     }
 
 

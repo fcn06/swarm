@@ -12,6 +12,9 @@ llm_api = { workspace = true }
 configuration = { workspace = true }
 mcp_agent_backbone={ workspace = true }
 
+agent_discovery_service={ workspace = true }
+
+
 a2a-rs= { workspace = true }
 
 anyhow={ workspace = true }

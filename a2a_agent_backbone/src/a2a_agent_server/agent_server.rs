@@ -13,6 +13,8 @@ use crate::a2a_agent_logic::simple_agent::SimpleAgent;
 
 use configuration::{AgentA2aConfig};
 
+use agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient;
+
 
 /// Modern A2A server setup 
 pub struct SimpleAgentServer {
@@ -111,7 +113,13 @@ impl SimpleAgentServer {
         );
 
          let agent_a2a_config = self.agent_a2a_config.clone();
-        agent_a2a_config.register(agent_info.get_agent_card().await?).await?;
+
+         agent_a2a_config.register(agent_info.get_agent_card().await?).await?;
+
+        // Make it more resilient, especially if the discovery service is not up
+        // let agent_discovery_client=AgentDiscoveryServiceClient::new(agent_a2a_config.agent_a2a_discovery_url.clone().expect("NO DISCOVERY URL"));
+        // agent_discovery_client.register(agent_info.get_agent_card().await?).await?;
+
 
         //////////////////////////////////////////////////////////////////
 

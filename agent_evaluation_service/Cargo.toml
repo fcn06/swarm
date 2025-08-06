@@ -1,0 +1,19 @@
+[package]
+name = "agent_evaluation_service"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["rlib"]
+
+[dependencies]
+# For making HTTP requests to the LLM API
+reqwest = { version = "0.11", features = ["json"] } # Changed to not include "blocking" as async is recommended.
+tokio = { version = "1", features = ["full"] } # For async operations
+# For serializing/deserializing JSON data
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+# For environment variables
+dotenv = "0.15"
+# For timestamps
+chrono = { version = "0.4", features = ["serde"] }

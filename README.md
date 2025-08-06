@@ -8,7 +8,7 @@ We combine two powerful communication protocols (MCP and A2A) and an orchestrati
 
 Whether you're a Rust enthusiast, an AI developer, or just curious about multi-agent systems, Swarm provides a flexible and powerful framework for your agentic applications!
 
-## **🌐 How It Works: A Glimpse into the Architecture**
+## **🌐 How It Works**
 
 The diagram below illustrates how our agents, powered by MCP and A2A, interact under the guidance of the Full Agent. This architecture allows agents to communicate with each other to achieve sub-goals, connect to the outside world, and execute complex plans.
 

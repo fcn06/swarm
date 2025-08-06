@@ -1,6 +1,6 @@
 
 use reqwest::{Client, Error};
-use serde::{Serialize, Deserialize};
+
 
 
 use a2a_rs::domain::AgentCard;

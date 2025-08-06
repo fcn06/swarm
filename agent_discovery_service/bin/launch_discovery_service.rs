@@ -1,7 +1,5 @@
-use std::sync::Arc;
 
-
-use tracing::{info, error, Level};
+use tracing::{ Level};
 use tracing_subscriber::{
     prelude::*,
     fmt,
@@ -11,8 +9,6 @@ use tracing_subscriber::{
 
 use clap::Parser;
 
-use serde::{Serialize,Deserialize};
-use chrono::Utc;
 
 use agent_discovery_service::discovery_server::server::DiscoveryServer;
 

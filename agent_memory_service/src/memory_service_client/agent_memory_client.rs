@@ -1,6 +1,6 @@
 
 use reqwest::{Client, Error};
-use serde::{Serialize, Deserialize};
+
 
 use crate::{AgentData, MemoryEntry};
 

@@ -31,23 +31,41 @@ echo $'\n'
 ./target/release/examples/main-server --port 8003 scrape &
 echo $'\n'
 
+sleep 3
+
+echo $'\n'
 
 echo "D) Launch three agents listening on three different ports (8081,8083,8085), each using mcp config"
-./target/release/simple_agent_server  --config-file "documentation/use_case_combined_agents/weather_a2a_agent.toml" &
-./target/release/simple_agent_server  --config-file "documentation/use_case_combined_agents/customer_domain_a2a_agent.toml" &
-./target/release/simple_agent_server  --config-file "documentation/use_case_combined_agents/web_scraper_a2a_agent.toml" &
-echo $'\n' 
-read -n 1 -s -r -p "Press any key to continue after three agents are launched on port 8081,8083,8085..."
 echo $'\n'
+
+./target/release/simple_agent_server  --config-file "documentation/use_case_combined_agents/weather_a2a_agent.toml" &
+sleep 2
+
+./target/release/simple_agent_server  --config-file "documentation/use_case_combined_agents/customer_domain_a2a_agent.toml" &
+sleep 2
+
+./target/release/simple_agent_server  --config-file "documentation/use_case_combined_agents/web_scraper_a2a_agent.toml" &
+sleep 3
+
+echo $'\n'
+echo $'\n'
+
 
 echo "E) Launch full agent listening on port 9080, connected to three individual agents"
 ./target/release/full_agent_server --config-file "documentation/use_case_combined_agents/agent_full_config.toml" &
+
+sleep 3
+
 echo $'\n'
-read -n 1 -s -r -p "Press any key to continue after coordinator agent is launched..."
 echo $'\n'
 
 
 echo "F) Launch the a2a_client with 4 requests, three of them are targetting a specific tool, and the fourth a general knowledge question"
+
+echo $'\n'
+read -n 1 -s -r -p "Press any key to continue..."
+echo $'\n'
+
 #echo "Ask the questions to first agent . He should answer to the scraping question"
 #./target/release/simple_a2a_client --port 8081 
 #read -n 1 -s -r -p "Press any key to continue..."

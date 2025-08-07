@@ -1,0 +1,57 @@
+*******************************************************
+Command Line passed to the orchestrator
+*******************************************************
+
+./target/release/simple_a2a_client --port 9080 
+
+*******************************************************
+Logs from the client connected to the orchestrator
+*******************************************************
+
+Server listening on: http://127.0.0.1:9080
+
+**************************
+Task 1 : Weather query
+**************************
+
+Created task with ID: task-01c3e92f-353c-432c-998e-c6c3e4825425
+Sending message to task...
+Got response with status: Completed
+Agent response:
+  The current weather in Boston is sunny with a temperature of 24 degrees Celsius.
+Retrieving task...
+Retrieved task with ID: task-01c3e92f-353c-432c-998e-c6c3e4825425 and state: Completed
+
+**************************
+Task 2 : Customer query
+**************************
+
+Sending message to task...
+Got response with status: Completed
+Agent response:
+  Customer details for Customer ID 1234 are: Full Name: Company A, address: Sunny Street.
+Retrieving task...
+Retrieved task with ID: task-d58d23b1-de85-4def-b096-af99eb9f056b and state: Completed
+
+**************************
+Task 3 : Combined query ( Weather and Customer)
+**************************
+
+Sending message to task...
+Got response with status: Completed
+Agent response:
+  The current weather in Boston is sunny with a temperature of 24 degrees Celsius. Customer ID 1234 is associated with Company A, located on Sunny Street.
+Retrieving task...
+Retrieved task with ID: task-3a597a1a-7840-4e9d-9169-7890bc90a253 and state: Completed
+
+**************************
+Task 4 : General Purpose
+**************************
+
+Sending message to task...
+2025-08-07T05:31:13.968861Z  WARN a2a_full_backbone::a2a_full_agent_logic::full_agent: PlannerAgent: No agent found with skill 'skill_web_data_extractor'. Attempting to find default agent.
+Got response with status: Completed
+Agent response:
+  Rust is a modern programming language offering a compelling combination of performance, reliability, and productivity. Its key benefits include memory safety (preventing common bugs like dangling pointers and data races), zero-cost abstractions (high-level code without sacrificing performance), a powerful tooling ecosystem (Cargo, Rustfmt, Clippy), excellent interoperability (FFI and WebAssembly), and compile-time guarantees that reduce runtime errors. While it has a steeper learning curve, Rust is well-suited for systems programming, web development, game development, and more.
+Retrieving task...
+Retrieved task with ID: task-3441d9e8-5a78-4b08-8df5-a3bd61ca4d3c and state: Completed

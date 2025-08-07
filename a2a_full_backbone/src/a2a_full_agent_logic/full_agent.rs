@@ -610,6 +610,10 @@ impl FullAgent {
          None
     }
 
+    
+    // todo:investigate about summarization
+    // I have some erratic errors in case of general knowledge
+    // not sure the output of internal search is transmitted in all cases
 
     async fn summarize_results(&self, plan: &mut Plan) -> Result<String> {
 

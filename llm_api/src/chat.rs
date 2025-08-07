@@ -2,9 +2,13 @@ use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::Value; // Import Value for flexible parameters
 
+use tracing::{ Level,debug};
 
 use crate::tools::Tool;
 use anyhow::{Result,Context};
+
+use tokio::time::{sleep, Duration};
+
 
 #[derive(Clone)]
 pub struct ChatLlmInteraction {
@@ -147,23 +151,38 @@ pub async fn call_chat_completions_v2(
     &self,
     request_payload: &ChatCompletionRequest,
 ) -> Result<ChatCompletionResponse, reqwest::Error> {
-    //let api_key = env::var("LLM_API_KEY").expect("LLM_API_KEY must be set");
     
-    let response = self.client
-        .post(self.llm_url.clone())
-        .bearer_auth(self.llm_api_key.clone())
-        .header("Content-Type", "application/json; charset=utf-8")
-        .json(request_payload)
-        .send()
-        .await?;
+    let mut retries = 0;
+    let max_retries = 3; // You can adjust this
+    let mut delay = Duration::from_secs(1); // Starting delay
 
-    // Check for HTTP errors first
-    response.error_for_status_ref()?;
+    loop {
+        let response = self.client
+            .post(self.llm_url.clone())
+            .bearer_auth(self.llm_api_key.clone())
+            .header("Content-Type", "application/json; charset=utf-8")
+            .json(request_payload)
+            .send()
+            .await?;
 
-    // Then deserialize the successful response
-    let response_body = response.json::<ChatCompletionResponse>().await?;
+        debug!("LLM API Response : {:?}", response);
 
-    Ok(response_body)
+        if response.status() == reqwest::StatusCode::TOO_MANY_REQUESTS {
+            retries += 1;
+            if retries > max_retries {
+                return Err(response.error_for_status().unwrap_err()); // Return the last 429 error
+            }
+            debug!("Rate limit hit (429). Retrying in {:?}... (Retry {}/{})", delay, retries, max_retries);
+            sleep(delay).await;
+            delay *= 2; // Exponential backoff
+        } else {
+            // Check for other HTTP errors and then deserialize
+            response.error_for_status_ref()?;
+            let response_body = response.json::<ChatCompletionResponse>().await?;
+            debug!("LLM API Response Body: {:?}", response_body);
+            return Ok(response_body);
+        }
+    }
 }
 
 /// for very simple calls without tools, one can use this simpler api
@@ -302,6 +321,10 @@ pub async fn call_api_simple_v2(
     .await
     .context("LLM API request failed during plan creation")?;
 
+
+    debug!("LLM Response Call API V2: {:?}", llm_response);
+
+
     let response_content = llm_response
         .choices
         .get(0)
@@ -320,6 +343,5 @@ pub async fn call_api_simple_v2(
     Ok(response_content)
 
 }
-
 
 }

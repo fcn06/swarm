@@ -6,7 +6,9 @@ use a2a_rs::{
 use anyhow::Result;
 
 use std::sync::Arc;
-use tracing::{info,debug};
+use tracing::{info,debug,error,warn};
+
+use tokio::time::{sleep, Duration};
 
 /////////////////////////////////////////////////////////
 // Client to connect to a2a server
@@ -72,12 +74,32 @@ impl A2AClient {
         let message_id = uuid::Uuid::new_v4().to_string();
         let message = Message::agent_text(task_description.to_string(), message_id);
 
-        // Send a task message
-        info!("Sending message to task...");
-        let task = self
-            .client
-            .send_task_message(&task_id, &message, None, Some(50))
-            .await?;
+        // Exponential re start in case of rate limiting
+        let mut retries = 0;
+        let max_retries = 3; // You can adjust this
+        let mut delay = Duration::from_secs(1); // Starting delay
+
+        let task = loop {
+            info!("Sending message to task...");
+            match self
+                .client
+                .send_task_message(&task_id, &message, None, Some(50))
+                .await
+            {
+                Ok(t) => break t,
+                Err(e) => {
+                    retries += 1;
+                    if retries > max_retries {
+                        error!("Failed to send task message after {} retries: {}", max_retries, e);
+                        return Err(e.into()); // Return the error if max retries reached
+                    }
+                    warn!("Failed to send task message. Retrying in {:?}... (Retry {}/{})\nError: {}", delay, retries, max_retries, e);
+                    sleep(delay).await;
+                    delay *= 2; // Exponential backoff
+                }
+            }
+        };
+
         // Response of send_task_message is  :Result<Task, A2AError>;
         // Simulate potential failure for demonstration
         // if task_description.contains("fail") {

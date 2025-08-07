@@ -15,3 +15,7 @@ serde_json = { workspace = true }
 rustls = { workspace = true }
 anyhow = { workspace = true }
 rmcp = { workspace = true }
+
+# Logging - optional
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true}

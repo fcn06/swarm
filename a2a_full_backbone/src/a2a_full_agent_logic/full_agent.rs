@@ -13,9 +13,7 @@ use crate::a2a_plan::plan_execution::A2AClient;
 
 use mcp_agent_backbone::mcp_agent_logic::agent::McpAgent;
 
-//use rmcp::model::{CallToolRequestParam,CallToolResult,RawContent};
 use rmcp::model::{CallToolRequestParam};
-
 
 use configuration::SimpleAgentReference;
 use configuration::AgentMcpConfig;
@@ -28,7 +26,6 @@ use configuration::AgentFullConfig;
 
 use tracing::{error,warn,info,debug,trace};
 
-//use std::error::Error;
 
 
 /// Agent that that can interact with other available agents, and also embed MCP runtime if needed
@@ -508,7 +505,10 @@ impl FullAgent {
                 } else {
                     // Task requires no specific skill or tool, potentially an LLM reflection task
                     // Use the original user query for general knowledge tasks
-                    task_result = Ok(self.llm_interaction.call_api_simple_v2("user".to_string(),plan.user_query.to_string()).await?.expect("Improper task description"));
+                    debug!("FullAgent: Executing general knowledge task for user query: '{}'", plan.user_query);
+                    let llm_response = self.llm_interaction.call_api_simple_v2("user".to_string(),plan.user_query.to_string()).await?;
+                    debug!("FullAgent: Raw LLM response for general knowledge task: {:?}", llm_response);
+                    task_result = Ok(llm_response.expect("Improper task description"));
                 }
 
                 // Process the task result immediately
@@ -664,11 +664,19 @@ impl FullAgent {
             context.push_str("The plan is still in progress. Provide a brief update based on the plan summary and tasks.");
         }
 
+        debug!("FullAgent: Context for summarization (length: {}): '{}'", context.len(), context);
+
         ////////////////////////////////////////////////////////////////////////////////////////////////
         // Generate answer based on Context
+        // We sometime have to deal with rate limiting constrainst in llm service provider. 
+        // Llm chat needed to be adjusted
+        // there is still an issue of timeout in a2a implementation that will need to be addressed
         ////////////////////////////////////////////////////////////////////////////////////////////////
         
-        let summary = self.llm_interaction.call_api_simple_v2("user".to_string(),context.to_string()).await?.expect("Improper Summary");
+        let summary_response = self.llm_interaction.call_api_simple_v2("user".to_string(),context.to_string()).await
+            .context("LLM API request failed during summarization")?;
+
+        let summary = summary_response.ok_or_else(|| anyhow::anyhow!("LLM returned no content for summarization"))?;
         
         ////////////////////////////////////////////////////////////////////////////////////////////////
 

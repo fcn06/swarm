@@ -8,6 +8,15 @@ use a2a_rs::{
 };
 use clap::{Parser};
 
+
+use tracing::{ Level,info};
+use tracing_subscriber::{
+    prelude::*,
+    fmt,
+    layer::Layer,
+    Registry, filter
+};
+
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Args {
@@ -17,6 +26,8 @@ struct Args {
     /// Configuration file path (TOML format)
     #[clap(long, default_value = "8080")]
     port: String,
+    #[clap(long, default_value = "warn")]
+    log_level: String,
 }
 
 
@@ -26,6 +37,34 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Parse command-line arguments
     let args = Args::parse();
 
+     /************************************************/
+    /* Setting proper log level. Default is INFO    */
+    /************************************************/ 
+    let log_level = match args.log_level.as_str() {
+        "trace" => Level::TRACE,
+        "debug" => Level::DEBUG,
+        "info" => Level::INFO,
+        "warn" => Level::WARN,
+        "error" => Level::ERROR,
+        _ => Level::WARN,
+    };
+
+    let subscriber = Registry::default()
+    .with(
+        // stdout layer, to view everything in the console
+        fmt::layer()
+            .compact()
+            .with_ansi(true)
+            .with_filter(filter::LevelFilter::from_level(log_level))
+    );
+
+    tracing::subscriber::set_global_default(subscriber).unwrap();
+
+    /************************************************/
+    /* End of Setting proper log level              */
+    /************************************************/ 
+
+ 
     /************************************************/
     /* Sample A2A client either responding to       */
     /* A simple A2A Server or A2A Planner Agent     */
@@ -36,6 +75,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let client = HttpClient::new(bind_address.to_string());
 
+    /* 
     /************************************************/
     /* First Task (query related to weather)       */
     /************************************************/ 
@@ -123,6 +163,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /* End of Second Task                           */
     /************************************************/ 
   
+    */
+
     /************************************************/
     /* Third Task  (Combined Weather and Customer)  */
     /************************************************/ 
@@ -131,10 +173,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Create a message
     let message_id_3 = uuid::Uuid::new_v4().to_string();
-    let message_3 = Message::user_text("What is the current weather in Boston and What are details of Customer_id 1234 ?".to_string(), message_id_3);
+    let user_text="What is the current weather in Boston and What are details of Customer_id 1234 ?".to_string();
+    println!("\nUser_Query : {}",user_text);
+    let message_3 = Message::user_text(user_text, message_id_3);
 
     // Send a task message
-    println!("Sending message to task...");
+    println!("This is a task that needs to be sent to two different agents to be adressed...\n");
+    println!("Sending message to agents to process tasks ...");
 
     let task_3 = client
         .send_task_message(&task_id_3, &message_3, None, Some(50))
@@ -164,6 +209,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /* End of Third Task                           */
     /************************************************/ 
 
+   
     
       
     /************************************************/
@@ -174,15 +220,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Create a message
     let message_id_4 = uuid::Uuid::new_v4().to_string();
-    let message_4 = Message::user_text("Make a description of the benefits of rust in less than 400 words ?".to_string(), message_id_4);
+    let user_text="Make a description of the benefits of rust in less than 400 words.".to_string();
+    println!("\nUser_Query : {}",user_text);
+    let message_4 = Message::user_text(user_text, message_id_4);
 
     // Send a task message
-    println!("Sending message to task...");
+    println!("This is an general knowledge task...\n");
+    println!("Sending message to agents to process tasks ...");
 
     let task_4 = client
         .send_task_message(&task_id_4, &message_4, None, Some(50))
         .await?;
-    println!("Got response with status: {:?}", task_4.status.state);
+    //info!("Got response with status: {:?}", task_4.status.state);
+    //info!("Got response with message: {:?}", task_4.status.message);
 
     if let Some(response_message_4) = task_4.status.message {
         println!("Agent response:");

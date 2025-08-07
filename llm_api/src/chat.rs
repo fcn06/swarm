@@ -2,7 +2,7 @@ use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::Value; // Import Value for flexible parameters
 
-use tracing::{ Level,debug};
+use tracing::{ Level,debug,warn};
 
 use crate::tools::Tool;
 use anyhow::{Result,Context};
@@ -172,7 +172,7 @@ pub async fn call_chat_completions_v2(
             if retries > max_retries {
                 return Err(response.error_for_status().unwrap_err()); // Return the last 429 error
             }
-            debug!("Rate limit hit (429). Retrying in {:?}... (Retry {}/{})", delay, retries, max_retries);
+            warn!("Rate limit hit (429). Retrying in {:?}... (Retry {}/{})", delay, retries, max_retries);
             sleep(delay).await;
             delay *= 2; // Exponential backoff
         } else {

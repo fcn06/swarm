@@ -112,14 +112,34 @@ impl SimpleAgentServer {
             Some(vec!["text".to_string(), "data".to_string()]),
         );
 
-         let agent_a2a_config = self.agent_a2a_config.clone();
+        //////////////////////////////////////////////////////////////////
+        // Register agent at launch
+        let agent_discovery_client = AgentDiscoveryServiceClient::new(agent_a2a_config.agent_a2a_discovery_url.clone().expect("NO DISCOVERY URL"));
+        
+        let max_retries = 3;
+        let mut retries = 0;
+        let mut delay = 1; // seconds
 
-         agent_a2a_config.register(agent_info.get_agent_card().await?).await?;
-
-        // Make it more resilient, especially if the discovery service is not up
-        // let agent_discovery_client=AgentDiscoveryServiceClient::new(agent_a2a_config.agent_a2a_discovery_url.clone().expect("NO DISCOVERY URL"));
-        // agent_discovery_client.register(agent_info.get_agent_card().await?).await?;
-
+        loop {
+            match agent_discovery_client.register(agent_info.get_agent_card().await?).await {
+                Ok(_) => {
+                    tracing::info!("Agent successfully registered with discovery service.");
+                    break;
+                },
+                Err(e) => {
+                    retries += 1;
+                    if retries < max_retries {
+                        tracing::warn!("Failed to register with discovery service, attempt {}/{}. Error: {}. Retrying in {} seconds...", retries, max_retries, e, delay);
+                        tokio::time::sleep(std::time::Duration::from_secs(delay)).await;
+                        delay *= 2; // Exponential backoff
+                    } else {
+                        tracing::error!("Failed to register with discovery service after {} attempts. Error: {}", max_retries, e);
+                        break;
+                        //return Err(Box::new(e) as Box<dyn std::error::Error>);
+                    }
+                }
+            }
+        }
 
         //////////////////////////////////////////////////////////////////
 

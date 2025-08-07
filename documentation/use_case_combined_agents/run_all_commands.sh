@@ -52,7 +52,8 @@ echo $'\n'
 
 
 echo "E) Launch full agent listening on port 9080, connected to three individual agents"
-./target/release/full_agent_server --config-file "documentation/use_case_combined_agents/agent_full_config.toml" --log-level "debug" &
+#./target/release/full_agent_server --config-file "documentation/use_case_combined_agents/agent_full_config.toml" --log-level "debug" &
+./target/release/full_agent_server --config-file "documentation/use_case_combined_agents/agent_full_config.toml"  &
 
 sleep 3
 

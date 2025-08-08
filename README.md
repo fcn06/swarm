@@ -42,6 +42,7 @@ Below is summarized results of our internal evaluation :
 |Groq | qwen/qwen3-32b | ✓ | ✓ | ✓ | <span style="font-size: smaller;">Works pretty well, and very fast but you quickly reach rate limiting constrainst with free plan</span> |
 |Groq | openai/gpt-oss-20b | ✓ | ✓ | ✓ | <span style="font-size: smaller;">Works pretty well, and very fast but you quickly reach rate limiting constrainst with free plan</span> |
 |Groq | deepseek-r1-distill-llama-70b | ✓ | ✓ | ✓ | <span style="font-size: smaller;">Works pretty well, and very fast but you quickly reach rate limiting constrainst with free plan</span> |
+|Groq | meta-llama/llama-4-scout-17b-16e-instruct | ✓ | ✓ | ✓ | <span style="font-size: smaller;">Works pretty well, and very fast but you quickly reach rate limiting constrainst with free plan</span> |
 |Google | gemini-2.0-flash | ✓ | ✓ | ✓ | <span style="font-size: smaller;">Works pretty well, but it is often verbose</span> |
 |Groq | llama-3.1-8b-instant | ✓ | ✗ | ✗ | <span style="font-size: smaller;">Works only for simple tasks</span> |
 

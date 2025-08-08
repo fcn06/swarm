@@ -266,14 +266,24 @@ pub async fn remove_think_tags( &self,result: String) -> anyhow::Result<String> 
     let mut cleaned_result = String::new();
     let mut in_think_tag = false;
 
-    // in case llm returns json markdown
+    
+    // Qwen sends back Json between ```json and ``` 
     let result_clean= if result.contains("```json") {
         let result_1=result.replace("```json", "");
         result_1.replace("```", "")
     } else {result};
     let result=result_clean;
 
-    // in case LLM return <think> and </think> tags
+
+    // LLama sends back Json between ```
+    let result_clean= if result.contains("```") {
+        let result_1=result.replace("```", "");
+        result_1.replace("```", "")
+    } else {result};
+    let result=result_clean;
+
+
+    // Gemini put Think tags regularly , including when you ask to return a simple Json 
     for line in result.lines() {
         if line.contains("<think>") {
             in_think_tag = true;

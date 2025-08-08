@@ -31,6 +31,7 @@ agent_mcp_server_api_key="<YOUR_API_KEY>"
 agent_mcp_model_id="qwen/qwen3-32b"
 #agent_mcp_model_id="openai/gpt-oss-20b"
 #agent_mcp_model_id="deepseek-r1-distill-llama-70b"
+#agent_mcp_model_id="meta-llama/llama-4-scout-17b-16e-instruct"
 agent_mcp_llm_url="https://api.groq.com/openai/v1/chat/completions"
 
 #################################################################

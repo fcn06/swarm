@@ -5,14 +5,13 @@ use a2a_rs::adapter::{
 use a2a_rs::port::{AsyncNotificationManager, AsyncTaskManager};
 
 use a2a_rs::services::AgentInfoProvider;
-use configuration::DiscoveryServiceInteraction;
-
 
 use crate::a2a_agent_server::agent_handler::SimpleAgentHandler;
 use crate::a2a_agent_logic::simple_agent::SimpleAgent;
 
 use configuration::{AgentA2aConfig};
 
+//use configuration::DiscoveryServiceInteraction;
 use agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient;
 
 
@@ -116,7 +115,7 @@ impl SimpleAgentServer {
         // Register agent at launch
         let agent_discovery_client = AgentDiscoveryServiceClient::new(agent_a2a_config.agent_a2a_discovery_url.clone().expect("NO DISCOVERY URL"));
         
-        let max_retries = 3;
+        let max_retries = 2;
         let mut retries = 0;
         let mut delay = 1; // seconds
 
@@ -135,7 +134,6 @@ impl SimpleAgentServer {
                     } else {
                         tracing::error!("Failed to register with discovery service after {} attempts. Error: {}", max_retries, e);
                         break;
-                        //return Err(Box::new(e) as Box<dyn std::error::Error>);
                     }
                 }
             }

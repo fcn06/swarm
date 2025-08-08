@@ -9,6 +9,8 @@ configuration = { workspace = true }
 a2a_agent_backbone = { workspace = true }
 mcp_agent_backbone={ workspace = true }
 
+agent_discovery_service={ workspace = true }
+
 rmcp={ workspace = true }
 a2a-rs= { workspace = true }
 

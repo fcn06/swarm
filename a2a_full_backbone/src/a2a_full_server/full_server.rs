@@ -10,7 +10,9 @@ use configuration::AgentFullConfig;
 use crate::a2a_full_server::full_handler::FullAgentHandler;
 use crate::a2a_full_agent_logic::full_agent::FullAgent;
 
-use configuration::DiscoveryServiceInteraction;
+//use configuration::DiscoveryServiceInteraction;
+use agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient;
+
 
 /// Modern A2A server setup using ReimbursementHandler
 //pub struct ReimbursementServer {
@@ -105,13 +107,38 @@ impl FullAgentServer {
             Some(vec!["text".to_string(), "data".to_string()]),
         );
         
+        //////////////////////////////////////////////////////////////////
+        // Register agent at launch
+        let agent_discovery_client = AgentDiscoveryServiceClient::new(agent_full_config.agent_full_discovery_url.clone().expect("NO DISCOVERY URL"));
+        
+        let max_retries = 2;
+        let mut retries = 0;
+        let mut delay = 1; // seconds
 
-        // register the planner agent server
-        let agent_full_config = self.agent_full_config.clone();
-        agent_full_config.register(agent_info.get_agent_card().await?).await?;
+        loop {
+            match agent_discovery_client.register(agent_info.get_agent_card().await?).await {
+                Ok(_) => {
+                    tracing::info!("Agent successfully registered with discovery service.");
+                    break;
+                },
+                Err(e) => {
+                    retries += 1;
+                    if retries < max_retries {
+                        tracing::warn!("Failed to register with discovery service, attempt {}/{}. Error: {}. Retrying in {} seconds...", retries, max_retries, e, delay);
+                        tokio::time::sleep(std::time::Duration::from_secs(delay)).await;
+                        delay *= 2; // Exponential backoff
+                    } else {
+                        tracing::error!("Failed to register with discovery service after {} attempts. Error: {}", max_retries, e);
+                        break;
+                    }
+                }
+            }
+        }
 
         //////////////////////////////////////////////////////////////////
 
+
+        let agent_full_config = self.agent_full_config.clone();
         // Create HTTP server
         let bind_address = format!("{}:{}", agent_full_config.agent_full_host, agent_full_config.agent_full_http_port);
 

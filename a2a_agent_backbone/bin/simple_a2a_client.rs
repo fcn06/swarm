@@ -9,7 +9,7 @@ use a2a_rs::{
 use clap::{Parser};
 
 
-use tracing::{ Level,info};
+use tracing::{ Level};
 use tracing_subscriber::{
     prelude::*,
     fmt,
@@ -220,7 +220,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Create a message
     let message_id_4 = uuid::Uuid::new_v4().to_string();
-    let user_text="Make a description of the benefits of rust in less than 400 words.".to_string();
+    let user_text="What are the benefits of rust.".to_string();
     println!("\nUser_Query : {}",user_text);
     let message_4 = Message::user_text(user_text, message_id_4);
 
@@ -231,8 +231,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let task_4 = client
         .send_task_message(&task_id_4, &message_4, None, Some(50))
         .await?;
-    //info!("Got response with status: {:?}", task_4.status.state);
-    //info!("Got response with message: {:?}", task_4.status.message);
+
 
     if let Some(response_message_4) = task_4.status.message {
         println!("Agent response:");

@@ -2,7 +2,7 @@ use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::Value; // Import Value for flexible parameters
 
-use tracing::{ Level,debug,warn};
+use tracing::{ debug,warn};
 
 use crate::tools::Tool;
 use anyhow::{Result,Context};

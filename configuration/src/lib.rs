@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use std::fs; // Assuming you might want logging here too
 
-use a2a_rs::domain::AgentCard;
+//use a2a_rs::domain::AgentCard;
 
 //////////////////////////////////////////////////////////////////////
 // NEW VERSION OF AGENT CONFIG
@@ -135,91 +135,3 @@ impl SimpleAgentReference {
     }
 }
 
-///////////////////////////////////////////////////////////////
-// INTERACTION WITH DISCOVERY SERVICE
-// to be moved to the discovery service crate
-///////////////////////////////////////////////////////////////
-
-/* 
-
-pub trait DiscoveryServiceInteraction {
-    //async fn register(&self, agent_card:AgentCard) -> Result<(), Box<dyn std::error::Error>> ;
-    fn register(&self, agent_card:AgentCard) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> + Send ;
-}
-
-
-impl DiscoveryServiceInteraction for AgentA2aConfig {
-    /// Start both HTTP and WebSocket servers (simplified for now)
-    async fn register(&self, agent_card:AgentCard) -> Result<(), Box<dyn std::error::Error>> {
-        println!("🚀 Registering Agent ...");
-
-        let discovery_url=self.agent_a2a_discovery_url.clone().expect("NO DISCOVERY URL");
-
-        let register_uri=format!("{}/register",discovery_url);
-
-        let agent_registered = reqwest::Client::new()
-        .post(register_uri)
-        .json(&agent_card)
-        .send()
-        .await;
-
-        match agent_registered {
-            Ok(response) => { println!("Successfully registered server agent: {:?}", response);}
-            Err(e) => {
-                if e.is_connect() {
-                    eprintln!("Connection error: The target server is not up or reachable. Details: {:?}", e);
-                } else if e.is_timeout() {
-                    eprintln!("Request timed out: {:?}", e);
-                } else if e.is_status() {
-                    // Handle HTTP status errors (e.g., 404, 500)
-                    eprintln!("HTTP status error: {:?}", e.status());
-                } else {
-                    eprintln!("An unexpected reqwest error occurred: {:?}", e);
-                }
-                //return Err(e);
-            }
-        }
-
-        Ok(())
-    }
-
-}
-
-
-impl DiscoveryServiceInteraction for AgentFullConfig {
-    /// Start both HTTP and WebSocket servers (simplified for now)
-    async fn register(&self, agent_card:AgentCard) -> Result<(), Box<dyn std::error::Error>> {
-        println!("🚀 Registering Agent ...");
-
-        let discovery_url=self.agent_full_discovery_url.clone().expect("NO DISCOVERY URL");
-
-        let register_uri=format!("{}/register",discovery_url);
-
-        let agent_registered = reqwest::Client::new()
-        .post(register_uri)
-        .json(&agent_card)
-        .send()
-        .await;
-
-        match agent_registered {
-            Ok(response) => { println!("Successfully registered server agent: {:?}", response);}
-            Err(e) => {
-                if e.is_connect() {
-                    eprintln!("Connection error: The target server is not up or reachable. Details: {:?}", e);
-                } else if e.is_timeout() {
-                    eprintln!("Request timed out: {:?}", e);
-                } else if e.is_status() {
-                    // Handle HTTP status errors (e.g., 404, 500)
-                    eprintln!("HTTP status error: {:?}", e.status());
-                } else {
-                    eprintln!("An unexpected reqwest error occurred: {:?}", e);
-                }
-                //return Err(e);
-            }
-        }
-
-        Ok(())
-    }
-
-}
-    */

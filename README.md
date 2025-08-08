@@ -27,10 +27,23 @@ Ready to dive in? Here's how to get your first Swarm components up and running.
 
 **1. Install Rust:** If you don't have Rust installed, follow the instructions on the [official Rust website](https://www.rust-lang.org/tools/install).
 
-**2. Obtain LLM API Keys:** To enable your agents to think and communicate, you'll need access to an OpenAI-compatible chat completion API. We recommend:
+**2. Obtain LLM API Keys:** To enable your agents to think and communicate, you'll need access to an OpenAI-compatible chat completion API. 
 
-*   **Groq:** For speed and efficiency (we've had great success with the `qwen/qwen3-32b` model). [https://api.groq.com/openai/v1/chat/completions](https://api.groq.com/openai/v1/chat/completions)
-*   **Gemini:** Also tested and supported. [https://generativelanguage.googleapis.com/v1beta/openai/chat/completions](https://generativelanguage.googleapis.com/v1beta/openai/chat/completions)
+We have tested Groq and gemini, for which you can access pretty good free plan:
+
+*   **Groq:**  [https://api.groq.com/openai/v1/chat/completions](https://api.groq.com/openai/v1/chat/completions). 
+
+*   **Gemini:** [https://generativelanguage.googleapis.com/v1beta/openai/chat/completions](https://generativelanguage.googleapis.com/v1beta/openai/chat/completions)
+
+Below is summarized results of our internal evaluation :
+
+| Provider | Model | General Purpose | MCP | Orchestration | Comments |
+| :--- | :--- | :---: | :---: | :---: | :---: |
+|Groq | qwen/qwen3-32b | ✓ | ✓ | ✓ | <span style="font-size: smaller;">Works pretty well, and very fast but you quickly reach rate limiting constrainst with free plan</span> |
+|Groq | openai/gpt-oss-20b | ✓ | ✓ | ✓ | <span style="font-size: smaller;">Works pretty well, and very fast but you quickly reach rate limiting constrainst with free plan</span> |
+|Groq | deepseek-r1-distill-llama-70b | ✓ | ✓ | ✓ | <span style="font-size: smaller;">Works pretty well, and very fast but you quickly reach rate limiting constrainst with free plan</span> |
+|Google | gemini-2.0-flash | ✓ | ✓ | ✓ | <span style="font-size: smaller;">Works pretty well, but it is often verbose</span> |
+|Groq | llama-3.1-8b-instant | ✓ | ✗ | ✗ | <span style="font-size: smaller;">Works only for simple tasks</span> |
 
 **3. Build Swarm:** Compile the workspace to ensure all dependencies are in sync:
 ```bash

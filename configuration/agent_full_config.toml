@@ -34,8 +34,12 @@ agent_full_examples=["Find the weather in Boston and then find customer details 
 # Define the url of the OpenAI compatible endpoint
 # as well as the model to use for planning.
 #################################################################
-agent_full_model_id="gemini-2.0-flash"
-agent_full_llm_url="https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+#agent_full_model_id="gemini-2.0-flash"
+#agent_full_llm_url="https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+agent_full_model_id="qwen/qwen3-32b"
+#agent_full_model_id="openai/gpt-oss-20b"
+#agent_full_model_id="deepseek-r1-distill-llama-70b"
+agent_full_llm_url="https://api.groq.com/openai/v1/chat/completions"
 
 #################################################################
 # Future use: It would make sense to have a discovery service
@@ -48,7 +52,7 @@ agent_full_discovery_url="http://127.0.0.1:4000"
 # You can say the orchestrator to include a MCP runtime agent
 # you just define the configuration file to use
 #################################################################
-#agent_full_mcp_config_path="configuration/agent_mcp_config.toml"
+agent_full_mcp_config_path="configuration/agent_mcp_config.toml"
 
 
 #################################################################
@@ -57,15 +61,20 @@ agent_full_discovery_url="http://127.0.0.1:4000"
 # across these A2A agents.
 #################################################################
 [[agent_full_agents_references]]
-name = "agent_search"
-url = "http://127.0.0.1:8081"
+name = "generic_search"
+url = "http://127.0.0.1:8080"
 is_default=true
 
-[[agent_full_agents_references]]
-name = "weather_agent"
-url = "http://127.0.0.1:8082"
+#[[agent_full_agents_references]]
+#name = "agent_search"
+#url = "http://127.0.0.1:8081"
+#is_default=true
 
-[[agent_full_agents_references]]
-name = "customer_agent"
-url = "http://127.0.0.1:8083"
+#[[agent_full_agents_references]]
+#name = "weather_agent"
+#url = "http://127.0.0.1:8082"
+
+#[[agent_full_agents_references]]
+#name = "customer_agent"
+#url = "http://127.0.0.1:8083"
 

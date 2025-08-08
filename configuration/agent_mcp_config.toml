@@ -26,8 +26,12 @@ agent_mcp_server_api_key="<YOUR_API_KEY>"
 # Define her the url of openai compatible endpoint 
 # as well as the model to use
 #################################################################
-agent_mcp_model_id="gemini-2.0-flash"
-agent_mcp_llm_url ="https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+#agent_mcp_model_id="gemini-2.0-flash"
+#agent_mcp_llm_url ="https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+agent_mcp_model_id="qwen/qwen3-32b"
+#agent_mcp_model_id="openai/gpt-oss-20b"
+#agent_mcp_model_id="deepseek-r1-distill-llama-70b"
+agent_mcp_llm_url="https://api.groq.com/openai/v1/chat/completions"
 
 #################################################################
 # In case you want to launch a rest endpoint to interact 

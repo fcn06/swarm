@@ -140,6 +140,7 @@ impl SimpleAgentReference {
 // to be moved to the discovery service crate
 ///////////////////////////////////////////////////////////////
 
+/* 
 
 pub trait DiscoveryServiceInteraction {
     //async fn register(&self, agent_card:AgentCard) -> Result<(), Box<dyn std::error::Error>> ;
@@ -221,3 +222,4 @@ impl DiscoveryServiceInteraction for AgentFullConfig {
     }
 
 }
+    */

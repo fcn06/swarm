@@ -39,13 +39,13 @@ echo "D) Launch three agents listening on three different ports (8081,8083,8085)
 echo $'\n'
 
 ./target/release/simple_agent_server  --config-file "documentation/use_case_combined_agents/weather_a2a_agent.toml" &
-sleep 2
+sleep 8
 
 ./target/release/simple_agent_server  --config-file "documentation/use_case_combined_agents/customer_domain_a2a_agent.toml" &
-sleep 2
+sleep 8
 
 ./target/release/simple_agent_server  --config-file "documentation/use_case_combined_agents/web_scraper_a2a_agent.toml" &
-sleep 3
+sleep 10
 
 echo $'\n'
 echo $'\n'

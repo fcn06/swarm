@@ -24,39 +24,56 @@ echo "B) Compile the mcp server example"
 cargo build --release --example main-server
 echo $'\n'
 
-echo "C) Launch three MCP server, each with individual tool on three different ports"
+echo "C) Launch discovery Service so that agents can self register"
+./target/release/discovery_service &
+sleep 3
 echo $'\n'
+
+
+echo "D) Launch three MCP server, each with individual tool on three different ports"
 ./target/release/examples/main-server --port 8001 weather &
 ./target/release/examples/main-server --port 8002 customer &
 ./target/release/examples/main-server --port 8003 scrape &
+sleep 4
+echo $'\n'
 echo $'\n'
 
-sleep 3
-
+echo "E) Launch three agents listening on three different ports (8081,8083,8085), each using mcp config"
 echo $'\n'
-
-echo "D) Launch three agents listening on three different ports (8081,8083,8085), each using mcp config"
+echo "Weather Domain Agent"
 echo $'\n'
 
 ./target/release/simple_agent_server  --config-file "documentation/use_case_combined_agents/weather_a2a_agent.toml" &
-sleep 8
 
+sleep 5
+echo $'\n'
+echo $'\n'
+
+echo $'\n'
+echo "Customer Domain Agent"
+echo $'\n'
 ./target/release/simple_agent_server  --config-file "documentation/use_case_combined_agents/customer_domain_a2a_agent.toml" &
-sleep 8
+sleep 5
+echo $'\n'
+echo $'\n'
 
+echo $'\n'
+echo "Web Scraper Domain Agent"
+echo $'\n'
 ./target/release/simple_agent_server  --config-file "documentation/use_case_combined_agents/web_scraper_a2a_agent.toml" &
-sleep 10
-
+sleep 8
 echo $'\n'
 echo $'\n'
 
 
-echo "E) Launch full agent listening on port 9080, connected to three individual agents"
-#./target/release/full_agent_server --config-file "documentation/use_case_combined_agents/agent_full_config.toml" --log-level "debug" &
+echo "F) Launch full agent listening on port 9080, connected to three individual agents"
+echo $'\n'
+echo "Orchestrator Agent"
+echo $'\n'
 ./target/release/full_agent_server --config-file "documentation/use_case_combined_agents/agent_full_config.toml"  &
-
-sleep 3
-
+# If you want to have specific log level you can specify it on command line ( trace, debug, info, warn, error. Default is warn)
+#./target/release/full_agent_server --config-file "documentation/use_case_combined_agents/agent_full_config.toml" --log-level "debug" &
+sleep 5
 echo $'\n'
 echo $'\n'
 
@@ -79,7 +96,7 @@ echo $'\n'
 #./target/release/simple_a2a_client --port 8085 
 #read -n 1 -s -r -p "Press any key to continue..."
 
-echo "Ask the questions to full agent, the orchestrator one : He should answer to the whole set of questions"
+echo "Ask the questions to the orchestrator : He should answer to the whole set of questions by send queries to appropriate agent"
 echo $'\n'
 ./target/release/simple_a2a_client --port 9080 
 echo $'\n'

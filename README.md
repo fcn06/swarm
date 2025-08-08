@@ -94,9 +94,9 @@ The `configuration` directory is your go-to for customizing agent behavior. Here
 | `agent_mcp_config.toml`  | Configures the MCP runtime settings.                                                   |
 | `agent_full_config.toml` | Configures the Full Agent, including capabilities of using tools and skills                                                                                                              |
 
-**LLM Models:** We've found `qwen/qwen3-32b` to be highly effective, especially for MCP interactions. Each agent can connect to its own LLM. URLs are parameterized in the config files, while API keys need to be injected at runtime as environment variables.
+**LLM Models:** Each agent can connect to its own LLM. URLs are parameterized in the config files, while API keys need to be injected at runtime as environment variables.
 
-*(To enable MCP features, an MCP server must be running. You can find one in the `examples` for testing.)*
+*(To enable MCP features, an MCP server must be running and configured in toml files. You can find one in the `examples` for testing.)*
 
 ## **🚀 Launching Your Agents Manually or Programmatically**
 

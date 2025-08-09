@@ -49,11 +49,11 @@ pub struct AgentHandler {
 
 impl AgentHandler {
     /// Create a new simple agent handler
-    pub fn new(simple_agent:Agent) -> Self {
+    pub fn new(agent:Agent) -> Self {
 
         println!("Creating AgentHandler");
         Self {
-            agent: Arc::new(Mutex::new(simple_agent)),
+            agent: Arc::new(Mutex::new(agent)),
             storage: Arc::new(InMemoryTaskStorage::new()),
         }
 
@@ -114,7 +114,7 @@ impl AgentHandler {
 // Asynchronous trait implementations - delegate to storage
 
 #[async_trait]
-impl AsyncMessageHandler for SimpleAgentHandler {
+impl AsyncMessageHandler for AgentHandler {
     async fn process_message<'a>(
         &self,
         task_id: &'a str,

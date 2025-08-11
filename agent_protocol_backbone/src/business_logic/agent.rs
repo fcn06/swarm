@@ -1,14 +1,12 @@
 use async_trait::async_trait;
-use llm_api::chat::Message as Message_Llm;
 use serde::{Serialize,Deserialize};
-
-
+use crate::planning::plan_definition::{ExecutionResult};
+use llm_api::chat::Message as LlmMessage;
 
 #[async_trait]
 pub trait Agent: Send + Sync  + Clone + 'static {
-    //async fn handle_request(&self, request: LlmMessage) -> anyhow::Result<ExecutionResult>;
     async fn new( agent_config: impl AgentConfig) -> anyhow::Result<Self>;
-    async fn handle_request(&self, request: Message_Llm) -> anyhow::Result<Message_Llm>;
+    async fn handle_request(&self, request: LlmMessage) -> anyhow::Result<ExecutionResult>;
 }
 
 pub trait AgentConfig: Send + Sync + Clone + 'static {

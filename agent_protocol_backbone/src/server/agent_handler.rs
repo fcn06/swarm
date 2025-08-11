@@ -23,9 +23,9 @@ use a2a_rs::{
     },
 };
 
-use llm_api::chat::Message as Message_Llm;
+use llm_api::chat::Message as LlmMessage;
 use crate::business_logic::agent::{Agent};
-
+use crate::planning::plan_definition::ExecutionResult;
 
 /// Simple agent handler that coordinates all business capability traits
 /// by delegating to InMemoryTaskStorage which implements the actual functionality.
@@ -84,7 +84,7 @@ impl<T: Agent> AgentHandler<T> {
         &self.storage
     }
 
-    fn a2a_message_to_llm_message(&self, a2a_message: &Message) -> Result<Message_Llm, A2AError> {
+    fn a2a_message_to_llm_message(&self, a2a_message: &Message) -> Result<LlmMessage, A2AError> {
         // Extract user query
         let user_query = a2a_message
             .parts
@@ -97,7 +97,7 @@ impl<T: Agent> AgentHandler<T> {
             .join("\n");
 
         // Convert A2A Message into LLM Message
-        let llm_msg = Message_Llm {
+        let llm_msg = LlmMessage {
             role: "user".to_string(),
             content: Some(user_query.to_string()),
             tool_call_id: None,
@@ -108,7 +108,7 @@ impl<T: Agent> AgentHandler<T> {
     }
 
     // other specific functions, like Validate Content, etc...
-    fn llm_message_to_a2a_message(&self, llm_message: Message_Llm) -> Result<Message, A2AError> {
+    fn llm_message_to_a2a_message(&self, llm_message: LlmMessage) -> Result<Message, A2AError> {
         // Convert LLM Message into A2A
         // todo use agent_text or user_text depending on role
         let message_id = uuid::Uuid::new_v4().to_string();
@@ -128,38 +128,39 @@ impl<T: Agent> AsyncMessageHandler for AgentHandler<T> {
         message: &'a Message,
         _session_id: Option<&'a str>,
     ) -> Result<Task, A2AError> {
+        
         // This is where we need to process custom code for message handling
-        // including communication with mcp
-        // see agent_swarm for details
-        // replace the below default message handler
+
+        // Create or get the session ID
+        let _session_id = _session_id.unwrap_or("default_session").to_string();
+
+        // Create a new task
+        let _task = self.create_task(task_id, "context_task").await?;
 
         // Transform a2a message into llm message
         let llm_msg = self.a2a_message_to_llm_message(&message)?;
 
-        // Create or get the session ID
-        //let _session_id = session_id.unwrap_or("default_session").to_string();
+        // Place her user query handler
+        let agent = self.agent.lock().await;
 
-        // Create a new task
-        //let mut task = self.create_task(task_id,"context_task").await?;
-        let _task = self.create_task(task_id, "context_task").await?;
-
-        //println!("Task Created : {:#?}",task.clone());
-
-
-          // Place her user query handler
-          let agent = self.agent.lock().await;
-          let response = agent.handle_request(llm_msg.clone()).await;
+        // Handle user request and get execution result
+        let execution_result:ExecutionResult = agent.handle_request(llm_msg.clone()).await.expect("No Return from LLM");
            
         // Convert the message Back to A2A Message
-        // todo : make it resilient and remove unwrap()
-        let response_message = self.llm_message_to_a2a_message(response.unwrap())?;
+        let llm_response = LlmMessage {
+            role: "tool".to_string(), // Or appropriate role based on ExecutionResult
+            content: Some(execution_result.output.clone()),
+            tool_call_id: None,
+            tool_calls:None
+        };
+        let response_message = self.llm_message_to_a2a_message(llm_response)?;
+        
 
         // Add the message to the task and update status
         let task = self
             .update_task_status(task_id, TaskState::Completed, Some(response_message))
             .await?;
-        //println!("Task Update : {:#?}",task.clone());
-
+        
         Ok(task)
     }
 }

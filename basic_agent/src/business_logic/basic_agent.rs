@@ -7,9 +7,11 @@ use llm_api::chat::{ChatLlmInteraction};
 // todo: see if the method of delegation to mcp_runtime is optimal
 use mcp_runtime::mcp_agent_logic::agent::McpAgent;
 
-use llm_api::chat::Message as Message_Llm;
+use llm_api::chat::Message as LlmMessage;
 use std::env;
 use agent_protocol_backbone::business_logic::agent::{Agent, AgentConfig};
+use agent_protocol_backbone::planning::plan_definition::{ExecutionResult};
+
 
 /// Modern A2A server setup 
 #[derive(Clone)]
@@ -57,8 +59,9 @@ impl Agent for BasicAgent {
     }
 
     /// business logic for handling user request
-    async fn handle_request(&self, request: Message_Llm) -> anyhow::Result<Message_Llm> {
+    async fn handle_request(&self, request: LlmMessage) ->anyhow::Result<ExecutionResult> {
        
+       let request_id=uuid::Uuid::new_v4().to_string();
 
         // use MCP LLM to answer if there is a MCP runtime, Agent LLM otherwise 
         let response =if self.mcp_agent.is_none() {
@@ -71,7 +74,13 @@ impl Agent for BasicAgent {
                 .unwrap()
             };
 
-        Ok(response.expect("No Return from LLM"))
+
+        Ok(ExecutionResult {
+            request_id,
+            success: true, // Mark as not fully successful if summarization fails
+            output: response.expect("No Return from LLM").content.expect("Empty result from Llm"),
+            plan_details: None,
+        })
 
     }
     

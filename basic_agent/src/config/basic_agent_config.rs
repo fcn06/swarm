@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize};
 
 use std::fs; // Assuming you might want logging here too
 

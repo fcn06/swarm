@@ -3,8 +3,7 @@ name = "orchestration_agent"
 version = "0.1.0"
 edition = "2024"
 
-[lib]
-crate-type = ["rlib"]
+
 
 [dependencies]
 llm_api = { workspace = true }
@@ -17,6 +16,7 @@ agent_discovery_service={ workspace = true }
 
 
 a2a-rs= { workspace = true }
+rmcp= { workspace = true }
 
 anyhow={ workspace = true }
 clap = { workspace = true }
@@ -76,3 +76,6 @@ tracing = ["dep:tracing", "dep:tracing-subscriber"]
 auth = ["dep:jsonwebtoken", "dep:oauth2", "dep:openidconnect", "dep:reqwest"]
 full = ["http-client",  "http-server", "tracing", "auth"]
 
+[[bin]]
+name = "orchestration_agent_launch"
+path = "bin/orchestration_agent_launch.rs"

@@ -24,7 +24,7 @@ pub struct OrchestrationAgentConfig {
     pub agent_full_model_id: String,
     pub agent_full_llm_url: String, // This is the LLM that will manage interactions with Full agent. LLM_FULL_API_KEY is connected to this one
     pub agent_full_mcp_config_path: Option<String>, // The path of the configuration for the MCP runtime
-    pub agent_full_agents_references:Vec<AgentReference>, // List all agents connected to full agents
+    pub agent_full_agents_references:Option<Vec<AgentReference>>, // List all agents connected to full agents
     pub agent_full_doc_url: Option<String>,
     pub agent_full_tags: Vec<String>,
     pub agent_full_examples: Vec<String>,
@@ -58,5 +58,5 @@ impl AgentConfig for OrchestrationAgentConfig {
     fn agent_doc_url(&self) -> Option<String> { self.agent_full_doc_url.clone() }
     fn agent_tags(&self) -> Vec<String> { self.agent_full_tags.clone() }
     fn agent_examples(&self) -> Vec<String> { self.agent_full_examples.clone() }
-    fn agents_references(&self) -> Option<Vec<AgentReference>> { self.agent_full_references.clone()  }
+    fn agents_references(&self) -> Option<Vec<AgentReference>> { self.agent_full_agents_references.clone()  }
 }

@@ -34,13 +34,13 @@ agent_full_examples=["Find the weather in Boston and then find customer details 
 # Define the url of the OpenAI compatible endpoint
 # as well as the model to use for planning.
 #################################################################
-#agent_full_model_id="gemini-2.0-flash"
-#agent_full_llm_url="https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
-agent_full_model_id="qwen/qwen3-32b"
+agent_full_model_id="gemini-2.0-flash"
+agent_full_llm_url="https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+#agent_full_model_id="qwen/qwen3-32b"
 #agent_full_model_id="openai/gpt-oss-20b"
 #agent_full_model_id="deepseek-r1-distill-llama-70b"
 #agent_full_model_id="meta-llama/llama-4-scout-17b-16e-instruct"
-agent_full_llm_url="https://api.groq.com/openai/v1/chat/completions"
+#agent_full_llm_url="https://api.groq.com/openai/v1/chat/completions"
 
 #################################################################
 # Future use: It would make sense to have a discovery service

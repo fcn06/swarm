@@ -6,49 +6,56 @@ use uuid::Uuid;
 // Assuming llm_api crate is available and has these
 use llm_api::chat::{ChatLlmInteraction};
 
-use crate::a2a_plan::plan_definition::{
-    ExecutionResult, Plan, PlanResponse, PlanStatus, 
-};
-use crate::a2a_plan::plan_execution::A2AClient;
-
-use mcp_agent_backbone::mcp_agent_logic::agent::McpAgent;
+use crate::plan::plan_execution::A2AClient;
 
 use rmcp::model::{CallToolRequestParam};
 
-use configuration::SimpleAgentReference;
-use configuration::AgentMcpConfig;
 
-// to update
 use a2a_rs::domain::{Message, Part, TaskState};
 
-use std::env;
 use configuration::AgentFullConfig;
 
 use tracing::{error,warn,info,debug,trace};
 
+use configuration::AgentMcpConfig;
+use mcp_runtime::mcp_agent_logic::agent::McpAgent;
+use llm_api::chat::Message as LlmMessage;
+use std::env;
+use agent_protocol_backbone::business_logic::agent::{Agent, AgentConfig};
+
+use agent_protocol_backbone::planning::plan_definition::{
+    ExecutionResult, Plan, PlanResponse, PlanStatus, 
+};
+
+use async_trait::async_trait;
+
+use agent_protocol_backbone::business_logic::agent::AgentReference;
 
 // TO BE MODIFIED THE SAME WAY WE DID FOR BASIC AGENT
 
 
 /// Agent that that can interact with other available agents, and also embed MCP runtime if needed
 #[derive(Clone)]
-pub struct FullAgent {
+pub struct OrchestrationAgent {
     //agent_full_config: AgentFullConfig, // possible future use
-    agents_references: Vec<SimpleAgentReference>,
+    agents_references: Vec<AgentReference>,
     llm_interaction: ChatLlmInteraction,
     client_agents: HashMap<String, A2AClient>,
     mcp_agent: Option<McpAgent>,
 }
 
 
-impl FullAgent {
-    pub async fn new(
-        agent_full_config: AgentFullConfig) -> Result<Self> {
+#[async_trait]
+impl Agent for OrchestrationAgent {
+
+    async fn new(
+        agent_config: impl AgentConfig + Sized + Send + 'static) -> anyhow::Result<Self> {
 
         // Set model to be used
-        let model_id = agent_full_config.agent_full_model_id.clone();
+        let model_id = agent_config.agent_model_id();
+
         // Set llm_url to be used
-        let llm_url = agent_full_config.agent_full_llm_url.clone();
+        let llm_url =  agent_config.agent_llm_url();
 
         // Set API key for LLM
         let llm_full_api_key = env::var("LLM_FULL_API_KEY").expect("LLM_FULL_API_KEY must be set");
@@ -60,7 +67,8 @@ impl FullAgent {
         );
 
         // List available agents from config
-        let agents_references = agent_full_config.agent_full_agents_references.clone();
+        //todo:make it resilient
+        let agents_references =  agent_config.agents_references().unwrap();
         
         // todo:make this search dynamic
         
@@ -109,7 +117,7 @@ impl FullAgent {
           }
   
           // Load MCP agent if specified in planner config
-          let mcp_agent = match agent_full_config.agent_full_mcp_config_path.clone() {
+          let mcp_agent = match agent_config.agent_mcp_config_path() {
               None => None,
               Some(path) => {
                   let agent_mcp_config = AgentMcpConfig::load_agent_config(path.as_str()).expect("Error loading MCP config for planner");
@@ -120,13 +128,87 @@ impl FullAgent {
   
           Ok(Self {
             //agent_full_config,
-            agents_references,
+            agents_references: agents_references,
             llm_interaction,
             client_agents,
             mcp_agent,
           })
 
     }
+
+    async fn handle_request(&self, request: LlmMessage) ->anyhow::Result<ExecutionResult> {
+    
+        let request_id = Uuid::new_v4().to_string();
+
+        // Extracting text from message
+        // todo:make resilient
+        let user_query = request.content.unwrap();
+
+        info!("---Full: Starting to handle user request --  Query: '{:?}'---",user_query);
+
+        match self.create_plan(user_query).await {
+            Ok(mut plan) => {
+                trace!(
+                    "FullAgent: Plan created successfully for request ID: {}. Plan ID: {}",
+                    request_id, plan.id
+                );
+
+                // Attempt to execute the plan
+                let _execution_outcome = self.execute_plan(&mut plan).await;
+
+                // Attempt to summarize results regardless of execution outcome
+                match self.summarize_results(&mut plan).await {
+                    Ok(summary) => {
+                        trace!(
+                            "FullAgent: Final summary generated for request ID {}.",
+                            request_id
+                        );
+                        Ok(ExecutionResult {
+                            request_id,
+                            success: plan.status == PlanStatus::Completed,
+                            output: summary,
+                            plan_details: Some(plan),
+                        })
+                    }
+                    Err(e) => {
+                        trace!(
+                            "FullAgent: Failed to summarize results for request ID {}: {}",
+                            request_id, e
+                        );
+                        let output_on_summary_fail = format!(
+                            "Plan processing finished with status {:?}, but summarization failed: {}",
+                            plan.status, e
+                        );
+                        Ok(ExecutionResult {
+                            request_id,
+                            success: false, // Mark as not fully successful if summarization fails
+                            output: output_on_summary_fail,
+                            plan_details: Some(plan),
+                        })
+                    }
+                }
+            }
+            Err(e) => {
+                let error_msg = format!(
+                    "FullAgent: Failed to create plan for request ID {}: {}",
+                    request_id, e
+                );
+                trace!("{}", error_msg);
+                Ok(ExecutionResult {
+                    request_id,
+                    success: false,
+                    output: error_msg,
+                    plan_details: None,
+                })
+            }
+        }
+    }
+
+}
+
+impl OrchestrationAgent {
+
+    
 
     async fn get_available_skills_and_tools_description(&self) -> String {
         let mut description = "Available agent skills: ".to_string();
@@ -163,74 +245,10 @@ impl FullAgent {
         description
     }
 
-    pub async fn handle_user_request(&mut self, user_request: Message) -> ExecutionResult {
-        let request_id = Uuid::new_v4().to_string();
-
-        // Extracting text from message
-        let user_query = self.extract_text_from_message(&user_request).await;
-
-        info!("---Full: Starting to handle user request --  Query: '{}'---",user_query);
-
-        match self.create_plan(&user_request).await {
-            Ok(mut plan) => {
-                trace!(
-                    "FullAgent: Plan created successfully for request ID: {}. Plan ID: {}",
-                    request_id, plan.id
-                );
-
-                // Attempt to execute the plan
-                let _execution_outcome = self.execute_plan(&mut plan).await;
-
-                // Attempt to summarize results regardless of execution outcome
-                match self.summarize_results(&mut plan).await {
-                    Ok(summary) => {
-                        trace!(
-                            "FullAgent: Final summary generated for request ID {}.",
-                            request_id
-                        );
-                        ExecutionResult {
-                            request_id,
-                            success: plan.status == PlanStatus::Completed,
-                            output: summary,
-                            plan_details: Some(plan),
-                        }
-                    }
-                    Err(e) => {
-                        trace!(
-                            "FullAgent: Failed to summarize results for request ID {}: {}",
-                            request_id, e
-                        );
-                        let output_on_summary_fail = format!(
-                            "Plan processing finished with status {:?}, but summarization failed: {}",
-                            plan.status, e
-                        );
-                        ExecutionResult {
-                            request_id,
-                            success: false, // Mark as not fully successful if summarization fails
-                            output: output_on_summary_fail,
-                            plan_details: Some(plan),
-                        }
-                    }
-                }
-            }
-            Err(e) => {
-                let error_msg = format!(
-                    "FullAgent: Failed to create plan for request ID {}: {}",
-                    request_id, e
-                );
-                trace!("{}", error_msg);
-                ExecutionResult {
-                    request_id,
-                    success: false,
-                    output: error_msg,
-                    plan_details: None,
-                }
-            }
-        }
-    }
+   
 
 
-    async fn create_plan(&self, request: &Message) -> Result<Plan> {
+    async fn create_plan(&self, user_request: String) -> Result<Plan> {
         info!(
             "PlannerAgent: Creating plan for request ID: {}",
             Uuid::new_v4().to_string()
@@ -376,7 +394,7 @@ impl FullAgent {
 
             RETURN ONLY THE SIMPLE JSON REPRESENTING THE PLAN ON THE SAME FORMAT AS ABOVE.",
 
-            skills_and_tools_description, self.extract_text_from_message(request).await
+            skills_and_tools_description, user_request
         );
 
         // This api returns raw text from llm
@@ -402,7 +420,7 @@ impl FullAgent {
         // Create the Plan struct from the parsed LLM response
         let plan = Plan::new(
             Uuid::new_v4().to_string(),
-            self.extract_text_from_message(request).await,
+            user_request,
             llm_plan_data.plan_summary,
             llm_plan_data.tasks,
         ); 
@@ -411,7 +429,7 @@ impl FullAgent {
     }
 
      // to be fine tuned and better tested
-     async fn execute_plan(&mut self, plan: &mut Plan) -> Result<()> {
+        async fn execute_plan(&self, plan: &mut Plan) -> Result<()> {
         trace!(
             "FullAgent: Starting plan execution for request ID: {}",plan.request_id);
         plan.status = PlanStatus::InProgress;
@@ -706,10 +724,18 @@ impl FullAgent {
     }
 
 
-        pub async fn submit_user_text(&mut self, user_query: String) -> ExecutionResult {
+        pub async fn submit_user_text(&mut self, user_query: String) ->  anyhow::Result<ExecutionResult>{
             let message_id = Uuid::new_v4().to_string();
-            let user_req= Message::user_text(user_query, message_id.clone());
-            let execution_result = self.handle_user_request(user_req).await;
+
+
+            let llm_message_user_request=LlmMessage{
+                role: "user".to_string(), // Or appropriate role based on ExecutionResult
+                content: Some(user_query),
+                tool_call_id: None,
+                tool_calls:None
+            };
+
+            let execution_result = self.handle_request(llm_message_user_request).await;
             execution_result
         }
 

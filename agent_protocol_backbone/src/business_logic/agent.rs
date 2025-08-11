@@ -1,5 +1,4 @@
 use async_trait::async_trait;
-use anyhow::Result;
 use llm_api::chat::Message as Message_Llm;
 use serde::{Serialize,Deserialize};
 

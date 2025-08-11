@@ -1,13 +1,8 @@
-use std::sync::{Arc, Mutex};
-use async_trait::async_trait;
-use axum::{extract::State, http::StatusCode, routing::post, Json, Router};
-use serde::{Deserialize, Serialize};
 
 use a2a_rs::adapter::{
     DefaultRequestProcessor, HttpServer, InMemoryTaskStorage,
     NoopPushNotificationSender, SimpleAgentInfo,
 };
-use a2a_rs::port::{AsyncNotificationManager, AsyncTaskManager};
 use a2a_rs::services::AgentInfoProvider;
 
 

@@ -78,3 +78,7 @@ full = ["http-client",  "http-server", "tracing", "auth"]
 [[bin]]
 name = "basic_agent_launch"
 path = "bin/basic_agent_launch.rs"
+
+[[bin]]
+name = "simple_a2a_client"
+path = "bin/simple_a2a_client.rs"

@@ -1,20 +1,14 @@
 [workspace]
 resolver = "3"
 
-members = [ "configuration","llm_api","mcp_agent_backbone","a2a_agent_backbone","agent_discovery_service","agent_memory_service","a2a_full_backbone","examples/*"]
 # Used while refactoring to add agent_protocol_backbone
-#members = [ "configuration","llm_api","mcp_agent_backbone","a2a_agent_backbone","agent_discovery_service","agent_memory_service","a2a_full_backbone","examples/*","agent_protocol_backbone","basic_agent","mcp_runtime","orchestration_agent"]
+members = [ "configuration","llm_api","agent_discovery_service","agent_memory_service","agent_protocol_backbone","basic_agent","mcp_runtime","orchestration_agent","examples/*"]
 
 [workspace.dependencies]
 llm_api = { path = "./llm_api" }
 configuration = { path = "./configuration" }
-
-mcp_agent_backbone = { path = "./mcp_agent_backbone" }
-mcp_runtime = { path = "./mcp_runtime" }
-
-a2a_agent_backbone = { path = "./a2a_agent_backbone" }
-
 agent_protocol_backbone = { path = "./agent_protocol_backbone" }
+mcp_runtime = { path = "./mcp_runtime" }
 
 agent_discovery_service = { path = "./agent_discovery_service" }
 

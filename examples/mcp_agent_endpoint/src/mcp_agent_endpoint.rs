@@ -11,7 +11,7 @@ use tracing_subscriber::{
 
 use crate::api::endpoint::run_endpoint;
 use configuration::AgentMcpConfig;
-use mcp_agent_backbone::mcp_agent_logic::agent::McpAgent;
+use mcp_runtime::mcp_agent_logic::agent::McpAgent;
 use clap::Parser;
 
 /// Command-line arguments for the reimbursement server

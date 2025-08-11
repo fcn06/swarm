@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 llm_api = { workspace = true }
-mcp_agent_backbone = { workspace = true }
+mcp_runtime = { workspace = true }
 configuration = { workspace = true }
 
 reqwest = { workspace = true }

@@ -9,6 +9,7 @@ pub trait Agent: Send + Sync  + Clone + 'static {
     async fn handle_request(&self, request: LlmMessage) -> anyhow::Result<ExecutionResult>;
 }
 
+
 pub trait AgentConfig: Send + Sync + Clone + 'static {
     fn agent_name(&self) -> String;
     fn agent_host(&self) -> String;

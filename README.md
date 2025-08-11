@@ -2,11 +2,9 @@
 
 ## **Why Swarm?**
 
-Imagine a team of digital assistants, each focusing on one domain of expertise: one for shopping, one for customer service, another for data analysis. Swarm is the framework that lets them work together seamlessly to support customer requests...You can configure intelligent agents, connect, and orchestrate  and allow them to collaborate. 
+Imagine a team of digital assistants, each focusing on one domain of expertise: one for shopping, one for customer service, another for data analysis. Swarm is the framework that lets them work together seamlessly to support customer requests...
 
-We combine two powerful communication protocols (MCP and A2A) and an orchestration capability to create a control center for your digital assistants. Swarm enables **recursive design**. You can create, according to business value, a sophisticated network of agents.
-
-Whether you're a Rust enthusiast, an AI developer, or just curious about multi-agent systems, Swarm provides a flexible and powerful framework for your agentic applications!
+Swarm provides a flexible and powerful framework for your agentic applications! Through Swarm, you can create, according to business value, a sophisticated network of agents.
 
 ## **🌐 How It Works**
 
@@ -79,9 +77,10 @@ You can then deep dive in `documentation/use_case_combined_agents` to inspect co
 
 Swarm is built around three key intelligent agent components:
 
-*   **A2A Agent (Agent-to-Agent Protocol):** 🗣️ A simple, autonomous agent capable of direct communication with other A2A agents. It can also integrate an MCP Runtime for external interactions and connect to its own LLM.
+*   **Basic Domain Agent:** 🗣️ A simple, autonomous agent that is specialized in one functional domain. It can also integrate an MCP Runtime for external interactions and connect to its own LLM.
+*   **Orchestration Agent:** 🧠 An advanced agent that acts as an orchestrator. It connects to various other agents and an MCP server, understands their available skills and tools, creates a plan based on a user request, and executes it. Because the Orchestrator Agent is also an A2A agent, this allows for the creation of complex, hierarchical agent swarms where agents can be a part of multiple orchestration layers.
 *   **MCP Runtime (Model Context Protocol):** 🛠️ A powerful runtime that enables agents to interact with external services and data sources. Imagine your agents querying a weather API or accessing a database!
-*   **Full Agent:** 🧠 An advanced A2A agent that acts as an orchestrator. It connects to various other A2A agents and an MCP server, understands their available skills and tools, creates a plan based on a user request, and executes it. Because a Full Agent is also an A2A agent, this allows for the creation of complex, hierarchical agent swarms where agents can be a part of multiple orchestration layers.
+
 
 
 ## **⚙️ Configuration Details**
@@ -90,9 +89,9 @@ The `configuration` directory is your go-to for customizing agent behavior. Here
 
 | File Name                | Purpose                                                                                |
 | :----------------------- | :------------------------------------------------------------------------------------- |
-| `agent_a2a_config.toml`  | Configures A2A simple agents, including optional embedded MCP agents                   |
+| `agent_a2a_config.toml`  | Configures simple domain agents, including optional embedded MCP agents                   |
 | `agent_mcp_config.toml`  | Configures the MCP runtime settings.                                                   |
-| `agent_full_config.toml` | Configures the Full Agent, including capabilities of using tools and skills                                                                                                              |
+| `agent_full_config.toml` | Configures the Orchestrator Agent, including capabilities of using tools and skills                                                                                                              |
 
 **LLM Models:** Each agent can connect to its own LLM. URLs are parameterized in the config files, while API keys need to be injected at runtime as environment variables.
 
@@ -102,7 +101,7 @@ The `configuration` directory is your go-to for customizing agent behavior. Here
 
 Getting your Swarm agents up and running is straightforward. For maximum flexibility and programmatic control, you can launch individual agents directly. Remember to set the required API key environment variables (e.g., `LLM_A2A_API_KEY`, `LLM_FULL_API_KEY`, `LLM_MCP_API_KEY`) *before* running these commands.
 
-*   **Simple Standalone A2A Agent Server:** Your individual intelligent assistant. You can run multiple A2A agents, each with its own configuration. (The example A2A agent embeds an MCP agent.)
+*   **Basic Domain Agent:** Your individual intelligent assistant. You can run multiple A2A agents, each with its own configuration. (The example A2A agent embeds an MCP agent.)
 
     ```bash
     # Run compiled binary.
@@ -110,31 +109,11 @@ Getting your Swarm agents up and running is straightforward. For maximum flexibi
     # LLM_MCP_API_KEY: Optional API Key for the embedded MCP Runtime's LLM (can be the same as A2A).
     # Both API keys must be compatible with llm_url defined in the config file.
     # You can define log level (default is "warn").
-    ./target/release/simple_agent_server --config-file "configuration/agent_a2a_config.toml" --log-level "warn"
+    ./target/release/basic_agent_launch --config-file "configuration/agent_a2a_config.toml" --log-level "warn"
     ```
 
-    To emphasize how simple it is to use Swarm to launch an agent programmatically, here is a code snippet:
-    ```rust
-    use configuration::AgentA2aConfig;
-    use a2a_agent_backbone::a2a_agent_logic::server::SimpleAgentServer;
 
-    #[tokio::main]
-    async fn main() -> Result<(), Box<dyn std::error::Error>> {
-        // Load A2A config file
-        let agent_a2a_config = AgentA2aConfig::load_agent_config("configuration/agent_a2a_config.toml")
-            .expect("Incorrect A2A config file");
-      
-        // Create the agent server
-        let server = SimpleAgentServer::new(agent_a2a_config).await?;
-
-        println!("🌐 Starting HTTP server only...");
-        server.start_http().await?;
-
-        Ok(())
-    }
-    ```
-
-*   **Full Agent Server (Orchestrator):** Ask the Full Agent to achieve a goal by providing a user query. This agent can connect to other A2A agents and MCP tools.
+*   **Orchestrator Agent:**  This agent can connect to other agents and MCP tools to achieve its goals.
 
     ```bash
     # Run compiled binary.
@@ -142,29 +121,9 @@ Getting your Swarm agents up and running is straightforward. For maximum flexibi
     # LLM_MCP_API_KEY: Optional API Key for the embedded MCP Runtime's LLM (can be the same LLM as Full Agent).
     # Both API keys must be compatible with llm_url defined in the config file.
     # You can define log level (default is "warn").
-    ./target/release/full_agent_server --config-file "configuration/agent_full_config.toml" --log-level "warn"
+    ./target/release/orchestration_agent_launch --config-file "configuration/agent_full_config.toml" --log-level "warn"
     ```
 
-    To emphasize how simple it is to use Swarm to launch a full agent programmatically, here is a code snippet:
-    ```rust
-    use configuration::AgentFullConfig;
-    use a2a_full_backbone::a2a_full_server::full_server::FullAgentServer;
-
-    #[tokio::main]
-    async fn main() -> Result<(), Box<dyn std::error::Error>> {
-        // Load Full agent config file
-        let agent_full_config = AgentFullConfig::load_agent_config("configuration/agent_full_config.toml")
-            .expect("Incorrect Full Agent config file");
-        
-        // Create the full agent server
-        let server = FullAgentServer::new(agent_full_config).await?;
-    
-        println!("🌐 Starting HTTP server only...");
-        server.start_http().await?;
-        
-        Ok(())
-    }
-    ```
 
 ## **🔬 Under the Hood: Swarm.rs Crate Breakdown**
 
@@ -173,10 +132,11 @@ The Swarm project is composed of several specialized sub-crates, each serving a 
 *   `agent_discovery_service`: An optional HTTP service where agents can register themselves. It exposes an endpoint to list all available agents, facilitating dynamic discovery.
 *   `agent_memory_service`: A Work In Progress capability for all agents to share their interactions and ensure better coordination.
 *   `configuration`: Contains Default Location of Swarm configuration files, making it easy to customize agent behavior.
-*   `a2a_agent_backbone`: Provides the foundational code for a simple domain agent. It can incorporate an MCP runtime for external interactions and connect to its own LLM.
-*   `a2a_full_backbone`: The core of the orchestrator Agent. It connects to declared domain agents and an MCP server, understands their skills and tools, creates, and executes plans to achieve your goals. It also connects to its own LLM.
+*   `agent_protocol_backbone`: Contains foundational elements to launch an agent and enable its request processing capabilities.
+*   `basic_agent`: Provides Business logic to launch a basic agent.
+*   `orchestration_agent`: Provides Business logic to launch an orchestration agent.
+*   `mcp_runtime`: A runtime to connect to a ModelContextProtocol Server. Designed to be embedded into an agent
 *   `llm_api`: Offers a convenient interface for interacting with various Large Language Models via an OpenAI-compatible API.
-*   `mcp_agent_backbone`: A runtime designed to be integrated into an A2A agent, granting it the capability to connect to an external set of tools via an MCP server. It can be connected to its own LLM.
 *   `documentation`: Contains a series of example of toml config file for all sort of agents ( weather forecast, customer domain, web scraper, joke telling,...).
 *   `examples`: Contains multiple illustrative examples to help you interact with Swarm:
     *   `mcp_agent_endpoint`: A testing utility for an MCP runtime to receive and process requests through an MCP server.
@@ -219,4 +179,4 @@ We heavily rely on and appreciate the fantastic work of these actively developed
 *   **MCP Protocol:** [https://github.com/modelcontextprotocol/rust-sdk](https://github.com/modelcontextprotocol/rust-sdk)
 *   **A2A Protocol:** [https://github.com/EmilLindfors/a2a-rs](https://github.com/EmilLindfors/a2a-rs)
 
-*Note: Due to their active development, we might occasionally pin to specific commits in `Cargo.toml` to maintain stability.*
+*Note: Due to their active development, we pin to recent ( but fixed revision ) in `Cargo.toml` to maintain stability.*

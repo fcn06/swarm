@@ -43,7 +43,7 @@ echo $'\n'
 echo "Weather Domain Agent"
 echo $'\n'
 
-./target/release/simple_agent_server  --config-file "documentation/use_case_combined_agents/weather_a2a_agent.toml" &
+./target/release/basic_agent_launch --config-file "documentation/use_case_combined_agents/weather_a2a_agent.toml" &
 
 sleep 5
 echo $'\n'
@@ -52,7 +52,7 @@ echo $'\n'
 echo $'\n'
 echo "Customer Domain Agent"
 echo $'\n'
-./target/release/simple_agent_server  --config-file "documentation/use_case_combined_agents/customer_domain_a2a_agent.toml" &
+./target/release/basic_agent_launch  --config-file "documentation/use_case_combined_agents/customer_domain_a2a_agent.toml" &
 sleep 5
 echo $'\n'
 echo $'\n'
@@ -60,7 +60,7 @@ echo $'\n'
 echo $'\n'
 echo "Web Scraper Domain Agent"
 echo $'\n'
-./target/release/simple_agent_server  --config-file "documentation/use_case_combined_agents/web_scraper_a2a_agent.toml" &
+./target/release/basic_agent_launch  --config-file "documentation/use_case_combined_agents/web_scraper_a2a_agent.toml" &
 sleep 8
 echo $'\n'
 echo $'\n'
@@ -70,9 +70,9 @@ echo "F) Launch full agent listening on port 9080, connected to three individual
 echo $'\n'
 echo "Orchestrator Agent"
 echo $'\n'
-./target/release/full_agent_server --config-file "documentation/use_case_combined_agents/agent_full_config.toml"  &
+./target/release/orchestration_agent_launch --config-file "documentation/use_case_combined_agents/agent_full_config.toml"  &
 # If you want to have specific log level you can specify it on command line ( trace, debug, info, warn, error. Default is warn)
-#./target/release/full_agent_server --config-file "documentation/use_case_combined_agents/agent_full_config.toml" --log-level "debug" &
+#./target/release/orchestration_agent_launch --config-file "documentation/use_case_combined_agents/agent_full_config.toml" --log-level "debug" &
 sleep 5
 echo $'\n'
 echo $'\n'

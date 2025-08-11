@@ -5,34 +5,34 @@
 #################################################################
 # General parameters
 #################################################################
-agent_a2a_name="Customer Data Retriever"
-agent_a2a_host="127.0.0.1"
-agent_a2a_http_port="8080"
+agent_name="Customer Data Retriever"
+agent_host="127.0.0.1"
+agent_http_port="8080"
 
 # Future use. Websocket is not supported
-agent_a2a_ws_port="8081"
+agent_ws_port="8081"
 
 #################################################################
 # Future use : It would make sense to have a discovery service
 # so that planner agent can dynamically discover agents to
 # connect to
 #################################################################
-agent_a2a_discovery_url="http://127.0.0.1:4000"
+agent_discovery_url="http://127.0.0.1:4000"
 
 
 #################################################################
 # Purpose and high level skills
 # The agent will use the A2A protocol for his interactions
 #################################################################
-agent_a2a_system_prompt="You are a dedicated agent for retrieving customer details from a secure data source. You can access and provide specific information about customers based on their ID or other identifying criteria, ensuring data privacy and accuracy. You are designed to work with an MCP runtime for secure data access."
-agent_a2a_skill_id="customer_data_access"
-agent_a2a_skill_name="Customer Information Retrieval"
-agent_a2a_skill_description="Retrieves comprehensive customer details including contact information, order history, account status, and preferences from a backend system, utilizing MCP for secure and authorized data access."
-agent_a2a_version="1.0.0"
-agent_a2a_description="An agent specialized in securely accessing and providing customer information, integrated with an MCP runtime for data retrieval."
-agent_a2a_doc_url="/docs"
-agent_a2a_tags=["customer data","CRM","data retrieval","customer support","MCP","user information"]
-agent_a2a_examples=[
+agent_system_prompt="You are a dedicated agent for retrieving customer details from a secure data source. You can access and provide specific information about customers based on their ID or other identifying criteria, ensuring data privacy and accuracy. You are designed to work with an MCP runtime for secure data access."
+agent_skill_id="customer_data_access"
+agent_skill_name="Customer Information Retrieval"
+agent_skill_description="Retrieves comprehensive customer details including contact information, order history, account status, and preferences from a backend system, utilizing MCP for secure and authorized data access."
+agent_version="1.0.0"
+agent_description="An agent specialized in securely accessing and providing customer information, integrated with an MCP runtime for data retrieval."
+agent_doc_url="/docs"
+agent_tags=["customer data","CRM","data retrieval","customer support","MCP","user information"]
+agent_examples=[
     "Get the contact details for customer ID 12345.",
     "What is the order history for John Doe?",
     "Check the account status of customer 98765.",
@@ -45,12 +45,12 @@ agent_a2a_examples=[
 # as well as the model to use
 #################################################################
 # These set of parameters declares the LLM that the agent will connect to
-agent_a2a_model_id="gemini-2.0-flash"
-agent_a2a_llm_url="https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+agent_model_id="gemini-2.0-flash"
+agent_llm_url="https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
 
 #################################################################
 # You can say the agent to include a MCP runtime agent
 # you just define the configuration file to use
 # MCP connected to customer data is mandatory for this agent
 #################################################################
-agent_a2a_mcp_config_path="configuration/agent_mcp_customer_data_config.toml"
+agent_mcp_config_path="configuration/agent_mcp_customer_data_config.toml"

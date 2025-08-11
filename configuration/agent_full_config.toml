@@ -7,11 +7,11 @@
 #################################################################
 # General parameters
 #################################################################
-agent_full_name="Orchestrator"
-agent_full_host="127.0.0.1"
-agent_full_http_port="9080"
+agent_name="Orchestrator"
+agent_host="127.0.0.1"
+agent_http_port="9080"
 # Future use. Websocket is not supported
-agent_full_ws_port="9081"
+agent_ws_port="9081"
 
 
 #################################################################
@@ -19,41 +19,41 @@ agent_full_ws_port="9081"
 # The orchestrator uses the A2A protocol for its interactions
 # and defines its role and capabilities here.
 #################################################################
-agent_full_system_prompt="You are a highly capable orchestrator and planner agent. Your primary function is to receive a user request, define a logical plan to fulfill it, and then delegate the necessary tasks to the most suitable connected agents or internal tools. Your expertise is in strategic coordination, not in performing the tasks yourself. You are aware of the skills and capabilities of the agents you manage."
-agent_full_skill_id="orchestration_and_planning"
-agent_full_skill_name="Task Orchestration and Delegation"
-agent_full_skill_description="Coordinates complex requests by creating a plan and delegating tasks to other agents or internal tools."
-agent_full_version="1.0.0"
-agent_full_description="An orchestrator agent that coordinates the execution of tasks by delegating to specialized agents and utilizing internal tools based on a defined plan."
-agent_full_doc_url="/docs"
-agent_full_tags=["orchestration","planning","coordination","delegation","weather","customer_details","web_search"]
-agent_full_examples=["Find the weather in Boston and then find customer details for a specific ID.", "Research the latest rust updates and provide a summary.", "Write a dunning letter for a customer with an overdue invoice."]
+agent_system_prompt="You are a highly capable orchestrator and planner agent. Your primary function is to receive a user request, define a logical plan to fulfill it, and then delegate the necessary tasks to the most suitable connected agents or internal tools. Your expertise is in strategic coordination, not in performing the tasks yourself. You are aware of the skills and capabilities of the agents you manage."
+agent_skill_id="orchestration_and_planning"
+agent_skill_name="Task Orchestration and Delegation"
+agent_skill_description="Coordinates complex requests by creating a plan and delegating tasks to other agents or internal tools."
+agent_version="1.0.0"
+agent_description="An orchestrator agent that coordinates the execution of tasks by delegating to specialized agents and utilizing internal tools based on a defined plan."
+agent_doc_url="/docs"
+agent_tags=["orchestration","planning","coordination","delegation","weather","customer_details","web_search"]
+agent_examples=["Find the weather in Boston and then find customer details for a specific ID.", "Research the latest rust updates and provide a summary.", "Write a dunning letter for a customer with an overdue invoice."]
 
 
 #################################################################
 # Define the url of the OpenAI compatible endpoint
 # as well as the model to use for planning.
 #################################################################
-agent_full_model_id="gemini-2.0-flash"
-agent_full_llm_url="https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
-#agent_full_model_id="qwen/qwen3-32b"
-#agent_full_model_id="openai/gpt-oss-20b"
-#agent_full_model_id="deepseek-r1-distill-llama-70b"
-#agent_full_model_id="meta-llama/llama-4-scout-17b-16e-instruct"
-#agent_full_llm_url="https://api.groq.com/openai/v1/chat/completions"
+agent_model_id="gemini-2.0-flash"
+agent_llm_url="https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+#agent_model_id="qwen/qwen3-32b"
+#agent_model_id="openai/gpt-oss-20b"
+#agent_model_id="deepseek-r1-distill-llama-70b"
+#agent_model_id="meta-llama/llama-4-scout-17b-16e-instruct"
+#agent_llm_url="https://api.groq.com/openai/v1/chat/completions"
 
 #################################################################
 # Future use: It would make sense to have a discovery service
 # so that the planner agent can dynamically discover agents to
 # connect to.
 #################################################################
-agent_full_discovery_url="http://127.0.0.1:4000"
+agent_discovery_url="http://127.0.0.1:4000"
 
 #################################################################
 # You can say the orchestrator to include a MCP runtime agent
 # you just define the configuration file to use
 #################################################################
-agent_full_mcp_config_path="configuration/agent_mcp_config.toml"
+agent_mcp_config_path="configuration/agent_mcp_config.toml"
 
 
 #################################################################
@@ -61,21 +61,21 @@ agent_full_mcp_config_path="configuration/agent_mcp_config.toml"
 # Once a plan is defined, it will coordinate execution
 # across these A2A agents.
 #################################################################
-[[agent_full_agents_references]]
+[[agent_agents_references]]
 name = "generic_search"
 url = "http://127.0.0.1:8080"
 is_default=true
 
-#[[agent_full_agents_references]]
+#[[agent_agents_references]]
 #name = "agent_search"
 #url = "http://127.0.0.1:8081"
 #is_default=true
 
-#[[agent_full_agents_references]]
+#[[agent_agents_references]]
 #name = "weather_agent"
 #url = "http://127.0.0.1:8082"
 
-#[[agent_full_agents_references]]
+#[[agent_agents_references]]
 #name = "customer_agent"
 #url = "http://127.0.0.1:8083"
 

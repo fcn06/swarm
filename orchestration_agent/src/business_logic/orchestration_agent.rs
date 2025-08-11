@@ -13,7 +13,6 @@ use rmcp::model::{CallToolRequestParam};
 
 use a2a_rs::domain::{Message, Part, TaskState};
 
-use configuration::AgentFullConfig;
 
 use tracing::{error,warn,info,debug,trace};
 
@@ -30,8 +29,6 @@ use agent_protocol_backbone::planning::plan_definition::{
 use async_trait::async_trait;
 
 use agent_protocol_backbone::business_logic::agent::AgentReference;
-
-// TO BE MODIFIED THE SAME WAY WE DID FOR BASIC AGENT
 
 
 /// Agent that that can interact with other available agents, and also embed MCP runtime if needed
@@ -245,7 +242,40 @@ impl OrchestrationAgent {
         description
     }
 
-   
+    async fn find_agent_with_skill(&self, skill: &str, _task_id: &str) -> Option<&A2AClient> {
+
+        // 1. Try to find the agent with appropriate skill 
+        for (agent_id, agent) in &self.client_agents {
+            info!("FullAgent: agent_id : '{}' with skill '{}'.",agent_id, skill);
+            // Access skills directly from the A2AClient struct
+            if agent.has_skill(skill) {
+                // Use the has_skill method
+                info!("FullAgent: Found agent '{}' with skill '{}'.",agent_id, skill);
+                return Some(agent);
+            }
+        }
+
+         // 2. If no agent with the specific skill is found, try to find the default agent
+         warn!("PlannerAgent: No agent found with skill '{}'. Attempting to find default agent.", skill);
+
+         for agent_ref_config in &self.agents_references {
+             if agent_ref_config.is_default == Some(true) {
+                 // We need to find the A2AClient instance associated with this default SimpleAgentReference
+                 // We can do this by matching the name or ID. Assuming client.id is agent_reference.name
+                 if let Some(default_agent_client) = self.client_agents.get(&agent_ref_config.name) {
+                     info!(
+                         "FullAgent: Found default agent '{}' as fallback.",
+                         default_agent_client.id
+                     );
+                     return Some(default_agent_client);
+                 }
+             }
+         }
+ 
+         // 3. If no agent with the skill and no default agent are found
+         warn!("FullAgent: No suitable agent (skill-matching or default) found for skill '{}'.", skill);
+         None
+    }
 
 
     async fn create_plan(&self, user_request: String) -> Result<Plan> {
@@ -595,40 +625,7 @@ impl OrchestrationAgent {
     }
 
 
-    async fn find_agent_with_skill(&self, skill: &str, _task_id: &str) -> Option<&A2AClient> {
-
-        // 1. Try to find the agent with appropriate skill 
-        for (agent_id, agent) in &self.client_agents {
-            info!("FullAgent: agent_id : '{}' with skill '{}'.",agent_id, skill);
-            // Access skills directly from the A2AClient struct
-            if agent.has_skill(skill) {
-                // Use the has_skill method
-                info!("FullAgent: Found agent '{}' with skill '{}'.",agent_id, skill);
-                return Some(agent);
-            }
-        }
-
-         // 2. If no agent with the specific skill is found, try to find the default agent
-         warn!("PlannerAgent: No agent found with skill '{}'. Attempting to find default agent.", skill);
-
-         for agent_ref_config in &self.agents_references {
-             if agent_ref_config.is_default == Some(true) {
-                 // We need to find the A2AClient instance associated with this default SimpleAgentReference
-                 // We can do this by matching the name or ID. Assuming client.id is agent_reference.name
-                 if let Some(default_agent_client) = self.client_agents.get(&agent_ref_config.name) {
-                     info!(
-                         "FullAgent: Found default agent '{}' as fallback.",
-                         default_agent_client.id
-                     );
-                     return Some(default_agent_client);
-                 }
-             }
-         }
- 
-         // 3. If no agent with the skill and no default agent are found
-         warn!("FullAgent: No suitable agent (skill-matching or default) found for skill '{}'.", skill);
-         None
-    }
+   
 
     
     // todo:investigate about summarization
@@ -707,7 +704,23 @@ impl OrchestrationAgent {
         Ok(summary)
     }
 
+        pub async fn submit_user_text(&mut self, user_query: String) ->  anyhow::Result<ExecutionResult>{
+
+
+            let llm_message_user_request=LlmMessage{
+                role: "user".to_string(), // Or appropriate role based on ExecutionResult
+                content: Some(user_query),
+                tool_call_id: None,
+                tool_calls:None
+            };
+
+            let execution_result = self.handle_request(llm_message_user_request).await;
+            execution_result
+        }
+
+    /* 
     // Helper function to extract text from a Message
+    // Not needed
     async fn extract_text_from_message(&self, message: &Message) -> String {
         message
             .parts
@@ -722,21 +735,6 @@ impl OrchestrationAgent {
             .collect::<Vec<String>>()
             .join("")
     }
-
-
-        pub async fn submit_user_text(&mut self, user_query: String) ->  anyhow::Result<ExecutionResult>{
-            let message_id = Uuid::new_v4().to_string();
-
-
-            let llm_message_user_request=LlmMessage{
-                role: "user".to_string(), // Or appropriate role based on ExecutionResult
-                content: Some(user_query),
-                tool_call_id: None,
-                tool_calls:None
-            };
-
-            let execution_result = self.handle_request(llm_message_user_request).await;
-            execution_result
-        }
+    */
 
 }

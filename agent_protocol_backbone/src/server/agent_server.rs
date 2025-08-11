@@ -32,9 +32,11 @@ impl<T:Agent,C: AgentConfig> AgentServer<T,C> {
     }
 
     pub async fn start_http(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let message_handler = AgentHandler::<T>::new(self.agent.clone());
-
+        
         let storage = self.create_in_memory_storage();
+
+        //let message_handler = AgentHandler::<T>::new(self.agent.clone());
+        let message_handler = AgentHandler::<T>::with_storage(self.agent.clone(),storage.clone());
 
         let processor = DefaultRequestProcessor::new(
             message_handler,

@@ -9,7 +9,7 @@ llm_api = { workspace = true }
 agent_protocol_backbone = { workspace = true }
 
 configuration = { workspace = true }
-mcp_agent_backbone={ workspace = true }
+mcp_runtime={ workspace = true }
 
 agent_discovery_service={ workspace = true }
 

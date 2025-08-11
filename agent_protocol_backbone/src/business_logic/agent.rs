@@ -2,13 +2,7 @@ use async_trait::async_trait;
 use llm_api::chat::Message as Message_Llm;
 use serde::{Serialize,Deserialize};
 
-/* 
-#[async_trait]
-pub trait Agent: Send + Sync + Clone + 'static {
-    //async fn handle_request(&self, request: LlmMessage) -> anyhow::Result<ExecutionResult>;
-    async fn handle_request(&self, request: LlmMessage) -> anyhow::Result<Message_Llm>;
-}
-*/
+
 
 #[async_trait]
 pub trait Agent: Send + Sync  + Clone + 'static {

@@ -1,8 +1,12 @@
 use async_trait::async_trait;
 
-use configuration::{AgentA2aConfig,AgentMcpConfig};
+use configuration::{AgentMcpConfig};
 use llm_api::chat::{ChatLlmInteraction};
-use mcp_agent_backbone::mcp_agent_logic::agent::McpAgent;
+
+// todo : change the prompt of mcp runtime , so that he tries to use internal knowledge if possible
+// todo: see if the method of delegation to mcp_runtime is optimal
+use mcp_runtime::mcp_agent_logic::agent::McpAgent;
+
 use llm_api::chat::Message as Message_Llm;
 use std::env;
 use agent_protocol_backbone::business_logic::agent::{Agent, AgentConfig};
@@ -13,7 +17,6 @@ pub struct BasicAgent {
     llm_interaction: ChatLlmInteraction,
     mcp_agent:Option<McpAgent>
 }
-
 
 #[async_trait]
 impl Agent for BasicAgent {

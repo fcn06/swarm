@@ -78,6 +78,7 @@ impl SimpleAgentHandler {
         &self.storage
     }
 
+    
     fn a2a_message_to_llm_message(&self, a2a_message: &Message) -> Result<Message_Llm, A2AError> {
         // Extract user query
         let user_query = a2a_message

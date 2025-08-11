@@ -24,7 +24,7 @@ use a2a_rs::{
 };
 
 use llm_api::chat::Message as Message_Llm;
-use crate::a2a_agent_logic::simple_agent::SimpleAgent;
+use crate::business_logic::agent::{Agent};
 
 
 /// Simple agent handler that coordinates all business capability traits
@@ -41,32 +41,38 @@ use crate::a2a_agent_logic::simple_agent::SimpleAgent;
 ///
 /// Todo : alter SimpleAgentHandler definition to add appropriate runtine entities to connect to AI, MCP, etc...
 ///
+
 #[derive(Clone)]
-pub struct AgentHandler {
-    agent: Arc<Mutex<Agent>>,
+pub struct AgentHandler <T: Agent> {
+    agent: Arc<Mutex<T>>,
     storage: Arc<InMemoryTaskStorage>,
+    //storage: InMemoryTaskStorage,
 }
 
-impl AgentHandler {
+impl<T: Agent> AgentHandler<T> {
     /// Create a new simple agent handler
-    pub fn new(agent:Agent) -> Self {
+    pub fn new(agent:T) -> Self {
 
         println!("Creating AgentHandler");
         Self {
             agent: Arc::new(Mutex::new(agent)),
+            //storage: InMemoryTaskStorage::new(),
             storage: Arc::new(InMemoryTaskStorage::new()),
         }
 
     }
 
+
+
     /// Create with a custom storage implementation
     pub fn with_storage(
-        agent:Agent,
+        agent:T,
         storage: InMemoryTaskStorage,
     ) -> Self {
        
         Self {
             agent: Arc::new(Mutex::new(agent)),
+            //storage: storage,
             storage: Arc::new(storage),
         }
 
@@ -114,7 +120,8 @@ impl AgentHandler {
 // Asynchronous trait implementations - delegate to storage
 
 #[async_trait]
-impl AsyncMessageHandler for AgentHandler {
+impl<T: Agent> AsyncMessageHandler for AgentHandler<T> {
+
     async fn process_message<'a>(
         &self,
         task_id: &'a str,
@@ -141,7 +148,7 @@ impl AsyncMessageHandler for AgentHandler {
 
           // Place her user query handler
           let mut agent = self.agent.lock().await;
-          let response = agent.handle_user_request(llm_msg.clone()).await;
+          let response = agent.handle_request(llm_msg.clone()).await;
            
         // Convert the message Back to A2A Message
         // todo : make it resilient and remove unwrap()
@@ -160,7 +167,7 @@ impl AsyncMessageHandler for AgentHandler {
 
 // below are all default boilerplate
 #[async_trait]
-impl AsyncTaskManager for AgentHandler {
+impl<T: Agent> AsyncTaskManager for AgentHandler<T> {
     async fn create_task<'a>(
         &self,
         task_id: &'a str,
@@ -198,7 +205,8 @@ impl AsyncTaskManager for AgentHandler {
 }
 
 #[async_trait]
-impl AsyncNotificationManager for AgentHandler {
+impl<T: Agent> AsyncNotificationManager for AgentHandler<T> {
+
     async fn set_task_notification<'a>(
         &self,
         config: &'a TaskPushNotificationConfig,
@@ -219,7 +227,8 @@ impl AsyncNotificationManager for AgentHandler {
 }
 
 #[async_trait]
-impl AsyncStreamingHandler for AgentHandler {
+impl<T: Agent> AsyncStreamingHandler for AgentHandler<T> {
+
     async fn add_status_subscriber<'a>(
         &self,
         task_id: &'a str,

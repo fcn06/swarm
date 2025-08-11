@@ -1,1 +1,1 @@
-pub mod generic_agent;
+pub mod agent;

@@ -4,38 +4,42 @@ use axum::{extract::State, http::StatusCode, routing::post, Json, Router};
 use serde::{Deserialize, Serialize};
 
 use a2a_rs::adapter::{
-    DefaultRequestProcessor,
-    InMemoryTaskStorage,
-    NoopPushNotificationSender,
-    SimpleAgentInfo,
-    HttpServer
+    DefaultRequestProcessor, HttpServer, InMemoryTaskStorage,
+    NoopPushNotificationSender, SimpleAgentInfo,
 };
-use a2a_rs::domain::{A2AError, Message, MessagePart, Task, TaskArtifactUpdateEvent, TaskPushNotificationConfig, TaskState, TaskStatusUpdateEvent};
-use a2a_rs::port::{
-    AsyncMessageHandler, AsyncNotificationManager, AsyncStreamingHandler, AsyncTaskManager,
-    streaming_handler::Subscriber,
-};
+use a2a_rs::port::{AsyncNotificationManager, AsyncTaskManager};
 use a2a_rs::services::AgentInfoProvider;
 
-use crate::agent_protocol::{A2AAgent, GenericAgentConfig};
-use crate::message::A2AMessage;
+
+
+use crate::business_logic::agent::{Agent, AgentConfig};
+use crate::server::agent_handler::AgentHandler;
 
 
 
-
-pub struct AgentServer<T: Agent, C: AgentConfig> {
-    agent: T,
+pub struct AgentServer<T:Agent,C: AgentConfig> {
     config: C,
+    agent:T,
 }
 
-impl<T: Agent, C: AgentConfig> AgentServer<T, C> {
-    pub fn new(agent: T, config: C) -> Self {
-        Self { agent, config }
+impl<T:Agent,C: AgentConfig> AgentServer<T,C> {
+    pub async fn new(agent_config: C) -> anyhow::Result<Self> {
+        // todo: remove unwrap()
+        let agent= Agent::new(agent_config.clone()).await?;
+        Ok(Self { config:agent_config,agent:agent })
+    }
+
+    /// Create in-memory storage
+    fn create_in_memory_storage(&self) -> InMemoryTaskStorage {
+        tracing::info!("Using in-memory storage");
+        let push_sender = NoopPushNotificationSender;
+        InMemoryTaskStorage::with_push_sender(push_sender)
     }
 
     pub async fn start_http(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let message_handler = AgentHandler::new(self.agent.clone());
-        let storage = message_handler.storage.clone(); // Get the storage from the handler
+        let message_handler = AgentHandler::<T>::new(self.agent.clone());
+
+        let storage = self.create_in_memory_storage();
 
         let processor = DefaultRequestProcessor::new(
             message_handler,

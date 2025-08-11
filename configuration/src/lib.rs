@@ -2,7 +2,6 @@ use serde::{Deserialize, Serialize};
 
 use std::fs; // Assuming you might want logging here too
 
-//use a2a_rs::domain::AgentCard;
 
 //////////////////////////////////////////////////////////////////////
 // NEW VERSION OF AGENT CONFIG
@@ -75,6 +74,7 @@ impl AgentFullConfig {
     }
 }
 
+
 // The configuration for the MCP runtime
 #[derive(Deserialize, Debug, Clone)]
 pub struct AgentMcpConfig {
@@ -103,6 +103,7 @@ impl AgentMcpConfig {
         Ok(config)
     }
 }
+
 
 
 ///////////////////////////////////////////////////////////////

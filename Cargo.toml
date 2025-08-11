@@ -3,7 +3,7 @@ resolver = "3"
 
 members = [ "configuration","llm_api","mcp_agent_backbone","a2a_agent_backbone","agent_discovery_service","agent_memory_service","a2a_full_backbone","examples/*"]
 # Used while refactoring to add agent_protocol_backbone
-#members = [ "configuration","llm_api","mcp_agent_backbone","a2a_agent_backbone","agent_discovery_service","agent_memory_service","a2a_full_backbone","examples/*","agent_protocol_backbone"]
+#members = [ "configuration","llm_api","mcp_agent_backbone","a2a_agent_backbone","agent_discovery_service","agent_memory_service","a2a_full_backbone","examples/*","agent_protocol_backbone","basic_agent"]
 
 [workspace.dependencies]
 llm_api = { path = "./llm_api" }

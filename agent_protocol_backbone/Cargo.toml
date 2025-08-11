@@ -1,8 +1,9 @@
 [package]
-name = "a2a_protocol_backbone"
+name = "agent_protocol_backbone"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
 crate-type = ["rlib"]
 
 [dependencies]

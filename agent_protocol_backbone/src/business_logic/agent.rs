@@ -11,7 +11,7 @@ pub trait Agent: Send + Sync + Clone + 'static {
 */
 
 #[async_trait]
-pub trait Agent: Send + Sync + Clone + 'static {
+pub trait Agent: Send + Sync  + Clone + 'static {
     //async fn handle_request(&self, request: LlmMessage) -> anyhow::Result<ExecutionResult>;
     async fn new( agent_config: impl AgentConfig) -> anyhow::Result<Self>;
     async fn handle_request(&self, request: Message_Llm) -> anyhow::Result<Message_Llm>;

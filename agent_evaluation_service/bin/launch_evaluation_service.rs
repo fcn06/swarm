@@ -16,9 +16,9 @@ struct Args {
     #[clap(long, default_value = "0.0.0.0:6000")]
     uri: String,
     /// Configuration file path (TOML format)
-    #[clap(long, default_value = "configuration/agent_basic_config.toml")]
+    #[clap(long, default_value = "configuration/agent_judge_config.toml")]
     config_file: String,
-    #[clap(long, default_value = "warn")]
+    #[clap(long, default_value = "info")]
     log_level: String,
 }
 

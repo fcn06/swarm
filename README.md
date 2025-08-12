@@ -77,9 +77,9 @@ The `configuration` directory is your go-to for customizing agent behavior. Here
 
 | File Name                | Purpose                                                                                |
 | :----------------------- | :------------------------------------------------------------------------------------- |
-| `agent_a2a_config.toml`  | Configures simple domain agents, including optional embedded MCP agents                   |
+| `agent_basic_config.toml`| Configures simple domain agents, including optional embedded MCP agents                |
 | `agent_mcp_config.toml`  | Configures the MCP runtime settings.                                                   |
-| `agent_full_config.toml` | Configures the Orchestrator Agent, including capabilities of using tools and skills                                                                                                              |
+| `agent_orchestration_config.toml` | Configures the Orchestrator Agent, including capabilities of using tools and skills                                                                                                              |
 
 **LLM Models:** Each agent can connect to its own LLM. URLs are parameterized in the config files, while API keys need to be injected at runtime as environment variables.
 
@@ -99,7 +99,7 @@ Getting your Swarm agents up and running is straightforward. For maximum flexibi
     # LLM_MCP_API_KEY: Optional API Key for the embedded MCP Runtime's LLM (can be the same as A2A).
     # Both API keys must be compatible with llm_url defined in the config file.
     # You can define log level (default is "warn").
-    ./target/release/basic_agent_launch --config-file "configuration/agent_a2a_config.toml" --log-level "warn"
+    ./target/release/basic_agent_launch --config-file "configuration/agent_basic_config.toml" --log-level "warn"
     ```
 
     Or programmatically, in just a few lines of code :
@@ -126,7 +126,7 @@ Getting your Swarm agents up and running is straightforward. For maximum flexibi
     # LLM_MCP_API_KEY: Optional API Key for the embedded MCP Runtime's LLM (can be the same LLM as Full Agent).
     # Both API keys must be compatible with llm_url defined in the config file.
     # You can define log level (default is "warn").
-    ./target/release/orchestration_agent_launch --config-file "configuration/agent_full_config.toml" --log-level "warn"
+    ./target/release/orchestration_agent_launch --config-file "configuration/agent_orchestration_config.toml" --log-level "warn"
     ```
     Or programmatically, in just a few lines of code :
 

@@ -59,7 +59,7 @@ impl JudgeAgent {
         let _system_message = agent_config.agent_system_prompt();
 
         // Set API key for LLM
-        let llm_a2a_api_key = env::var("LLM_Judge_API_KEY").expect("LLM_A2A_API_KEY must be set");
+        let llm_a2a_api_key = env::var("LLM_Judge_API_KEY").expect("LLM_JUDGE_API_KEY must be set");
 
         let llm_interaction= ChatLlmInteraction::new(
             agent_config.agent_llm_url(),

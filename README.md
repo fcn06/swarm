@@ -80,6 +80,7 @@ The `configuration` directory is your go-to for customizing agent behavior. Here
 | `agent_basic_config.toml`| Configures simple domain agents, including optional embedded MCP agents                |
 | `agent_mcp_config.toml`  | Configures the MCP runtime settings.                                                   |
 | `agent_orchestration_config.toml` | Configures the Orchestrator Agent, including capabilities of using tools and skills                                                                                                              |
+| `agent_judge_config.toml`| FUTURE USE :Configures for the judge agent that will be used for evaluation service   |
 
 **LLM Models:** Each agent can connect to its own LLM. URLs are parameterized in the config files, while API keys need to be injected at runtime as environment variables.
 
@@ -147,6 +148,7 @@ The Swarm project is composed of several specialized sub-crates, each serving a 
 
 *   `agent_discovery_service`: An optional HTTP service where agents can register themselves. It exposes an endpoint to list all available agents, facilitating dynamic discovery.
 *   `agent_memory_service`: A Work In Progress capability for all agents to share their interactions and ensure better coordination.
+*   `agent_evaluation_service`: A Work In Progress capability for all agents to have their performance evaluated ( Llm as a Judge Model).
 *   `configuration`: Contains Default Location of Swarm configuration files, making it easy to customize agent behavior.
 *   `agent_protocol_backbone`: Contains foundational elements to launch an agent and enable its request processing capabilities.
 *   `basic_agent`: Provides Business logic to launch a basic agent.

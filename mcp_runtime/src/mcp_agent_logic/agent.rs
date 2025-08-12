@@ -8,7 +8,6 @@ use tracing::{info, error,warn,trace, debug};
 use std::env;
 
 use serde_json::json;
-use std::error::Error;
 use std::sync::Arc;
 
 use rmcp::RoleClient;
@@ -97,9 +96,8 @@ impl McpAgent {
     pub fn push_message(
         &mut self,
         user_message:Message,
-    ) -> anyhow::Result<()> {
+    ) {
         self.messages.push(user_message);
-        Ok(())
     }
 
     /// Reset agent to initial system message
@@ -128,7 +126,7 @@ impl McpAgent {
     async fn call_api_v2(
         &self,
         request_payload: &ChatCompletionRequest,
-    ) -> Result<ChatCompletionResponse, reqwest::Error> {
+    ) -> anyhow::Result<ChatCompletionResponse> {
         debug!("Calling LLM API with payload: {:?}", request_payload);
         //trace!("Request Payload:{:#?}",request_payload.clone());
 
@@ -136,16 +134,16 @@ impl McpAgent {
         let payload_json = serde_json::to_string(&request_payload.clone()).unwrap();
         trace!("{}",payload_json);
 
-        let response = self.llm_interaction.call_chat_completions_v2(request_payload).await;
+        let response = self.llm_interaction.call_chat_completions_v2(request_payload).await?;
         debug!("LLM API Response: {:?}", response);
-        response
+        Ok(response)
     }
 
     /// Handles the execution of tool calls requested by the LLM.
     async fn handle_tool_calls(
         &mut self,
         choice: &Choice,
-    ) -> Result<(), Box<dyn Error>>  {
+    ) -> anyhow::Result<()>  {
         if let Some(tool_calls) = &choice.message.tool_calls {
             info!("--- Tool Calls Requested ---");
             let mut tool_results: Vec<Message> = Vec::new();
@@ -156,10 +154,7 @@ impl McpAgent {
                 match execute_tool_call_v2(self.mcp_client.clone(), tool_call.clone()).await {
                     Ok(result) => {
                         let result_content_str =
-                            serde_json::to_string(&result.content).map_err(|e| {
-                                error!("Failed to serialize tool result content: {}", e);
-                                Box::new(e) as Box<dyn Error>
-                            })?;
+                            serde_json::to_string(&result.content)?;
 
                         tool_results.push(Message {
                             role: self.agent_mcp_config.agent_mcp_role_tool.clone(),
@@ -189,7 +184,7 @@ impl McpAgent {
     }
 
     /// Executes the main agent logic loop.
-    pub async fn execute_loop(&mut self) -> Result<Option<Message>, Box<dyn Error>>  {
+    pub async fn execute_loop(&mut self) -> anyhow::Result<Option<Message>>  {
         let mut final_message: Option<Message> = None;
 
         for loop_count in 0..self.agent_mcp_config.agent_mcp_max_loops {
@@ -217,7 +212,7 @@ impl McpAgent {
 
             if response.choices.is_empty() {
                 error!("LLM response contained no choices.");
-                return Err("LLM response contained no choices.".into());
+                anyhow::bail!("LLM response contained no choices.");
             }
             let choice = &response.choices[0];
 
@@ -235,31 +230,28 @@ impl McpAgent {
                 }
                 reason if reason == self.agent_mcp_config.agent_mcp_finish_reason_stop => {
                     info!("LLM indicated finish_reason 'stop'.");
-                    if final_message.is_none() {
-                        if choice.message.role == self.agent_mcp_config.agent_mcp_role_assistant {
-                            final_message = Some(Message {
-                                role: self.agent_mcp_config.agent_mcp_role_assistant.clone(),
-                                content: choice.message.content.clone(),
-                                tool_call_id: None,
-                                tool_calls: None,
-                            });
-                            warn!(
-                                "Finish reason was 'stop', but no final message captured by process_response. Captured last assistant message."
-                            );
-                        } else {
-                            warn!(
-                                "Finish reason was 'stop', but no final message captured and last message role ('{}') wasn't assistant.",
-                                choice.message.role
-                            );
-                        }
+                    if choice.message.role == self.agent_mcp_config.agent_mcp_role_assistant {
+                        final_message = Some(Message {
+                            role: self.agent_mcp_config.agent_mcp_role_assistant.clone(),
+                            content: choice.message.content.clone(),
+                            tool_call_id: None,
+                            tool_calls: None,
+                        });
+                        warn!(
+                            "Finish reason was 'stop'. Captured last assistant message."
+                        );
+                    } else {
+                        warn!(
+                            "Finish reason was 'stop', but last message role ('{}') wasn't assistant.",
+                            choice.message.role
+                        );
                     }
                     break;
                 }
                 other_reason => {
                     warn!("Unhandled finish reason '{}', exiting loop.", other_reason);
                     if let Some(content) = &choice.message.content {
-                        //if !content.trim().is_empty() && final_message.is_none() {
-                        if !content.trim().is_empty() { // Removed the `&& final_message.is_none()` part
+                        if !content.trim().is_empty() {
                             final_message = Some(Message {
                                 role: self.agent_mcp_config.agent_mcp_role_assistant.clone(),
                                 content: Some(content.clone()),
@@ -282,11 +274,10 @@ impl McpAgent {
                     "Maximum loop count ({}) reached, exiting.",
                     self.agent_mcp_config.agent_mcp_max_loops
                 );
-                return Err(format!(
+                anyhow::bail!(
                     "Agent exceeded maximum iterations ({})",
                     self.agent_mcp_config.agent_mcp_max_loops
-                )
-                .into());
+                );
             }
         } // End of loop
 
@@ -301,9 +292,8 @@ impl McpAgent {
     pub async fn run_agent_internal(
         &mut self,
         user_message: Message,
-    ) -> Result<Option<Message>, Box<dyn Error>>  {
-
-        let _= self.push_message(user_message);
+    ) -> anyhow::Result<Option<Message>>  {
+        self.push_message(user_message);
         self.execute_loop().await
     }
 

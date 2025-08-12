@@ -85,27 +85,6 @@ impl Plan {
         tasks_definition: Vec<TaskDefinition>,
     ) -> Self {
         let plan_id = Uuid::new_v4().to_string();
-        let mut tasks = HashMap::new();
-        let mut task_order = Vec::new();
-
-        for task_def in &tasks_definition {
-            let task_id = task_def.id.clone();
-            let task = TaskDefinition {
-                id: task_id.clone(),
-                description: task_def.description.clone(),
-                skill_to_use: task_def.skill_to_use.clone(),
-                expected_outcome: task_def.expected_outcome.clone(),
-                dependencies: task_def.dependencies.clone(),
-                assigned_agent_id_preference: task_def.assigned_agent_id_preference.clone(),
-                tool_to_use: task_def.tool_to_use.clone(),
-                tool_parameters: task_def.tool_parameters.clone(),
-                created_at: Utc::now(),
-                task_output: None, // Initialize task_output as None
-            };
-
-            tasks.insert(task_id.clone(), task);
-            task_order.push(task_id); // Initial order from LLM
-        }
 
         Plan {
             id: plan_id,
@@ -113,7 +92,7 @@ impl Plan {
             user_query,
             plan_summary,
             tasks_definition,
-            task_results: HashMap::new(), // Initialize the new field
+            task_results: HashMap::new(),
             status: PlanStatus::Pending,
             final_summary: None,
             created_at: Some(Utc::now()),

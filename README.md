@@ -2,9 +2,9 @@
 
 ## **Why Swarm?**
 
-Imagine a team of digital assistants, each focusing on one domain of expertise: one for shopping, one for customer service, another for data analysis. Swarm is the framework that lets them work together seamlessly to support customer requests...
+**Building complex, multi-agent systems is hard.** You need to handle communication, orchestrate tasks, and manage external tools. **Swarm makes it easy.**
 
-Swarm provides a flexible and powerful framework for your agentic applications! Through Swarm, you can create, according to business value, a sophisticated network of agents.
+Swarm is a Rust-based framework that allows you to build, connect, and orchestrate a network of specialized, intelligent agents. Think of it as a central nervous system for your digital workforce. Whether you need a customer service bot that can consult a shipping expert, or a data analyst that can delegate web scraping tasks, Swarm provides the backbone for them to collaborate seamlessly.
 
 ## **🌐 How It Works**
 
@@ -19,66 +19,54 @@ For a detailed description of Swarm's core components, refer to the "Core Compon
 *(Note: An optional MCP Server is provided in the `examples` section for testing purposes.)*
 
 
-## **🚀 Getting Started & Prerequisites**
+## **🚀 Quickstart: Your First Swarm in 5 Minutes**
 
-Ready to dive in? Here's how to get your first Swarm components up and running.
+Follow these steps to get a multi-agent system running.
 
-**1. Install Rust:** If you don't have Rust installed, follow the instructions on the [official Rust website](https://www.rust-lang.org/tools/install).
+### Prerequisites
 
-**2. Obtain LLM API Keys:** To enable your agents to think and communicate, you'll need access to an OpenAI-compatible chat completion API. 
+1.  **Install Rust**: If you don't have it, get it from [rust-lang.org](https://www.rust-lang.org/tools/install).
+2.  **Get an LLM API Key**: Swarm agents need an LLM to think. We recommend starting with a free plan from [Groq](https://console.groq.com/keys) or [Google AI Studio (for Gemini)](https://aistudio.google.com/app/apikey). For a detailed comparison of the models we've tested, see our [Model Comparison Guide](./documentation/model_comparison/quick_comparison.md).
 
-We have tested Groq and gemini, for which you can access pretty good free plan:
+### Step 1: Clone and Build the Project
 
-*   **Groq:**  [https://api.groq.com/openai/v1/chat/completions](https://api.groq.com/openai/v1/chat/completions). 
-
-*   **Gemini:** [https://generativelanguage.googleapis.com/v1beta/openai/chat/completions](https://generativelanguage.googleapis.com/v1beta/openai/chat/completions)
-
-Below is summarized results of our internal evaluation :
-
-| Provider | Model | General Purpose | MCP | Orchestration | Comments |
-| :--- | :--- | :---: | :---: | :---: | :---: |
-|Groq | qwen/qwen3-32b | ✓ | ✓ | ✓ | <span style="font-size: smaller;">Works pretty well, and very fast but you quickly reach rate limiting constrainst with free plan</span> |
-|Groq | openai/gpt-oss-20b | ✓ | ✓ | ✓ | <span style="font-size: smaller;">Works pretty well, and very fast but you quickly reach rate limiting constrainst with free plan</span> |
-|Groq | deepseek-r1-distill-llama-70b | ✓ | ✓ | ✓ | <span style="font-size: smaller;">Works pretty well, and very fast but you quickly reach rate limiting constrainst with free plan</span> |
-|Groq | meta-llama/llama-4-scout-17b-16e-instruct | ✓ | ✓ | ✓ | <span style="font-size: smaller;">Works pretty well, and very fast but you quickly reach rate limiting constrainst with free plan</span> |
-|Google | gemini-2.0-flash | ✓ | ✓ | ✓ | <span style="font-size: smaller;">Works pretty well, but it is often verbose</span> |
-|Groq | llama-3.1-8b-instant | ✓ | ✗ | ✗ | <span style="font-size: smaller;">Works only for simple tasks</span> |
-
-**3. Build Swarm:** Compile the workspace to ensure all dependencies are in sync:
 ```bash
+git clone https://your-repo-url/swarm.git
+cd swarm
 cargo build --release
 ```
 
-## **🚀 Quickstart through a simplified example scenario : Multi-Agent Orchestration Use Case:**
+### Step 2: Set Your API Keys
 
-We created an easy to launch scenario to illustrate capabilities of the framework. It can be launched via script , from the root of swarm crate.
-
-It is located in `documentation/use_case_combined_agents`. You will be able to find all the config files to support the scenario.
-
-You should see logs from three MCP servers, three A2A agents, and the coordinating Full Agent. The script will then send three requests, and you will see the full agent orchestrate the response.
+The quickstart scenario uses the Gemini API by default. Export your API key as an environment variable:
 
 ```bash
-# The simple scenario has three domain driven agents and one that orchestrates 
-# Domain driven agents can have their own LLM. In defined scenario we use gemini
+# Replace <YOUR-GEMINI-API-KEY> with your actual key
 export LLM_A2A_API_KEY=<YOUR-GEMINI-API-KEY>
-# MCP Runtime can have their own LLM to manage interaction with MCP servers. In defined scenario we also use gemini
 export LLM_MCP_API_KEY=<YOUR-GEMINI-API-KEY>
-# Orchestrator agent can also have its own llm  LLM to manage interaction with other agents. In defined scenario we also use gemini
-export LLM_FULL_API_KEY=<YOUR-GEMINI-API-KEY>
-# This is the command line TO BE LAUNCHED FROM SWARM root, to launch the scenario
-./documentation/use_case_combined_agents/run_all_commands.sh 
+export LLM_FULL_API_KEY=<YOUR-GEMINI-API_KEY>
 ```
-We hope that this quickstart will enable you to build your own scenario very easily
 
-You can then deep dive in `documentation/use_case_combined_agents` to inspect configuration files, and launch script to understand how agents are connected together
+### Step 3: Run the Demo!
+
+We've prepared a script that launches a full orchestration scenario, including three specialized agents and one orchestrator.
+
+```bash
+# This command must be run from the root of the swarm project
+./documentation/use_case_combined_agents/run_all_commands.sh
+```
+
+You should now see logs from all agents as the orchestrator processes three sample requests. **Congratulations, you've just run your first swarm!**
+
+To understand what just happened, feel free to inspect the configuration files in the `documentation/use_case_combined_agents` directory.
 
 
 ## **💡 Core Components of Swarm**
 
 Swarm is built around three key intelligent agent components:
 
-*   **Basic Domain Agent:** 🗣️ A simple, autonomous agent that is specialized in one functional domain. It can also integrate an MCP Runtime for external interactions and connect to its own LLM.
-*   **Orchestration Agent:** 🧠 An advanced agent that acts as an orchestrator. It connects to various other agents and an MCP server, understands their available skills and tools, creates a plan based on a user request, and executes it. Because the Orchestrator Agent is also an A2A agent, this allows for the creation of complex, hierarchical agent swarms where agents can be a part of multiple orchestration layers.
+*   **Basic Domain Agent (The Specialist):** 🗣️ This is your workhorse. An agent designed to be an expert in a single domain, like "weather forecasting" or "database queries."
+*   **Orchestration Agent (The Manager):** 🧠 This agent acts as a team lead. It takes a complex user request, breaks it down into smaller tasks, and delegates them to the appropriate Specialist agents. Because the Orchestrator Agent is also an A2A agent, this allows for the creation of complex, hierarchical agent swarms where agents can be a part of multiple orchestration layers.
 *   **MCP Runtime (Model Context Protocol):** 🛠️ A powerful runtime that enables agents to interact with external services and data sources. Imagine your agents querying a weather API or accessing a database!
 
 
@@ -119,7 +107,7 @@ Getting your Swarm agents up and running is straightforward. For maximum flexibi
     ```rust
     // load config file
     let basic_agent_config = AgentConfig::load_agent_config(&args.config_file);
-  
+
     // Create the modern server, and pass the runtime elements
     let server = AgentServer::<BasicAgent>::new(basic_agent_config.expect("Incorrect Basic Agent config file")).await?;
 
@@ -145,7 +133,7 @@ Getting your Swarm agents up and running is straightforward. For maximum flexibi
     ```rust
     // load config file
     let basic_agent_config = AgentConfig::load_agent_config(&args.config_file);
-  
+
       // Create the modern server, and pass the runtime elements
     let server = AgentServer::<OrchestrationAgent>::new(orchestration_agent_config.expect("Incorrect Orchestration Agent config file")).await?;
 
@@ -188,9 +176,22 @@ We're continuously working on improvements, including:
 *   **Improved UI** Improve the UI to interact with any kind of agent.
 *   **Test with Llama.cpp Server** Test with llama.cpp server so that we can connect all kind of fine tuned models for single domain agents.
 
+## **🤝 How to Contribute**
 
-We're eager for your comments, suggestions, and contributions! 
-Whether it's a bug report, a feature idea, or a pull request, your input helps shape the future of Swarm. 
+We welcome contributions of all kinds! Whether you're a developer, a writer, or just have a great idea, we'd love to have you.
+
+Here are a few ways you can help:
+
+1.  **Report Bugs**: If you find a bug, please [open an issue](https://github.com/your-repo-url/swarm/issues) and provide as much detail as possible.
+2.  **Suggest Features**: Have an idea for a new feature? We'd love to hear it! [Open an issue](https://github.com/your-repo-url/swarm/issues) to start the discussion.
+3.  **Submit Pull Requests**: If you're ready to contribute code, please fork the repository and submit a pull request. We recommend starting with issues labeled `good first issue`.
+4.  **Improve the Documentation**: If you see an area where the documentation could be better, please don't hesitate to make the change and submit a pull request.
+
+Before contributing, please read our (coming soon) `CONTRIBUTING.md` file for more detailed guidelines.
+
+
+We're eager for your comments, suggestions, and contributions!
+Whether it's a bug report, a feature idea, or a pull request, your input helps shape the future of Swarm.
 
 You an also contribute by suggesting configuration files that you have been using to support your use case, as well as models you have been using for your experimentations
 

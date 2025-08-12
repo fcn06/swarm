@@ -2,7 +2,11 @@
 resolver = "3"
 
 # Used while refactoring to add agent_protocol_backbone
-members = [ "configuration","llm_api","agent_discovery_service","agent_memory_service","agent_protocol_backbone","basic_agent","mcp_runtime","orchestration_agent","examples/*"]
+members = [ "configuration","llm_api",
+                "agent_discovery_service","agent_memory_service",
+                "agent_evaluation_service",
+                "agent_protocol_backbone","basic_agent","mcp_runtime","orchestration_agent",
+                "examples/*"]
 
 [workspace.dependencies]
 llm_api = { path = "./llm_api" }

@@ -1,5 +1,5 @@
 use reqwest::{Client, Error};
-use crate::evaluation_server::llm_judge::AgentLogData;
+use crate::evaluation_server::judge_agent::AgentLogData;
 
 #[derive(Debug)]
 pub struct AgentEvaluationServiceClient {

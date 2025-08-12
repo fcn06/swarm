@@ -1,5 +1,5 @@
 [package]
-name = "example_mcp_agent_endpoint"
+name = "example_mcp_runtime_endpoint"
 version = "0.1.0"
 edition = "2024"
 
@@ -29,5 +29,5 @@ clap = { workspace = true }
 
 
 [[example]]
-name = "mcp_agent_endpoint"
-path = "src/mcp_agent_endpoint.rs"
+name = "mcp_runtime_endpoint"
+path = "src/mcp_runtime_endpoint.rs"

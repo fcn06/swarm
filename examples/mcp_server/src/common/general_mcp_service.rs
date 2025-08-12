@@ -1,18 +1,16 @@
-use std::sync::Arc;
-
 use rmcp::{
-    Error as McpError, RoleServer, ServerHandler, const_string, model::*, schemars,
-    service::RequestContext, tool,  tool_handler, tool_router,
+    ErrorData as McpError,  ServerHandler,  model::*, schemars,
+    tool,  tool_handler, tool_router,
     handler::server::{router::tool::ToolRouter, tool::Parameters},
 };
 use serde_json::json;
-use tokio::sync::Mutex;
+
 
 
 #[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
 pub struct StructRequestLocation {
     #[schemars(description = "Location for which you desire to know weather")]
-    pub location: String,
+    pub _location: String,
     #[schemars(description = "Temperature unit to use. You can specify Degree Celsius or Degree Farenheit")]
     pub unit: Option<String>,
 }
@@ -20,7 +18,7 @@ pub struct StructRequestLocation {
 #[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
 pub struct StructRequestCustomerDetails {
     #[schemars(description = "Give customer details from a given customer_id")]
-    pub customer_id: String,
+    pub _customer_id: String,
 }
 
 #[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
@@ -49,7 +47,7 @@ impl GeneralMcpService {
 
     #[tool(description = "Get the current weather in a given location")]
     async fn get_current_weather(
-        &self, Parameters(StructRequestLocation { location, unit }): Parameters<StructRequestLocation>) -> Result<CallToolResult, McpError> {
+        &self, Parameters(StructRequestLocation { _location, unit }): Parameters<StructRequestLocation>) -> Result<CallToolResult, McpError> {
         let unit = unit.unwrap_or("Degree Celsius".to_string());
         let begining_string=r#""{"Temperature": "24", "unit":""#;
         let end_string=r#"","description":"Sunny"}"#;
@@ -62,7 +60,7 @@ impl GeneralMcpService {
 
     #[tool(description = "Give customer details")]
     async fn get_customer_details(
-        &self,Parameters(StructRequestCustomerDetails { customer_id }): Parameters<StructRequestCustomerDetails>) 
+        &self,Parameters(StructRequestCustomerDetails { _customer_id }): Parameters<StructRequestCustomerDetails>) 
             -> Result<CallToolResult, McpError> {
         Ok(CallToolResult::success(vec![Content::text(
             r#"{"Full Name": "Company A", "address": "Sunny Street"}"#,
@@ -84,7 +82,6 @@ impl GeneralMcpService {
 
 }
 
-const_string!(Echo = "echo");
 //#[tool(tool_box)]
 #[tool_handler]
 impl ServerHandler for GeneralMcpService {

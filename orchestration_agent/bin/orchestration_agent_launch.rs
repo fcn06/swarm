@@ -1,4 +1,4 @@
-use orchestration_agent::config::orchestration_agent_config::OrchestrationAgentConfig;
+use agent_protocol_backbone::config::agent_config::{AgentConfig};
 use orchestration_agent::business_logic::orchestration_agent::OrchestrationAgent;
 use agent_protocol_backbone::server::agent_server::AgentServer;
 
@@ -62,10 +62,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /************************************************/ 
 
     // load a2a config file and initialize appropriateruntime
-    let orchestration_agent_config = OrchestrationAgentConfig::load_agent_config(&args.config_file);
+    let orchestration_agent_config = AgentConfig::load_agent_config(&args.config_file);
   
     // Create the modern server, and pass the runtime elements
-    let server = AgentServer::<OrchestrationAgent,OrchestrationAgentConfig>::new(orchestration_agent_config.expect("Incorrect Orchestration Agent config file")).await?;
+    let server = AgentServer::<OrchestrationAgent>::new(orchestration_agent_config.expect("Incorrect Orchestration Agent config file")).await?;
 
     println!("🌐 Starting HTTP server only...");
     server.start_http().await?;

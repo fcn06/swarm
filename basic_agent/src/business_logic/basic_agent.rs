@@ -9,7 +9,9 @@ use mcp_runtime::mcp_agent_logic::agent::McpAgent;
 
 use llm_api::chat::Message as LlmMessage;
 use std::env;
-use agent_protocol_backbone::business_logic::agent::{Agent, AgentConfig};
+
+use agent_protocol_backbone::business_logic::agent::{Agent};
+use agent_protocol_backbone::config::agent_config::{AgentConfig};
 use agent_protocol_backbone::planning::plan_definition::{ExecutionResult};
 
 
@@ -25,7 +27,7 @@ impl Agent for BasicAgent {
 
     /// Creation of a new simple a2a agent
     async fn new(
-        agent_config: impl AgentConfig + Sized + Send + 'static) -> anyhow::Result<Self> {
+        agent_config: AgentConfig ) -> anyhow::Result<Self> {
 
                // Set model to be used
         let model_id = agent_config.agent_model_id();

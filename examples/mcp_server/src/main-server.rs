@@ -1,13 +1,11 @@
 use rmcp::transport::sse_server::SseServer;
 use tracing_subscriber::{
     layer::SubscriberExt,
-    util::SubscriberInitExt,
     {self},
 };
 
-use tracing::{info, error, Level};
+use tracing::{Level};
 use tracing_subscriber::{
-    prelude::*,
     fmt,
     layer::Layer,
     Registry, filter

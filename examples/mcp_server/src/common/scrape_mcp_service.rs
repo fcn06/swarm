@@ -1,6 +1,6 @@
 use rmcp::{
-    Error as McpError, RoleServer, ServerHandler, const_string, model::*, schemars,
-    service::RequestContext, tool,  tool_handler, tool_router,
+    ErrorData as McpError,  ServerHandler, model::*, schemars,
+    tool,  tool_handler, tool_router,
     handler::server::{router::tool::ToolRouter, tool::Parameters},
 };
 use serde_json::json;

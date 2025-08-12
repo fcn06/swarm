@@ -2,18 +2,17 @@
 use axum::{
     Json,
     Router,
-    extract::{State,Form},
+    extract::{State},
     http::StatusCode,
     response::{IntoResponse, Response,Html}, // Use IntoResponse for better error handling
     routing::{get, post},
 };
 
-use serde::{Deserialize, Serialize};
+use serde::{ Serialize};
 use tracing::{info, error,debug};
 
 
 use a2a_rs::{
-    HttpClient,
     domain::{Message, Part},
     services::AsyncA2AClient,
 };

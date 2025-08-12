@@ -1,4 +1,3 @@
-// main.rs
 mod api;
 
 use tracing::{info, error, Level};

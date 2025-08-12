@@ -17,10 +17,12 @@ use a2a_rs::domain::{Message, Part, TaskState};
 use tracing::{error,warn,info,debug,trace};
 
 use configuration::AgentMcpConfig;
+
 use mcp_runtime::mcp_agent_logic::agent::McpAgent;
 use llm_api::chat::Message as LlmMessage;
 use std::env;
-use agent_protocol_backbone::business_logic::agent::{Agent, AgentConfig};
+use agent_protocol_backbone::business_logic::agent::{Agent};
+use agent_protocol_backbone::config::agent_config::{AgentConfig,AgentReference};
 
 use agent_protocol_backbone::planning::plan_definition::{
     ExecutionResult, Plan, PlanResponse, PlanStatus, 
@@ -28,7 +30,6 @@ use agent_protocol_backbone::planning::plan_definition::{
 
 use async_trait::async_trait;
 
-use agent_protocol_backbone::business_logic::agent::AgentReference;
 
 
 /// Agent that that can interact with other available agents, and also embed MCP runtime if needed
@@ -46,7 +47,7 @@ pub struct OrchestrationAgent {
 impl Agent for OrchestrationAgent {
 
     async fn new(
-        agent_config: impl AgentConfig + Sized + Send + 'static) -> anyhow::Result<Self> {
+        agent_config: AgentConfig) -> anyhow::Result<Self> {
 
         // Set model to be used
         let model_id = agent_config.agent_model_id();
@@ -65,7 +66,7 @@ impl Agent for OrchestrationAgent {
 
         // List available agents from config
         //todo:make it resilient
-        let agents_references =  agent_config.agents_references().unwrap();
+        let agents_references =  agent_config.agent_agents_references().unwrap();
         
         // todo:make this search dynamic
         
@@ -718,9 +719,10 @@ impl OrchestrationAgent {
             execution_result
         }
 
-    /* 
+    
     // Helper function to extract text from a Message
-    // Not needed
+    // This function is not needed for now
+    #[allow(dead_code)]
     async fn extract_text_from_message(&self, message: &Message) -> String {
         message
             .parts
@@ -735,6 +737,6 @@ impl OrchestrationAgent {
             .collect::<Vec<String>>()
             .join("")
     }
-    */
+    
 
 }

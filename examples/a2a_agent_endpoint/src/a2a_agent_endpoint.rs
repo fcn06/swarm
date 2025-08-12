@@ -1,7 +1,7 @@
 // main.rs
 mod api;
 
-use tracing::{info, error, Level};
+use tracing::{info,  Level};
 use tracing_subscriber::{
     prelude::*,
     fmt,
@@ -15,8 +15,6 @@ use clap::Parser;
 
 use a2a_rs::{
     HttpClient,
-    domain::{Message, Part},
-    services::AsyncA2AClient,
 };
 
 use std::sync::Arc;

@@ -18,7 +18,7 @@ use clap::Parser;
 #[clap(author, version, about, long_about = None)]
 struct Args {
     /// Configuration file path (TOML format)
-    #[clap(long, default_value = "configuration/agent_mcp_config.toml")]
+    #[clap(long, default_value = "configuration/mcp_runtime_config.toml")]
     config_file: String,
     #[clap(long, default_value = "warn")]
     log_level: String,

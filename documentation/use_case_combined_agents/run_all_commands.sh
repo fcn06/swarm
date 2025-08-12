@@ -24,6 +24,9 @@ echo "B) Compile the mcp server example"
 cargo build --release --example main-server
 echo $'\n'
 
+echo "##############################################################"
+echo $'\n'
+
 echo "C) Launch discovery Service so that agents can self register"
 ./target/release/discovery_service &
 sleep 3
@@ -38,12 +41,15 @@ sleep 4
 echo $'\n'
 echo $'\n'
 
-echo "E) Launch three agents listening on three different ports (8081,8083,8085), each using mcp config"
+echo "##############################################################"
+echo $'\n'
+
+echo "E) Launch three domain agents listening on three different ports (8081,8083,8085), each using mcp config"
 echo $'\n'
 echo "Weather Domain Agent"
 echo $'\n'
 
-./target/release/basic_agent_launch --config-file "documentation/use_case_combined_agents/weather_a2a_agent.toml" &
+./target/release/basic_agent_launch --config-file "documentation/use_case_combined_agents/weather_domain_agent.toml" &
 
 sleep 5
 echo $'\n'
@@ -52,7 +58,7 @@ echo $'\n'
 echo $'\n'
 echo "Customer Domain Agent"
 echo $'\n'
-./target/release/basic_agent_launch  --config-file "documentation/use_case_combined_agents/customer_domain_a2a_agent.toml" &
+./target/release/basic_agent_launch  --config-file "documentation/use_case_combined_agents/customer_domain_agent.toml" &
 sleep 5
 echo $'\n'
 echo $'\n'
@@ -60,25 +66,29 @@ echo $'\n'
 echo $'\n'
 echo "Web Scraper Domain Agent"
 echo $'\n'
-./target/release/basic_agent_launch  --config-file "documentation/use_case_combined_agents/web_scraper_a2a_agent.toml" &
+./target/release/basic_agent_launch  --config-file "documentation/use_case_combined_agents/web_scraper_domain_agent.toml" &
 sleep 8
 echo $'\n'
 echo $'\n'
 
+echo "##############################################################"
+echo $'\n'
 
-echo "F) Launch full agent listening on port 9080, connected to three individual agents"
+echo "F) Launch Orchestration agent listening on port 9080, connected to three individual agents"
 echo $'\n'
 echo "Orchestrator Agent"
 echo $'\n'
-./target/release/orchestration_agent_launch --config-file "documentation/use_case_combined_agents/agent_full_config.toml"  &
+./target/release/orchestration_agent_launch --config-file "documentation/use_case_combined_agents/agent_orchestration_config.toml"  &
 # If you want to have specific log level you can specify it on command line ( trace, debug, info, warn, error. Default is warn)
 #./target/release/orchestration_agent_launch --config-file "documentation/use_case_combined_agents/agent_full_config.toml" --log-level "debug" &
 sleep 5
 echo $'\n'
 echo $'\n'
 
+echo "##############################################################"
+echo $'\n'
 
-echo "F) Launch the a2a_client with 4 requests, three of them are targetting a specific tool, and the fourth a general knowledge question"
+echo "F) Launch the agent_client with complex requests, some of them are targetting a specific tool, and the last one is  a general knowledge question"
 
 echo $'\n'
 read -n 1 -s -r -p "Press any key to continue..."

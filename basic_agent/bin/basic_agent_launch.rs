@@ -17,7 +17,7 @@ use tracing_subscriber::{
 #[clap(author, version, about, long_about = None)]
 struct Args {
     /// Configuration file path (TOML format)
-    #[clap(long, default_value = "configuration/agent_a2a_config.toml")]
+    #[clap(long, default_value = "configuration/agent_basic_config.toml")]
     config_file: String,
     #[clap(long, default_value = "warn")]
     log_level: String,

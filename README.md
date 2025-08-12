@@ -101,7 +101,9 @@ The `configuration` directory is your go-to for customizing agent behavior. Here
 
 Getting your Swarm agents up and running is straightforward. For maximum flexibility and programmatic control, you can launch individual agents directly. Remember to set the required API key environment variables (e.g., `LLM_A2A_API_KEY`, `LLM_FULL_API_KEY`, `LLM_MCP_API_KEY`) *before* running these commands.
 
-*   **Basic Domain Agent:** Your individual intelligent assistant. You can run multiple A2A agents, each with its own configuration. (The example A2A agent embeds an MCP agent.)
+*   **Basic Domain Agent:** Your individual intelligent assistant specialized in a single domain
+
+    Via Script :
 
     ```bash
     # Run compiled binary.
@@ -112,8 +114,23 @@ Getting your Swarm agents up and running is straightforward. For maximum flexibi
     ./target/release/basic_agent_launch --config-file "configuration/agent_a2a_config.toml" --log-level "warn"
     ```
 
+    Or programmatically, in just a few lines of code :
+
+    ```rust
+    // load config file
+    let basic_agent_config = AgentConfig::load_agent_config(&args.config_file);
+  
+    // Create the modern server, and pass the runtime elements
+    let server = AgentServer::<BasicAgent>::new(basic_agent_config.expect("Incorrect Basic Agent config file")).await?;
+
+    println!("🌐 Starting HTTP server only...");
+    server.start_http().await?;
+    ```
+
 
 *   **Orchestrator Agent:**  This agent can connect to other agents and MCP tools to achieve its goals.
+
+    Via Script :
 
     ```bash
     # Run compiled binary.
@@ -123,7 +140,18 @@ Getting your Swarm agents up and running is straightforward. For maximum flexibi
     # You can define log level (default is "warn").
     ./target/release/orchestration_agent_launch --config-file "configuration/agent_full_config.toml" --log-level "warn"
     ```
+    Or programmatically, in just a few lines of code :
 
+    ```rust
+    // load config file
+    let basic_agent_config = AgentConfig::load_agent_config(&args.config_file);
+  
+      // Create the modern server, and pass the runtime elements
+    let server = AgentServer::<OrchestrationAgent>::new(orchestration_agent_config.expect("Incorrect Orchestration Agent config file")).await?;
+
+    println!("🌐 Starting HTTP server only...");
+    server.start_http().await?;
+    ```
 
 ## **🔬 Under the Hood: Swarm.rs Crate Breakdown**
 

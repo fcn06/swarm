@@ -172,6 +172,7 @@ We're continuously working on improvements, including:
 *   **Context Enrichment:** Enrich the request with relevant context, to make a plan more accurate.
 *   **Evaluation:** Evaluation of the outcome of the swarm of agents, to enable distributed iterative decision processing ( test and learn).
 *   **Identity Management:** Use Self Sovereign Identity concept to enable agent to have its own proven identity.
+*   **Directed Graph of Agents:** Connect agents in a pre defined pipeline to execute complex tasks.
 *   **Code Refactoring:** Continuously improving code clarity and maintainability.
 *   **Unit Tests:** Enhancing robustness and reliability across the codebase.
 *   **Scalable & Asynchronous Communication** Leveraging Tokio to enable agents to process requests from multiple clients in parallel.

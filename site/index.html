@@ -2,63 +2,217 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Very Simple Demo of a web UI calling a REST LLM endpoint</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A2A Agent Chat Interface</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 70vh;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+        .chat-window {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            border-bottom: 1px solid #eee;
+            background-color: #e9ecef;
+        }
+        .message-bubble {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+        .message-bubble.user {
+            background-color: #007bff;
+            color: white;
+            align-self: flex-end;
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+        .message-bubble.agent {
+            background-color: #f0f0f0;
+            color: #333;
+            align-self: flex-start;
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+        }
+        .input-area {
+            display: flex;
+            padding: 20px;
+            border-top: 1px solid #eee;
+            background-color: #fff;
+            align-items: center;
+        }
+        .input-area textarea {
+            flex-grow: 1;
+            border: 1px solid #ccc;
+            border-radius: 25px;
+            padding: 10px 15px;
+            font-size: 1em;
+            resize: none;
+            min-height: 40px;
+            max-height: 120px;
+            overflow-y: auto;
+            margin-right: 10px;
+        }
+        .input-area button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-left: 5px;
+        }
+        .input-area button:hover {
+            background-color: #218838;
+        }
+        .input-area button#reset_all {
+            background-color: #dc3545;
+        }
+        .input-area button#reset_all:hover {
+            background-color: #c82333;
+        }
+        .loading-indicator {
+            text-align: center;
+            padding: 10px;
+            color: #666;
+            font-style: italic;
+        }
+        .error-message {
+            color: #dc3545;
+            padding: 10px;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
-<h1>Very Simple demo of UI calling a REST endpoint to interact with A2A Agents</h1>
+    <h1>Chat with A2A Agents</h1>
 
-<br>
+    <div class="container">
+        <div class="chat-window" id="chat_window">
+            <!-- Messages will be appended here -->
+        </div>
 
-    <input type="text" id="text_query"  placeholder="Enter your query here" size="80" />
-    <button type="button" id="post_query"  >Post Query</button>
-    <button type="button" id="reset_all"  >Reset</button>
+        <div class="input-area">
+            <textarea id="text_query" placeholder="Type your message here..." rows="1"></textarea>
+            <button type="button" id="post_query">Send</button>
+            <button type="button" id="reset_all">Clear Chat</button>
+        </div>
+    </div>
 
-<br>
+    <script>
+        const chatWindow = document.getElementById("chat_window");
+        const textQuery = document.getElementById("text_query");
+        const postQueryBtn = document.getElementById("post_query");
+        const resetAllBtn = document.getElementById("reset_all");
+        const urlLocalServer = 'http://127.0.0.1:3030/msg';
 
-
-<section id="section"></section>
-<script>
-
-        document.getElementById("post_query").onclick=async() => {
-          await chat();
+        postQueryBtn.onclick = async () => {
+            await sendMessage();
         };
 
-        document.getElementById("reset_all").onclick= function() {
-          document.getElementById("section").innerHTML ="";
+        resetAllBtn.onclick = () => {
+            chatWindow.innerHTML = "";
+            textQuery.value = "";
+            textQuery.style.height = 'auto'; // Reset textarea height
         };
 
+        textQuery.addEventListener('input', () => {
+            textQuery.style.height = 'auto'; // Reset height
+            textQuery.style.height = textQuery.scrollHeight + 'px'; // Set to scroll height
+        });
 
-     async  function chat() {
+        textQuery.addEventListener('keypress', async (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault(); // Prevent new line
+                await sendMessage();
+            }
+        });
 
-        var urlLocalServer = 'http://127.0.0.1:3030/msg';
-        var text_area = document.getElementById("text_query");
+        async function sendMessage() {
+            const query = textQuery.value.trim();
+            if (!query) return;
 
-        var obj = {"role": "user", "content": text_area.value};
+            // Display user message
+            appendMessage(query, 'user');
+            textQuery.value = "";
+            textQuery.style.height = 'auto'; // Reset textarea height after sending
 
-        const myJSON = JSON.stringify(obj);
+            // Show loading indicator
+            const loadingMessage = appendMessage('Agent is thinking...', 'agent loading-indicator');
 
-        document.getElementById("section").innerHTML += "<br><br><b>" + text_area.value + "</b><br><br>";
+            const obj = {"role": "user", "content": query};
+            const myJSON = JSON.stringify(obj);
 
-        text_area.value="";
+            try {
+                const response = await fetch(urlLocalServer, {
+                    method: "POST",
+                    cache: "no-cache",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: myJSON,
+                });
 
+                // Remove loading indicator
+                chatWindow.removeChild(loadingMessage);
 
-        const response = await fetch(urlLocalServer, {
-            method: "POST", // *GET, POST, PUT, DELETE, etc.
-            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body:myJSON,
-          });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
 
-        const data = await response.json();
-        document.getElementById("section").innerHTML += data.content;
-     }
+                const data = await response.json();
+                appendMessage(data.content, 'agent');
 
+            } catch (error) {
+                console.error("Error sending message:", error);
+                // Remove loading indicator if present, then show error
+                if (chatWindow.contains(loadingMessage)) {
+                    chatWindow.removeChild(loadingMessage);
+                }
+                appendMessage(`Error: Could not connect to the agent. Please ensure the agent service is running. (${error.message})`, 'agent error-message');
+            } finally {
+                // Scroll to the bottom after new messages
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }
+        }
 
-</script>
+        function appendMessage(content, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message-bubble', type);
+            messageDiv.textContent = content;
+            chatWindow.appendChild(messageDiv);
+            chatWindow.scrollTop = chatWindow.scrollHeight; // Auto-scroll to bottom
+            return messageDiv; // Return the created element for potential removal (e.g., loading indicator)
+        }
+    </script>
 </body>
 </html>

@@ -41,15 +41,17 @@ cargo build --release
 The quickstart scenario uses the Gemini API by default. Export your API key as an environment variable:
 
 ```bash
-# Replace <YOUR-GEMINI-API-KEY> with your actual key
+# Replace <YOUR-GEMINI-API-KEY> and <YOUR-GROQ-API_KEY> with your actual key
 export LLM_A2A_API_KEY=<YOUR-GEMINI-API-KEY>
 export LLM_MCP_API_KEY=<YOUR-GEMINI-API-KEY>
 export LLM_FULL_API_KEY=<YOUR-GEMINI-API_KEY>
+export LLM_JUDGE_API_KEY=<YOUR-GROQ-API_KEY>
 ```
 
 ### Step 3: Run the Demo!
 
 We've prepared a script that launches a full orchestration scenario, including three specialized agents and one orchestrator.
+The outcome is evaluated by another Llm acting as a judge
 
 ```bash
 # This command must be run from the root of the swarm project

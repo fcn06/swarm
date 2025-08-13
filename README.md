@@ -63,12 +63,12 @@ To understand what just happened, feel free to inspect the configuration files i
 
 ## **💡 Core Components of Swarm**
 
-Swarm is built around three key intelligent agent components:
+Swarm is built around three key intelligent agent components, and one component acting as a Judge to evaluate their results:
 
 *   **Basic Domain Agent (The Specialist):** 🗣️ This is your workhorse. An agent designed to be an expert in a single domain, like "weather forecasting" or "database queries."
 *   **Orchestration Agent (The Manager):** 🧠 This agent acts as a team lead. It takes a complex user request, breaks it down into smaller tasks, and delegates them to the appropriate Specialist agents. Because the Orchestrator Agent is also an A2A agent, this allows for the creation of complex, hierarchical agent swarms where agents can be a part of multiple orchestration layers.
 *   **MCP Runtime (Model Context Protocol):** 🛠️ A powerful runtime that enables agents to interact with external services and data sources. Imagine your agents querying a weather API or accessing a database!
-
+*   **LLM as a Judge:** 🛠️ A LLM that will evaluate outcome of orchestrator agents. We advise that you use a different LLM/Model thjan the one you use for agents and MCP. You can try it yourself through the demo we presented above. The evaluation data can be an interesting input for training / fine tuning LLM to improve accuracy of their answer, or the relevance of the tools you use.
 
 
 ## **⚙️ Configuration Details**

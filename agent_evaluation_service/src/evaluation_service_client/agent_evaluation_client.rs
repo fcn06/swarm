@@ -15,7 +15,7 @@ impl AgentEvaluationServiceClient {
         }
     }
 
-    pub async fn log_evaluation(&self, log_data: AgentLogData) -> Result<String, Error> {
+    pub async fn log_evaluation(&self, log_data: AgentLogData) -> anyhow::Result<String> {
         let url = format!("{}/log", self.evaluation_service_url);
         
         let response = self.client.post(&url)
@@ -23,6 +23,6 @@ impl AgentEvaluationServiceClient {
             .send()
             .await?;
 
-        response.json::<String>().await
+        Ok(response.json::<String>().await?)
     }
 }

@@ -13,7 +13,7 @@ use agent_protocol_backbone::config::agent_config::AgentConfig;
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Args {
-    #[clap(long, default_value = "0.0.0.0:6000")]
+    #[clap(long, default_value = "0.0.0.0:7000")]
     uri: String,
     /// Configuration file path (TOML format)
     #[clap(long, default_value = "configuration/agent_judge_config.toml")]
@@ -58,10 +58,11 @@ async fn main() -> anyhow::Result<()> {
       /************************************************/ 
 
 
-    // load judge agent config file and initialize appropriateruntime
-    let judge_agent_config = AgentConfig::load_agent_config(&args.config_file)?;
-
-    let evaluation_server = EvaluationServer::new(judge_agent_config).await?;
+    /************************************************/
+    /* Launch Evaluation Server                         */
+    /************************************************/ 
+    let agent_config = AgentConfig::load_agent_config(&args.config_file).expect("REASON");
+    let evaluation_server = EvaluationServer::new(args.uri,agent_config).await?;
     evaluation_server.start_http().await?;
 
     Ok(())

@@ -54,7 +54,7 @@ impl DiscoveryServer {
 
             // Run our app with hyper
             let listener = tokio::net::TcpListener::bind(self.uri.clone()).await?;
-            println!("Server started");
+            info!("Discovery Server started at {}", self.uri);
             axum::serve(listener, self.app.clone()).await?;
 
             Ok(())

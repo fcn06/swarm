@@ -29,13 +29,14 @@ use agent_protocol_backbone::planning::plan_definition::{
 };
 
 use async_trait::async_trait;
-
+use agent_evaluation_service::evaluation_service_client::agent_evaluation_client::AgentEvaluationServiceClient;
+use agent_evaluation_service::evaluation_server::judge_agent::AgentLogData;
 
 
 /// Agent that that can interact with other available agents, and also embed MCP runtime if needed
 #[derive(Clone)]
 pub struct OrchestrationAgent {
-    //agent_full_config: AgentFullConfig, // possible future use
+    agent_config: AgentConfig, // possible future use
     agents_references: Vec<AgentReference>,
     llm_interaction: ChatLlmInteraction,
     client_agents: HashMap<String, A2AClient>,
@@ -125,7 +126,7 @@ impl Agent for OrchestrationAgent {
           };
   
           Ok(Self {
-            //agent_full_config,
+            agent_config:agent_config,
             agents_references: agents_references,
             llm_interaction,
             client_agents,
@@ -138,13 +139,16 @@ impl Agent for OrchestrationAgent {
     
         let request_id = Uuid::new_v4().to_string();
 
+        // To be instantiated at launch
+        let evaluation_service=AgentEvaluationServiceClient::new("http://127.0.0.1:7000".to_string());
+
         // Extracting text from message
         // todo:make resilient
         let user_query = request.content.unwrap();
 
         info!("---Full: Starting to handle user request --  Query: '{:?}'---",user_query);
 
-        match self.create_plan(user_query).await {
+        match self.create_plan(user_query.clone()).await {
             Ok(mut plan) => {
                 trace!(
                     "FullAgent: Plan created successfully for request ID: {}. Plan ID: {}",
@@ -161,6 +165,20 @@ impl Agent for OrchestrationAgent {
                             "FullAgent: Final summary generated for request ID {}.",
                             request_id
                         );
+
+                        // To be improved
+                        evaluation_service.log_evaluation(AgentLogData {
+                            agent_id: self.agent_config.agent_name().to_string(),
+                            request_id: request_id.to_string(),
+                            step_id: "".to_string(),
+                            original_user_query: user_query.clone().to_string(),
+                            agent_input: user_query.clone().to_string(),
+                            agent_output: summary.to_string(),
+                            context_snapshot: None,
+                            success_criteria: None,
+                        }).await?;
+
+
                         Ok(ExecutionResult {
                             request_id,
                             success: plan.status == PlanStatus::Completed,

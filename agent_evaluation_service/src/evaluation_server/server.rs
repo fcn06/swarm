@@ -6,7 +6,7 @@ use axum::{
     routing::{get, post},
     http::StatusCode,
 };
-use tracing::info;
+use tracing::{info,trace};
 use std::sync::Arc;
 use crate::evaluation_server::judge_agent::{AgentLogData, EvaluatedAgentData};
 use crate::evaluation_server::judge_agent::JudgeAgent;
@@ -27,7 +27,7 @@ pub struct EvaluationServer {
 }
 
 impl EvaluationServer {
-    pub async fn new(agent_config: AgentConfig) -> anyhow::Result<Self> {
+    pub async fn new(uri:String, agent_config: AgentConfig) -> anyhow::Result<Self> {
         let db_evaluations: DashMap<String, EvaluatedAgentData> = DashMap::new();
 
         let judge_agent=JudgeAgent::new(agent_config.clone()).await?;
@@ -45,7 +45,7 @@ impl EvaluationServer {
             .with_state(app_state);
 
         Ok(Self {
-            uri:format!("http://{}:{}", agent_config.agent_host(), agent_config.agent_http_port()),
+            uri:uri,
             app,
         })
     }
@@ -53,7 +53,7 @@ impl EvaluationServer {
     /// Start the HTTP server.
     pub async fn start_http(&self) -> anyhow::Result<()> {
         let listener = tokio::net::TcpListener::bind(self.uri.clone()).await?;
-        println!("Evaluation Server started at {}", self.uri);
+        info!("Evaluation Server started at {}", self.uri);
         axum::serve(listener, self.app.clone()).await?;
         Ok(())
     }
@@ -76,13 +76,13 @@ async fn log_evaluation(
         Ok(evaluated_data) => {
 
             let db_evaluations = state.db_evaluations.clone();
-            info!("Received Agent Evaluation Data : {:?}", evaluated_data);
+            trace!("Received Agent Evaluation Data : {:?}", evaluated_data);
             db_evaluations.insert(log_data.agent_id.clone(), evaluated_data);
             Ok(Json("Evaluation logged successfully".to_string()))
         }
         Err(e) => {
             let error_message = format!("Failed to evaluate agent output: {:?}", e);
-            eprintln!("{}", error_message);
+            trace!("{}", error_message);
             Err((StatusCode::INTERNAL_SERVER_ERROR, error_message))
         }
     }
@@ -92,7 +92,7 @@ async fn log_evaluation(
 async fn list_evaluations(
     State(state): State<AppState>,
 ) -> Json<Vec<EvaluatedAgentData>> {
-    let db_evaluations = state.db_evaluations.to_owned();
+    let db_evaluations = state.db_evaluations.clone();
 
     let mut list_evaluations: Vec<EvaluatedAgentData> = Vec::new();
 

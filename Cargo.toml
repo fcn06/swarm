@@ -12,6 +12,7 @@ members = [ "configuration","llm_api",
 llm_api = { path = "./llm_api" }
 configuration = { path = "./configuration" }
 agent_protocol_backbone = { path = "./agent_protocol_backbone" }
+agent_evaluation_service = { path = "./agent_evaluation_service" }
 mcp_runtime = { path = "./mcp_runtime" }
 
 agent_discovery_service = { path = "./agent_discovery_service" }

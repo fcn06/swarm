@@ -5,7 +5,7 @@
 #################################################################
 # General parameters
 #################################################################
-agent_name="Generic Agent"
+agent_name="Basic Agent"
 agent_host="127.0.0.1"
 agent_http_port="8080"
 

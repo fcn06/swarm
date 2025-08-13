@@ -4,6 +4,7 @@ use chrono::Utc;
 use llm_api::chat::{ChatLlmInteraction, Message};
 use anyhow::Result;
 
+use tracing::trace;
 
 
 use agent_protocol_backbone::config::agent_config::AgentConfig;
@@ -59,7 +60,7 @@ impl JudgeAgent {
         let _system_message = agent_config.agent_system_prompt();
 
         // Set API key for LLM
-        let llm_a2a_api_key = env::var("LLM_Judge_API_KEY").expect("LLM_JUDGE_API_KEY must be set");
+        let llm_a2a_api_key = env::var("LLM_JUDGE_API_KEY").expect("LLM_JUDGE_API_KEY must be set");
 
         let llm_interaction= ChatLlmInteraction::new(
             agent_config.agent_llm_url(),
@@ -112,7 +113,11 @@ impl JudgeAgent {
             .and_then(|msg| msg.content)
             .ok_or_else(|| anyhow::anyhow!("LLM response content is empty"))?;
 
+        trace!("LLM Judge response: {}", response_content);
+        
         let judge_evaluation: JudgeEvaluation = serde_json::from_str(&response_content)?;
+
+        trace!("Judge Evaluation Structured Answer : {:?}",judge_evaluation );
 
         let evaluated_data = EvaluatedAgentData {
             agent_log: log_data,

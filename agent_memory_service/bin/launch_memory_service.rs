@@ -11,7 +11,7 @@ use clap::Parser;
 
 
 
-use agent_memory_service::memory_server::server::MemoryServer;
+use agent_memory_service::memory_server::MemoryServer;
 
 /// Command-line arguments for the reimbursement server
 #[derive(Parser, Debug)]

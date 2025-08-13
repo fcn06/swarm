@@ -1,8 +1,7 @@
+use reqwest::Client;
+use anyhow::Result;
 
-use reqwest::{Client, Error};
-
-
-use crate::{AgentData, MemoryEntry};
+use crate::models::{LogEntry, LogPayload, Role};
 
 #[derive(Debug)]
 pub struct AgentMemoryServiceClient {
@@ -18,22 +17,29 @@ impl AgentMemoryServiceClient {
         }
     }
 
-    pub async fn push_content_to_memory_service(&self, agent_data: AgentData) -> Result<MemoryEntry, Error> {
-        let url = format!("{}/memory", self.memory_service_url);
+    pub async fn log(&self, conversation_id: String, role: Role, content: String, agent_id: Option<String>) -> Result<Vec<LogEntry>> {
+        let url = format!("{}/log", self.memory_service_url);
+        let payload = LogPayload {
+            conversation_id,
+            role,
+            content,
+            agent_id,
+        };
+
         let response = self.client.post(&url)
-            .json(&agent_data)
+            .json(&payload)
             .send()
             .await?;
 
-        response.json::<MemoryEntry>().await
+        Ok(response.json::<Vec<LogEntry>>().await?)
     }
 
-    pub async fn retrieve_content_from_memory_service(&self) -> Result<Vec<MemoryEntry>, Error> {
-        let url = format!("{}/memory", self.memory_service_url);
+    pub async fn get_conversation(&self, conversation_id: &str) -> Result<Option<Vec<LogEntry>>> {
+        let url = format!("{}/conversation/{}", self.memory_service_url, conversation_id);
         let response = self.client.get(&url)
             .send()
             .await?;
 
-        response.json::<Vec<MemoryEntry>>().await
+        Ok(response.json::<Option<Vec<LogEntry>>>().await?)
     }
 }

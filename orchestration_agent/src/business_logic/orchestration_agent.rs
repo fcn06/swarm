@@ -32,6 +32,7 @@ use agent_protocol_backbone::planning::plan_definition::{
 use async_trait::async_trait;
 use agent_evaluation_service::evaluation_service_client::agent_evaluation_client::AgentEvaluationServiceClient;
 use agent_evaluation_service::evaluation_server::judge_agent::AgentLogData;
+use agent_memory_service::{memory_service_client::agent_memory_client::AgentMemoryServiceClient, models::Role};
 
 
 /// Agent that that can interact with other available agents, and also embed MCP runtime if needed
@@ -43,6 +44,7 @@ pub struct OrchestrationAgent {
     client_agents: HashMap<String, A2AClient>,
     mcp_agent: Option<McpAgent>,
     evaluation_service: Option<AgentEvaluationServiceClient>,
+    memory_service: Option<AgentMemoryServiceClient>,
 }
 
 
@@ -130,6 +132,15 @@ impl Agent for OrchestrationAgent {
               warn!("Evaluation service URL not configured. No evaluations will be logged.");
               None
           };
+
+          // Initialize memory service client if configured
+          let memory_service = if let Some(url) = agent_config.agent_memory_service_url() {
+            info!("Memory service configured at: {}", url);
+            Some(AgentMemoryServiceClient::new(url))
+        } else {
+            warn!("Memory service URL not configured. No memory will be used.");
+            None
+        };
   
           Ok(Self {
             agent_config: Arc::new(agent_config),
@@ -138,6 +149,7 @@ impl Agent for OrchestrationAgent {
             client_agents,
             mcp_agent,
             evaluation_service,
+            memory_service,
           })
 
     }
@@ -145,6 +157,7 @@ impl Agent for OrchestrationAgent {
     async fn handle_request(&self, request: LlmMessage) ->anyhow::Result<ExecutionResult> {
     
         let request_id = Uuid::new_v4().to_string();
+        let conversation_id = Uuid::new_v4().to_string();
 
         let user_query = request.content.clone().unwrap_or_default();
 
@@ -176,7 +189,7 @@ impl Agent for OrchestrationAgent {
                                 request_id: request_id.to_string(),
                                 step_id: "".to_string(),
                                 original_user_query: user_query.clone(),
-                                agent_input: user_query,
+                                agent_input: user_query.clone(),
                                 agent_output: summary.clone(),
                                 context_snapshot: None,
                                 success_criteria: None,
@@ -189,9 +202,35 @@ impl Agent for OrchestrationAgent {
                             });
                         }
 
+                        if let Some(service) = self.memory_service.clone() {
+                            let agent_config = self.agent_config.clone();
+                            
+                            let user_query_clone = user_query.clone();
+                            let summary_clone = summary.clone();
+                            let service_clone = service.clone();
+                            let agent_name = agent_config.agent_name().to_string();
+                            let plan_clone = plan.clone();
+                            let conversation_id_clone= conversation_id.clone();
+
+                            tokio::spawn(async move {
+                                if let Err(e) = service_clone.log(conversation_id_clone.clone(), Role::User, user_query_clone, None).await {
+                                    warn!("Failed to log user query to memory: {}", e);
+                                }
+                                let mut agent_response = summary_clone;
+                                if let Ok(plan_json) = serde_json::to_string(&plan_clone) {
+                                    agent_response.push_str("\n\n");
+                                    agent_response.push_str(&plan_json);
+                                }
+                                if let Err(e) = service_clone.log(conversation_id_clone.clone(), Role::Agent, agent_response, Some(agent_name)).await {
+                                    warn!("Failed to log agent response to memory: {}", e);
+                                }
+                            });
+                        }
+
 
                         Ok(ExecutionResult {
                             request_id,
+                            conversation_id:conversation_id,
                             success: plan.status == PlanStatus::Completed,
                             output: summary,
                             plan_details: Some(plan),
@@ -208,6 +247,7 @@ impl Agent for OrchestrationAgent {
                         );
                         Ok(ExecutionResult {
                             request_id,
+                            conversation_id,
                             success: false, // Mark as not fully successful if summarization fails
                             output: output_on_summary_fail,
                             plan_details: Some(plan),
@@ -223,6 +263,7 @@ impl Agent for OrchestrationAgent {
                 trace!("{}", error_msg);
                 Ok(ExecutionResult {
                     request_id,
+                    conversation_id,
                     success: false,
                     output: error_msg,
                     plan_details: None,

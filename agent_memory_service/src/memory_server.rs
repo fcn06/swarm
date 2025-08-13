@@ -35,7 +35,7 @@ impl MemoryServer {
         let app = Router::new()
             .route("/", get(root))
             .route("/log", post(log_message))
-            .route("/conversation/:conversation_id", get(get_conversation))
+            .route("/conversation/{conversation_id}", get(get_conversation))
             .with_state(app_state);
 
         Ok(Self { uri, app })
@@ -60,7 +60,8 @@ async fn log_message(
     State(state): State<AppState>, // Extract the AppState
     Json(payload): Json<LogPayload>,
 ) -> Json<Vec<LogEntry>> {
-    info!("Received log_message request: {:?}", payload);
+    
+    info!("Received log_message for conversation : {:?}", payload.conversation_id);
 
     let db_memory = state.db_memory.to_owned();
 
@@ -82,6 +83,7 @@ async fn get_conversation(
     State(state): State<AppState>, // Extract the AppState
     Path(conversation_id): Path<String>,
 ) -> Json<Option<Vec<LogEntry>>> {
+    
     info!("Received get_conversation request for id: {}", conversation_id);
 
     let db_memory = state.db_memory.to_owned();

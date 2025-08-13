@@ -61,6 +61,11 @@ agent_mcp_config_path="configuration/agent_mcp_config.toml"
 agent_evaluation_service_url="http://127.0.0.1:7000"
 
 #################################################################
+# Agent Memory Service
+#################################################################
+agent_memory_service_url="http://127.0.0.1:5000"
+
+#################################################################
 # Define the series of agents to which the orchestrator is connected.
 # Once a plan is defined, it will coordinate execution
 # across these A2A agents.
@@ -82,4 +87,3 @@ is_default=true
 #[[agent_agents_references]]
 #name = "customer_agent"
 #url = "http://127.0.0.1:8083"
-

@@ -9,6 +9,7 @@ edition = "2024"
 llm_api = { workspace = true }
 agent_protocol_backbone = { workspace = true }
 agent_evaluation_service = { workspace = true }
+agent_memory_service = { workspace = true }
 
 configuration = { workspace = true }
 mcp_runtime={ workspace = true }

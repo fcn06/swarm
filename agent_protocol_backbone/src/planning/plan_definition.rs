@@ -70,6 +70,7 @@ pub struct ExecutionPlan {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExecutionResult {
     pub request_id: String,
+    pub conversation_id: String,
     pub success: bool,
     pub output: String,
     #[serde(skip_serializing_if = "Option::is_none")]

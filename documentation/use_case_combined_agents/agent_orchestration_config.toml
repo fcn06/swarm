@@ -50,6 +50,11 @@ agent_discovery_url="http://127.0.0.1:4000"
 agent_evaluation_service_url="http://127.0.0.1:7000"
 
 #################################################################
+# Agent Memory Service
+#################################################################
+agent_memory_service_url="http://127.0.0.1:5000"
+
+#################################################################
 # You can say the orchestrator to include a MCP runtime agent
 # you just define the configuration file to use
 #################################################################

@@ -3,7 +3,7 @@ use anyhow::Result;
 
 use crate::models::{LogEntry, LogPayload, Role};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AgentMemoryServiceClient {
     memory_service_url: String,
     client: Client,

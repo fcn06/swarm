@@ -51,6 +51,11 @@ echo "C) Launch Evaluation Service so that agents can have their output evaluate
 sleep 3
 echo $'\n'
 
+echo "C) Launch Memory Service so that agents can have log their conversation and plan"
+./target/release/memory_service &
+sleep 3
+echo $'\n'
+
 echo "D) Launch three MCP server, each with individual tool on three different ports"
 ./target/release/examples/main-server --port 8001 weather &
 ./target/release/examples/main-server --port 8002 customer &
@@ -131,6 +136,8 @@ echo $'\n'
 
 echo "When it is finished, you can access evaluations of the orchestrator by the LLM Judge :"
 echo "curl http://127.0.0.1:7000/evaluations"
+echo "When it is finished, you can access what is recorded by memory service:"
+echo curl http://127.0.0.1:5000/conversation/{conversation_id}"
 echo $'\n'
-echo "Just Try it"
+echo "Just Try them"
 echo $'\n'

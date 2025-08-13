@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-
+use uuid::Uuid;
 use configuration::{AgentMcpConfig};
 use llm_api::chat::{ChatLlmInteraction};
 
@@ -64,6 +64,7 @@ impl Agent for BasicAgent {
     async fn handle_request(&self, request: LlmMessage) ->anyhow::Result<ExecutionResult> {
        
        let request_id=uuid::Uuid::new_v4().to_string();
+       let conversation_id = Uuid::new_v4().to_string();
 
         // use MCP LLM to answer if there is a MCP runtime, Agent LLM otherwise 
         let response =if self.mcp_agent.is_none() {
@@ -79,6 +80,7 @@ impl Agent for BasicAgent {
 
         Ok(ExecutionResult {
             request_id,
+            conversation_id,
             success: true, // Mark as not fully successful if summarization fails
             output: response.expect("No Return from LLM").content.expect("Empty result from Llm"),
             plan_details: None,

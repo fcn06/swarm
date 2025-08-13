@@ -51,7 +51,11 @@ export LLM_JUDGE_API_KEY=<YOUR-GROQ-API_KEY>
 ### Step 3: Run the Demo!
 
 We've prepared a script that launches a full orchestration scenario, including three specialized agents and one orchestrator.
-The outcome is evaluated by another Llm acting as a judge
+
+The outcome is evaluated by another Llm acting as a judge.\
+The conversations , and the plan for execution are stored in memory service.\
+Both of these elements will be useful for training / fine tuning of a LLM Model.
+
 
 ```bash
 # This command must be run from the root of the swarm project

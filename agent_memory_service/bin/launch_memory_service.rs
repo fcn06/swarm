@@ -17,7 +17,7 @@ use agent_memory_service::memory_server::MemoryServer;
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Args {
-    #[clap(long, default_value = "warn")]
+    #[clap(long, default_value = "info")]
     log_level: String,
     #[clap(long, default_value = "0.0.0.0:5000")]
     uri: String,

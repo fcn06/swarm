@@ -16,7 +16,8 @@ use agent_protocol_backbone::config::agent_config::AgentConfig;
 /// Application state holding evaluation data.
 #[derive(Clone)]
 pub struct AppState {
-    pub db_evaluations: Arc<DashMap<String, EvaluatedAgentData>>,
+    // Storing a vector of evaluations for each agent
+    pub db_evaluations: Arc<DashMap<String, Vec<EvaluatedAgentData>>>,
     pub judge_agent: Arc<JudgeAgent>,
 }
 
@@ -28,7 +29,8 @@ pub struct EvaluationServer {
 
 impl EvaluationServer {
     pub async fn new(uri:String, agent_config: AgentConfig) -> anyhow::Result<Self> {
-        let db_evaluations: DashMap<String, EvaluatedAgentData> = DashMap::new();
+        // Initialize with the new data structure
+        let db_evaluations: DashMap<String, Vec<EvaluatedAgentData>> = DashMap::new();
 
         let judge_agent=JudgeAgent::new(agent_config.clone()).await?;
 
@@ -74,10 +76,13 @@ async fn log_evaluation(
 
     match judge_agent.evaluate_agent_output(log_data.clone()).await {
         Ok(evaluated_data) => {
-
             let db_evaluations = state.db_evaluations.clone();
             trace!("Received Agent Evaluation Data : {:?}", evaluated_data);
-            db_evaluations.insert(log_data.agent_id.clone(), evaluated_data);
+            
+            // Get the entry for the agent_id, or create a new one if it doesn't exist.
+            // Then push the new evaluation data into the vector.
+            db_evaluations.entry(log_data.agent_id.clone()).or_default().push(evaluated_data);
+
             Ok(Json("Evaluation logged successfully".to_string()))
         }
         Err(e) => {
@@ -94,12 +99,11 @@ async fn list_evaluations(
 ) -> Json<Vec<EvaluatedAgentData>> {
     let db_evaluations = state.db_evaluations.clone();
 
-    let mut list_evaluations: Vec<EvaluatedAgentData> = Vec::new();
-
-    for entry in db_evaluations.iter() {
-        list_evaluations.push(entry.value().clone());
-    }
+    // Flatten the vectors of evaluations into a single vector
+    let list_evaluations: Vec<EvaluatedAgentData> = db_evaluations
+        .iter()
+        .flat_map(|entry| entry.value().clone())
+        .collect();
 
     Json(list_evaluations)
 }
-

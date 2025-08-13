@@ -45,6 +45,11 @@ agent_llm_url="https://generativelanguage.googleapis.com/v1beta/openai/chat/comp
 agent_discovery_url="http://127.0.0.1:4000"
 
 #################################################################
+# Agent Evaluation Service
+#################################################################
+agent_evaluation_service_url="http://127.0.0.1:7000"
+
+#################################################################
 # You can say the orchestrator to include a MCP runtime agent
 # you just define the configuration file to use
 #################################################################

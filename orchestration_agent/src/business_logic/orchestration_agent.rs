@@ -2,6 +2,7 @@ use anyhow::{Context, Result, bail};
 use chrono::Utc;
 use std::collections::{HashMap, HashSet, VecDeque};
 use uuid::Uuid;
+use std::sync::Arc;
 
 // Assuming llm_api crate is available and has these
 use llm_api::chat::{ChatLlmInteraction};
@@ -36,11 +37,12 @@ use agent_evaluation_service::evaluation_server::judge_agent::AgentLogData;
 /// Agent that that can interact with other available agents, and also embed MCP runtime if needed
 #[derive(Clone)]
 pub struct OrchestrationAgent {
-    agent_config: AgentConfig, // possible future use
+    agent_config: Arc<AgentConfig>, // Use Arc for cheaper cloning
     agents_references: Vec<AgentReference>,
     llm_interaction: ChatLlmInteraction,
     client_agents: HashMap<String, A2AClient>,
     mcp_agent: Option<McpAgent>,
+    evaluation_service: Option<AgentEvaluationServiceClient>,
 }
 
 
@@ -66,10 +68,7 @@ impl Agent for OrchestrationAgent {
         );
 
         // List available agents from config
-        //todo:make it resilient
-        let agents_references =  agent_config.agent_agents_references().unwrap();
-        
-        // todo:make this search dynamic
+        let agents_references =  agent_config.agent_agents_references().unwrap_or_default();
         
         // retrieve the agents available from config
           let mut client_agents = HashMap::new();
@@ -77,15 +76,15 @@ impl Agent for OrchestrationAgent {
           debug!("Full Agent: Connecting to A2a server agents...");
           for agent_reference in &agents_references {
               // Use agent_info (which implements AgentInfoProvider) to get details for connection
-              let agent_reference = agent_reference.get_agent_reference().await?;
+              let agent_reference_details = agent_reference.get_agent_reference().await?;
   
               debug!(
                   "FullAgent: Connecting to agent '{}' at {}",
-                  agent_reference.name, agent_reference.url
+                  agent_reference_details.name, agent_reference_details.url
               );
   
   
-              match A2AClient::connect(agent_reference.name.clone(), agent_reference.url.clone())
+              match A2AClient::connect(agent_reference_details.name.clone(), agent_reference_details.url.clone())
                   .await
               {
                   Ok(client) => {
@@ -101,7 +100,7 @@ impl Agent for OrchestrationAgent {
                       // Use details from agent_info for error reporting
                       debug!(
                           "FullAgent: Warning: Failed to connect to A2a agent '{}' at {}: {}",
-                          agent_reference.name, agent_reference.url, e
+                          agent_reference_details.name, agent_reference_details.url, e
                       );
                   }
               }
@@ -111,8 +110,6 @@ impl Agent for OrchestrationAgent {
               warn!(
                   "FullAgent: Warning: No A2a server agents connected, planner capabilities will be limited to direct LLM interaction if any."
               );
-              // Depending on requirements, you might return an error here:
-              // bail!("Critical: Failed to connect to any A2a server agents.");
           }
   
           // Load MCP agent if specified in planner config
@@ -124,13 +121,23 @@ impl Agent for OrchestrationAgent {
                   Some(mcp_agent)
               },
           };
+
+          // Initialize evaluation service client if configured
+          let evaluation_service = if let Some(url) = agent_config.agent_evaluation_service_url() {
+              info!("Evaluation service configured at: {}", url);
+              Some(AgentEvaluationServiceClient::new(url))
+          } else {
+              warn!("Evaluation service URL not configured. No evaluations will be logged.");
+              None
+          };
   
           Ok(Self {
-            agent_config:agent_config,
-            agents_references: agents_references,
+            agent_config: Arc::new(agent_config),
+            agents_references,
             llm_interaction,
             client_agents,
             mcp_agent,
+            evaluation_service,
           })
 
     }
@@ -139,12 +146,7 @@ impl Agent for OrchestrationAgent {
     
         let request_id = Uuid::new_v4().to_string();
 
-        // To be instantiated at launch
-        let evaluation_service=AgentEvaluationServiceClient::new("http://127.0.0.1:7000".to_string());
-
-        // Extracting text from message
-        // todo:make resilient
-        let user_query = request.content.unwrap();
+        let user_query = request.content.clone().unwrap_or_default();
 
         info!("---Full: Starting to handle user request --  Query: '{:?}'---",user_query);
 
@@ -166,17 +168,26 @@ impl Agent for OrchestrationAgent {
                             request_id
                         );
 
-                        // To be improved
-                        evaluation_service.log_evaluation(AgentLogData {
-                            agent_id: self.agent_config.agent_name().to_string(),
-                            request_id: request_id.to_string(),
-                            step_id: "".to_string(),
-                            original_user_query: user_query.clone().to_string(),
-                            agent_input: user_query.clone().to_string(),
-                            agent_output: summary.to_string(),
-                            context_snapshot: None,
-                            success_criteria: None,
-                        }).await?;
+                        // Asynchronously log the evaluation without blocking the main flow
+                        if let Some(service) = self.evaluation_service.clone() {
+                            let agent_config = self.agent_config.clone();
+                            let log_data = AgentLogData {
+                                agent_id: agent_config.agent_name().to_string(),
+                                request_id: request_id.to_string(),
+                                step_id: "".to_string(),
+                                original_user_query: user_query.clone(),
+                                agent_input: user_query,
+                                agent_output: summary.clone(),
+                                context_snapshot: None,
+                                success_criteria: None,
+                            };
+
+                            tokio::spawn(async move {
+                                if let Err(e) = service.log_evaluation(log_data).await {
+                                    warn!("Failed to log evaluation: {}", e);
+                                }
+                            });
+                        }
 
 
                         Ok(ExecutionResult {

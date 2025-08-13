@@ -22,6 +22,7 @@ pub struct AgentConfig {
     pub agent_tags: Vec<String>,
     pub agent_examples: Vec<String>,
     pub agent_agents_references: Option<Vec<AgentReference>>,
+    pub agent_evaluation_service_url: Option<String>,
 }
 
 impl AgentConfig {
@@ -52,6 +53,7 @@ impl AgentConfig {
     pub fn agent_tags(&self) -> Vec<String> { self.agent_tags.clone() }
     pub fn agent_examples(&self) -> Vec<String> { self.agent_examples.clone() }
     pub fn agent_agents_references(&self) -> Option<Vec<AgentReference>> { self.agent_agents_references.clone() }
+    pub fn agent_evaluation_service_url(&self) -> Option<String> { self.agent_evaluation_service_url.clone() }
 
 }
 

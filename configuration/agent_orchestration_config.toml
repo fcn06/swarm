@@ -55,6 +55,10 @@ agent_discovery_url="http://127.0.0.1:4000"
 #################################################################
 agent_mcp_config_path="configuration/agent_mcp_config.toml"
 
+#################################################################
+# Agent Evaluation Service
+#################################################################
+agent_evaluation_service_url="http://127.0.0.1:7000"
 
 #################################################################
 # Define the series of agents to which the orchestrator is connected.

@@ -1,4 +1,4 @@
-use reqwest::{Client, Error};
+use reqwest::{Client};
 use crate::evaluation_server::judge_agent::AgentLogData;
 
 #[derive(Debug,Clone)]

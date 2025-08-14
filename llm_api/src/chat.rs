@@ -78,6 +78,7 @@ pub struct FunctionName {
 
 // --- Structs for Response ---
 
+#[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 pub struct ChatCompletionResponse {
     pub id: String,
@@ -90,6 +91,7 @@ pub struct ChatCompletionResponse {
     system_fingerprint: Option<String>,
 }
 
+#[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 pub struct Choice {
     pub index: u32,

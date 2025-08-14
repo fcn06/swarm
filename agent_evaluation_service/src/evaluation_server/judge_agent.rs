@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::env;
 use chrono::Utc;
-use llm_api::chat::{ChatLlmInteraction, Message};
+use llm_api::chat::{ChatLlmInteraction};
 use anyhow::Result;
 
 use tracing::trace;

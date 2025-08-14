@@ -134,10 +134,17 @@ echo $'\n'
 ./target/release/simple_a2a_client --port 9080 
 echo $'\n'
 
-echo "When it is finished, you can access evaluations of the orchestrator by the LLM Judge :"
-echo "curl http://127.0.0.1:7000/evaluations"
-echo "When it is finished, you can access what is recorded by memory service:"
-echo curl http://127.0.0.1:5000/conversation/{conversation_id}"
+echo "When it is finished..." 
 echo $'\n'
+echo "* You can access evaluations of the orchestrator by the LLM Judge :"
+echo "curl http://127.0.0.1:7000/evaluations"
+echo $'\n'
+echo "* You can access what is recorded by memory service:"
+echo "curl http://127.0.0.1:5000/conversation/{conversation_id}"
+echo $'\n'
+echo "* You can access registered agents:"
+echo "curl http://127.0.0.1:4000/agents"
+echo $'\n'
+
 echo "Just Try them"
 echo $'\n'

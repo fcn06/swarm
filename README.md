@@ -61,11 +61,9 @@ Both of these elements will be useful for training / fine tuning of a LLM Model.
 # This command must be run from the root of the swarm project
 ./documentation/use_case_combined_agents/run_all_commands.sh
 ```
-
 You should now see logs from all agents as the orchestrator processes three sample requests. **Congratulations, you've just run your first swarm!**
 
-To understand what just happened, feel free to inspect the configuration files in the `documentation/use_case_combined_agents` directory.
-
+To understand what just happened, you can access the explanations of expected logs [here](./documentation/use_case_combined_agents/sample_logs/logs_orchestrator_call). Additionnally, feel free to inspect the configuration files in the `documentation/use_case_combined_agents` directory.
 
 ## **💡 Core Components of Swarm**
 
@@ -191,8 +189,8 @@ We welcome contributions of all kinds! Whether you're a developer, a writer, or 
 
 Here are a few ways you can help:
 
-1.  **Report Bugs**: If you find a bug, please [open an issue](https://github.com/your-repo-url/swarm/issues) and provide as much detail as possible.
-2.  **Suggest Features**: Have an idea for a new feature? We'd love to hear it! [Open an issue](https://github.com/your-repo-url/swarm/issues) to start the discussion.
+1.  **Report Bugs**: If you find a bug, please [open an issue](https://github.com/fcn06/swarm/issues) and provide as much detail as possible.
+2.  **Suggest Features**: Have an idea for a new feature? We'd love to hear it! [Open an issue](https://github.com/fcn06/swarm/issues) to start the discussion.
 3.  **Submit Pull Requests**: If you're ready to contribute code, please fork the repository and submit a pull request. We recommend starting with issues labeled `good first issue`.
 4.  **Improve the Documentation**: If you see an area where the documentation could be better, please don't hesitate to make the change and submit a pull request.
 

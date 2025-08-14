@@ -71,7 +71,7 @@ impl<T:Agent> AgentServer<T> {
             let mut delay = 1; // seconds
 
             loop {
-                match agent_discovery_client.register(agent_info.get_agent_card().await?).await {
+                match agent_discovery_client.register(&agent_info.get_agent_card().await?).await {
                     Ok(_) => {
                         tracing::info!("Agent successfully registered with discovery service.");
                         break;

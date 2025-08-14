@@ -1,57 +1,146 @@
 *******************************************************
-Command Line passed to the orchestrator
+Launch of Discovery, Evaluation, Memory
 *******************************************************
 
-./target/release/simple_a2a_client --port 9080 
+C) Launch discovery Service so that agents can self register
+
+C) Launch Evaluation Service so that agents can have their output evaluated ( LLM as a Judge)
+2025-08-14T05:43:42.068769Z  INFO agent_evaluation_service::evaluation_server::server: Evaluation Server started at 0.0.0.0:7000
+
+C) Launch Memory Service so that agents can have log their conversation and plan
+Server started on 0.0.0.0:5000
 
 *******************************************************
-Logs from the client connected to the orchestrator
+Launch of the MCP servers ( One for customer, one for weather and one for web scraping)
 *******************************************************
+
+D) Launch three MCP server, each with individual tool on three different ports
+Server listening on: 127.0.0.1:8001
+Server listening on: 127.0.0.1:8003
+Server listening on: 127.0.0.1:8002
+
+*******************************************************
+Launch of three domain agents and one orchestrator
+Domain agent for weather
+Domain Agent for customer
+Domain Agent for Webscraping
+*******************************************************
+
+E) Launch three domain agents listening on three different ports (8081,8083,8085), each using mcp config
+
+Weather Domain Agent
+
+🌐 Starting HTTP server only...
+🌐 Starting HTTP a2a agent server Weather Information Agent on 127.0.0.1:8083
+📋 Agent card: http://127.0.0.1:8083/agent-card
+🛠️  Skills: http://127.0.0.1:8083/skills
+💾 Storage: In-memory (non-persistent)
+🔓 Authentication: None (public access)
+
+
+Customer Domain Agent
+
+🌐 Starting HTTP server only...
+🌐 Starting HTTP a2a agent server Customer Data Retriever on 127.0.0.1:8085
+📋 Agent card: http://127.0.0.1:8085/agent-card
+🛠️  Skills: http://127.0.0.1:8085/skills
+💾 Storage: In-memory (non-persistent)
+🔓 Authentication: None (public access)
+
+
+Web Scraper Domain Agent
+
+🌐 Starting HTTP server only...
+🌐 Starting HTTP a2a agent server Advanced Web Scraper on 127.0.0.1:8081
+📋 Agent card: http://127.0.0.1:8081/agent-card
+🛠️  Skills: http://127.0.0.1:8081/skills
+💾 Storage: In-memory (non-persistent)
+🔓 Authentication: None (public access)
+
+
+*******************************************************
+Launch the orchestrator agent , connected to the three domain agents
+*******************************************************
+
+F) Launch Orchestration agent listening on port 9080, connected to three individual agents
+
+Orchestrator Agent
+
+🌐 Starting HTTP server only...
+🌐 Starting HTTP a2a agent server Orchestrator on 127.0.0.1:9080
+📋 Agent card: http://127.0.0.1:9080/agent-card
+🛠️  Skills: http://127.0.0.1:9080/skills
+💾 Storage: In-memory (non-persistent)
+🔓 Authentication: None (public access)
+
+
+*******************************************************
+Launch of a client with complex queries :
+
+one query that needs data from two agents, from two different tools
+(weather from weather agent and customer from customer agent)
+
+one query about general knowledge, that the agent needs to answer from the best of its abilities
+
+*******************************************************
+
+F) Launch the agent_client with complex requests, some of them are targetting a specific tool, and the last one is  a general knowledge question
+
+Press any key to continue...
+
+Ask the questions to the orchestrator : He should answer to the whole set of questions by send queries to appropriate agent
 
 Server listening on: http://127.0.0.1:9080
 
-**************************
-Task 1 : Weather query
-**************************
+##############################################################
 
-Created task with ID: task-01c3e92f-353c-432c-998e-c6c3e4825425
-Sending message to task...
-Got response with status: Completed
-Agent response:
-  The current weather in Boston is sunny with a temperature of 24 degrees Celsius.
-Retrieving task...
-Retrieved task with ID: task-01c3e92f-353c-432c-998e-c6c3e4825425 and state: Completed
+User_Query : What is the current weather in Boston and What are details of Customer_id 1234 ?
+This is a task that needs to be sent to two different agents to be adressed...
 
-**************************
-Task 2 : Customer query
-**************************
-
-Sending message to task...
-Got response with status: Completed
-Agent response:
-  Customer details for Customer ID 1234 are: Full Name: Company A, address: Sunny Street.
-Retrieving task...
-Retrieved task with ID: task-d58d23b1-de85-4def-b096-af99eb9f056b and state: Completed
-
-**************************
-Task 3 : Combined query ( Weather and Customer)
-**************************
-
-Sending message to task...
+Sending message to agents to process tasks ...
 Got response with status: Completed
 Agent response:
   The current weather in Boston is sunny with a temperature of 24 degrees Celsius. Customer ID 1234 is associated with Company A, located on Sunny Street.
 Retrieving task...
-Retrieved task with ID: task-3a597a1a-7840-4e9d-9169-7890bc90a253 and state: Completed
 
-**************************
-Task 4 : General Purpose
-**************************
+2025-08-14T05:44:21.343709Z  INFO agent_evaluation_service::evaluation_server::server: Received log_evaluation request for agent: Orchestrator
+2025-08-14T05:44:21.343925Z  INFO agent_memory_service::memory_server: Received log_message for conversation : "56e76fe5-46db-4a82-a37c-e0ec38cc9d40"
+2025-08-14T05:44:21.345052Z  INFO agent_memory_service::memory_server: Received log_message for conversation : "56e76fe5-46db-4a82-a37c-e0ec38cc9d40"
+Retrieved task with ID: task-480a7d6d-374d-42e7-a4ea-fe54688bf515 and state: Completed
 
-Sending message to task...
-2025-08-07T05:31:13.968861Z  WARN a2a_full_backbone::a2a_full_agent_logic::full_agent: PlannerAgent: No agent found with skill 'skill_web_data_extractor'. Attempting to find default agent.
-Got response with status: Completed
+##############################################################
+
+User_Query : What are the benefits of rust.
+This is an general knowledge task...
+
+Sending message to agents to process tasks ...
+2025-08-14T05:44:23.397972Z  WARN orchestration_agent::business_logic::orchestration_agent: PlannerAgent: No agent found with skill 'skill_search_web'. Attempting to find default agent.
+
 Agent response:
-  Rust is a modern programming language offering a compelling combination of performance, reliability, and productivity. Its key benefits include memory safety (preventing common bugs like dangling pointers and data races), zero-cost abstractions (high-level code without sacrificing performance), a powerful tooling ecosystem (Cargo, Rustfmt, Clippy), excellent interoperability (FFI and WebAssembly), and compile-time guarantees that reduce runtime errors. While it has a steeper learning curve, Rust is well-suited for systems programming, web development, game development, and more.
+  Rust is a systems programming language that provides memory safety without garbage collection, leading to high performance and concurrency without data races. Its reliability stems from a strong type system and comprehensive error handling. Rust features a modern syntax, a powerful package manager (Cargo), and excellent interoperability with other languages like C and WebAssembly. Backed by an active community and comprehensive tooling, Rust is suitable for systems programming, web development, and applications demanding performance and correctness, though it has a steeper learning curve.
 Retrieving task...
-Retrieved task with ID: task-3441d9e8-5a78-4b08-8df5-a3bd61ca4d3c and state: Completed
+
+2025-08-14T05:44:32.577524Z  INFO agent_memory_service::memory_server: Received log_message for conversation : "6e77eb92-f362-45a7-9fa6-ff0490cb6886"
+2025-08-14T05:44:32.578056Z  INFO agent_evaluation_service::evaluation_server::server: Received log_evaluation request for agent: Orchestrator
+2025-08-14T05:44:32.578750Z  INFO agent_memory_service::memory_server: Received log_message for conversation : "6e77eb92-f362-45a7-9fa6-ff0490cb6886"
+Retrieved task with ID: task-a97251d6-1e9a-4c2d-baa1-57a74af6a096 and state: Completed
+
+*******************************************************
+At the end, you can access memory, evaluation and discover services
+If you want to see what was recorded
+*******************************************************
+
+When it is finished...
+
+* You can access evaluations of the orchestrator by the LLM Judge :
+curl http://127.0.0.1:7000/evaluations
+
+* You can access what is recorded by memory service:
+curl http://127.0.0.1:5000/conversation/{conversation_id}
+
+* You can access registered agents:
+curl http://127.0.0.1:4000/agents
+
+Just Try them
+
+

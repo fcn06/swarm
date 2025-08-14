@@ -63,6 +63,10 @@ impl<T:Agent> AgentServer<T> {
             Some(vec!["text".to_string(), "data".to_string()]),
         );
 
+        /************************************************************************* */
+        // This manages interactions with registration service
+        // Should be refactored and externalised
+        /************************************************************************* */
         // Agent discovery registration (optional, but good practice)
         if let Some(discovery_url) = self.config.agent_discovery_url() {
             let agent_discovery_client = agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient::new(discovery_url);
@@ -91,6 +95,7 @@ impl<T:Agent> AgentServer<T> {
                 }
             }
         }
+        /************************************************************************* */
 
         let bind_address = format!("{}:{}", self.config.agent_host(), self.config.agent_http_port());
 

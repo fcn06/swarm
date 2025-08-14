@@ -1,3 +1,4 @@
+// todo:Modularize
 use anyhow::{Context, Result, bail};
 use chrono::Utc;
 use std::collections::{HashMap, HashSet, VecDeque};
@@ -181,6 +182,11 @@ impl Agent for OrchestrationAgent {
                             request_id
                         );
 
+                        /************************************************************************* */
+                        // These manage interactions with evaluation and memory service
+                        // Should be refactored and externalised
+                        /************************************************************************* */
+
                         // Asynchronously log the evaluation without blocking the main flow
                         if let Some(service) = self.evaluation_service.clone() {
                             let agent_config = self.agent_config.clone();
@@ -227,6 +233,7 @@ impl Agent for OrchestrationAgent {
                             });
                         }
 
+                        /************************************************************************* */
 
                         Ok(ExecutionResult {
                             request_id,

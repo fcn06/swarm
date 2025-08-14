@@ -11,7 +11,7 @@ use std::sync::Arc;
 use crate::evaluation_server::judge_agent::{AgentLogData, EvaluatedAgentData};
 use crate::evaluation_server::judge_agent::JudgeAgent;
 
-use agent_protocol_backbone::config::agent_config::AgentConfig;
+use configuration::AgentConfig;
 
 /// Application state holding evaluation data.
 #[derive(Clone)]

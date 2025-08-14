@@ -2,6 +2,8 @@ use async_trait::async_trait;
 use uuid::Uuid;
 use configuration::{AgentMcpConfig};
 use llm_api::chat::{ChatLlmInteraction};
+use std::sync::Arc;
+
 
 // todo : change the prompt of mcp runtime , so that he tries to use internal knowledge if possible
 // todo: see if the method of delegation to mcp_runtime is optimal
@@ -11,7 +13,9 @@ use llm_api::chat::Message as LlmMessage;
 use std::env;
 
 use agent_protocol_backbone::business_logic::agent::{Agent};
-use agent_protocol_backbone::config::agent_config::{AgentConfig};
+use agent_protocol_backbone::business_logic::services::{EvaluationService, MemoryService};
+
+use configuration::AgentConfig;
 use agent_protocol_backbone::planning::plan_definition::{ExecutionResult};
 
 
@@ -27,7 +31,10 @@ impl Agent for BasicAgent {
 
     /// Creation of a new simple a2a agent
     async fn new(
-        agent_config: AgentConfig ) -> anyhow::Result<Self> {
+        agent_config: AgentConfig,
+        _evaluation_service: Option<Arc<dyn EvaluationService>>,
+        _memory_service: Option<Arc<dyn MemoryService>>
+    ) -> anyhow::Result<Self> {
 
                // Set model to be used
         let model_id = agent_config.agent_model_id();

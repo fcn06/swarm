@@ -8,7 +8,9 @@ use a2a_rs::services::AgentInfoProvider;
 
 
 use crate::business_logic::agent::{Agent};
-use crate::config::agent_config::{AgentConfig};
+
+//use crate::config::agent_config::{AgentConfig};
+use configuration::AgentConfig;
 
 use crate::server::agent_handler::AgentHandler;
 
@@ -20,9 +22,7 @@ pub struct AgentServer<T:Agent> {
 }
 
 impl<T:Agent> AgentServer<T> {
-    pub async fn new(agent_config: AgentConfig) -> anyhow::Result<Self> {
-        // todo: remove unwrap()
-        let agent= Agent::new(agent_config.clone()).await?;
+    pub async fn new(agent_config: AgentConfig, agent: T) -> anyhow::Result<Self> {
         Ok(Self { config:agent_config,agent:agent })
     }
 

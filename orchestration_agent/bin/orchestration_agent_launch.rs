@@ -1,16 +1,24 @@
-use agent_protocol_backbone::config::agent_config::{AgentConfig};
+use agent_protocol_backbone::business_logic::agent::Agent;
+use configuration::AgentConfig;
 use orchestration_agent::business_logic::orchestration_agent::OrchestrationAgent;
 use agent_protocol_backbone::server::agent_server::AgentServer;
+use std::sync::Arc;
 
 use clap::Parser;
 
-use tracing::{ Level};
+use tracing::{ Level, info, warn};
 use tracing_subscriber::{
     prelude::*,
     fmt,
     layer::Layer,
     Registry, filter
 };
+
+use agent_protocol_backbone::business_logic::services::{EvaluationService, MemoryService};
+use agent_evaluation_service::evaluation_service_client::agent_evaluation_client::AgentEvaluationServiceClient;
+use agent_memory_service::memory_service_client::agent_memory_client::AgentMemoryServiceClient;
+use orchestration_agent::business_logic::service_adapters::{AgentEvaluationServiceAdapter, AgentMemoryServiceAdapter};
+
 
 /// Command-line arguments for the reimbursement server
 #[derive(Parser, Debug)]
@@ -62,10 +70,35 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /************************************************/ 
 
     // load a2a config file and initialize appropriateruntime
-    let orchestration_agent_config = AgentConfig::load_agent_config(&args.config_file);
+    let orchestration_agent_config = AgentConfig::load_agent_config(&args.config_file).expect("Incorrect Orchestration Agent config file");
   
+    // Initialize evaluation service client if configured
+    let evaluation_service: Option<Arc<dyn EvaluationService>> = if let Some(url) = orchestration_agent_config.agent_evaluation_service_url() {
+        info!("Evaluation service configured at: {}", url);
+        let client = AgentEvaluationServiceClient::new(url);
+        let adapter = AgentEvaluationServiceAdapter::new(client);
+        Some(Arc::new(adapter))
+    } else {
+        warn!("Evaluation service URL not configured. No evaluations will be logged.");
+        None
+    };
+
+    // Initialize memory service client if configured
+    let memory_service: Option<Arc<dyn MemoryService>> = if let Some(url) = orchestration_agent_config.agent_memory_service_url() {
+        info!("Memory service configured at: {}", url);
+        let client = AgentMemoryServiceClient::new(url);
+        let adapter = AgentMemoryServiceAdapter::new(client);
+        Some(Arc::new(adapter))
+    } else {
+        warn!("Memory service URL not configured. No memory will be used.");
+        None
+    };
+
+    let agent = OrchestrationAgent::new(orchestration_agent_config.clone(), evaluation_service, memory_service).await?;
+
+
     // Create the modern server, and pass the runtime elements
-    let server = AgentServer::<OrchestrationAgent>::new(orchestration_agent_config.expect("Incorrect Orchestration Agent config file")).await?;
+    let server = AgentServer::<OrchestrationAgent>::new(orchestration_agent_config, agent).await?;
 
     println!("🌐 Starting HTTP server only...");
     server.start_http().await?;

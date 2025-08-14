@@ -7,7 +7,7 @@ use tracing_subscriber::{
 };
 use clap::Parser;
 use agent_evaluation_service::evaluation_server::server::EvaluationServer;
-use agent_protocol_backbone::config::agent_config::AgentConfig;
+use configuration::AgentConfig;
 
 /// Command-line arguments for the reimbursement server
 #[derive(Parser, Debug)]

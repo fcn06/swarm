@@ -7,7 +7,7 @@ use anyhow::Result;
 use tracing::trace;
 
 
-use agent_protocol_backbone::config::agent_config::AgentConfig;
+use configuration::AgentConfig;
 
 /// Represents the data received from the agent's log/message queue.
 #[derive(Debug, Serialize, Deserialize, Clone)]

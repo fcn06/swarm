@@ -24,16 +24,18 @@ use mcp_runtime::mcp_agent_logic::agent::McpAgent;
 use llm_api::chat::Message as LlmMessage;
 use std::env;
 use agent_protocol_backbone::business_logic::agent::{Agent};
-use agent_protocol_backbone::config::agent_config::{AgentConfig,AgentReference};
+
 
 use agent_protocol_backbone::planning::plan_definition::{
     ExecutionResult, Plan, PlanResponse, PlanStatus, 
 };
 
+use configuration::{AgentConfig,AgentReference};
+
 use async_trait::async_trait;
-use agent_evaluation_service::evaluation_service_client::agent_evaluation_client::AgentEvaluationServiceClient;
 use agent_evaluation_service::evaluation_server::judge_agent::AgentLogData;
-use agent_memory_service::{memory_service_client::agent_memory_client::AgentMemoryServiceClient, models::Role};
+use agent_memory_service::models::Role;
+use agent_protocol_backbone::business_logic::services::{EvaluationService, MemoryService};
 
 
 /// Agent that that can interact with other available agents, and also embed MCP runtime if needed
@@ -44,8 +46,8 @@ pub struct OrchestrationAgent {
     llm_interaction: ChatLlmInteraction,
     client_agents: HashMap<String, A2AClient>,
     mcp_agent: Option<McpAgent>,
-    evaluation_service: Option<AgentEvaluationServiceClient>,
-    memory_service: Option<AgentMemoryServiceClient>,
+    evaluation_service: Option<Arc<dyn EvaluationService>>,
+    memory_service: Option<Arc<dyn MemoryService>>,
 }
 
 
@@ -53,7 +55,10 @@ pub struct OrchestrationAgent {
 impl Agent for OrchestrationAgent {
 
     async fn new(
-        agent_config: AgentConfig) -> anyhow::Result<Self> {
+        agent_config: AgentConfig,
+        evaluation_service: Option<Arc<dyn EvaluationService>>,
+        memory_service: Option<Arc<dyn MemoryService>>,
+    ) -> anyhow::Result<Self> {
 
         // Set model to be used
         let model_id = agent_config.agent_model_id();
@@ -116,32 +121,7 @@ impl Agent for OrchestrationAgent {
           }
   
           // Load MCP agent if specified in planner config
-          let mcp_agent = match agent_config.agent_mcp_config_path() {
-              None => None,
-              Some(path) => {
-                  let agent_mcp_config = AgentMcpConfig::load_agent_config(path.as_str()).expect("Error loading MCP config for planner");
-                  let mcp_agent = McpAgent::new(agent_mcp_config).await?;
-                  Some(mcp_agent)
-              },
-          };
-
-          // Initialize evaluation service client if configured
-          let evaluation_service = if let Some(url) = agent_config.agent_evaluation_service_url() {
-              info!("Evaluation service configured at: {}", url);
-              Some(AgentEvaluationServiceClient::new(url))
-          } else {
-              warn!("Evaluation service URL not configured. No evaluations will be logged.");
-              None
-          };
-
-          // Initialize memory service client if configured
-          let memory_service = if let Some(url) = agent_config.agent_memory_service_url() {
-            info!("Memory service configured at: {}", url);
-            Some(AgentMemoryServiceClient::new(url))
-        } else {
-            warn!("Memory service URL not configured. No memory will be used.");
-            None
-        };
+          let mcp_agent = Self::initialize_mcp_agent(&agent_config).await?;
   
           Ok(Self {
             agent_config: Arc::new(agent_config),
@@ -213,13 +193,12 @@ impl Agent for OrchestrationAgent {
                             
                             let user_query_clone = user_query.clone();
                             let summary_clone = summary.clone();
-                            let service_clone = service.clone();
                             let agent_name = agent_config.agent_name().to_string();
                             let plan_clone = plan.clone();
                             let conversation_id_clone= conversation_id.clone();
 
                             tokio::spawn(async move {
-                                if let Err(e) = service_clone.log(conversation_id_clone.clone(), Role::User, user_query_clone, None).await {
+                                if let Err(e) = service.log(conversation_id_clone.clone(), Role::User, user_query_clone, None).await {
                                     warn!("Failed to log user query to memory: {}", e);
                                 }
                                 let mut agent_response = summary_clone;
@@ -227,7 +206,7 @@ impl Agent for OrchestrationAgent {
                                     agent_response.push_str("\n\n");
                                     agent_response.push_str(&plan_json);
                                 }
-                                if let Err(e) = service_clone.log(conversation_id_clone.clone(), Role::Agent, agent_response, Some(agent_name)).await {
+                                if let Err(e) = service.log(conversation_id_clone.clone(), Role::Agent, agent_response, Some(agent_name)).await {
                                     warn!("Failed to log agent response to memory: {}", e);
                                 }
                             });
@@ -283,7 +262,17 @@ impl Agent for OrchestrationAgent {
 
 impl OrchestrationAgent {
 
-    
+    async fn initialize_mcp_agent(agent_config: &AgentConfig) -> anyhow::Result<Option<McpAgent>> {
+        match agent_config.agent_mcp_config_path() {
+            None => Ok(None),
+            Some(path) => {
+                let agent_mcp_config = AgentMcpConfig::load_agent_config(path.as_str())
+                    .context("Error loading MCP config for planner")?;
+                let mcp_agent = McpAgent::new(agent_mcp_config).await?;
+                Ok(Some(mcp_agent))
+            },
+        }
+    }
 
     async fn get_available_skills_and_tools_description(&self) -> String {
         let mut description = "Available agent skills: ".to_string();

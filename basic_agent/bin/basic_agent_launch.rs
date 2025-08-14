@@ -1,6 +1,8 @@
-use agent_protocol_backbone::config::agent_config::{AgentConfig};
+use configuration::AgentConfig;
 use basic_agent::business_logic::basic_agent::BasicAgent;
 use agent_protocol_backbone::server::agent_server::AgentServer;
+use agent_protocol_backbone::business_logic::agent::Agent;
+
 
 use clap::Parser;
 
@@ -62,10 +64,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /************************************************/ 
 
     // load a2a config file and initialize appropriateruntime
-    let basic_agent_config = AgentConfig::load_agent_config(&args.config_file);
+    let basic_agent_config = AgentConfig::load_agent_config(&args.config_file).expect("Incorrect Basic Agent config file");
   
+    let agent = BasicAgent::new(basic_agent_config.clone(), None, None).await?;
+
     // Create the modern server, and pass the runtime elements
-    let server = AgentServer::<BasicAgent>::new(basic_agent_config.expect("Incorrect Basic Agent config file")).await?;
+    let server = AgentServer::<BasicAgent>::new(basic_agent_config, agent).await?;
 
     println!("🌐 Starting HTTP server only...");
     server.start_http().await?;

@@ -171,10 +171,8 @@ Swarm is currently a project for discovery and exploration! While not production
 
 We're continuously working on improvements, including:
 
-*   **Memory & State Management** Capability to store all request from all agents, and to facilitate communication through the agent network.
 *   **Dynamic Discovery:** Enable agents to understand dynamically what relevant skills are available to define an execution plan.
 *   **Context Enrichment:** Enrich the request with relevant context, to make a plan more accurate.
-*   **Evaluation:** Evaluation of the outcome of the swarm of agents, to enable distributed iterative decision processing ( test and learn).
 *   **Identity Management:** Use Self Sovereign Identity concept to enable agent to have its own proven identity.
 *   **Directed Graph of Agents:** Connect agents in a pre defined pipeline to execute complex tasks.
 *   **Code Refactoring:** Continuously improving code clarity and maintainability.

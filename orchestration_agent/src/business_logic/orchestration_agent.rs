@@ -655,6 +655,133 @@ impl OrchestrationAgent {
             execution_result
         }
 
+
+
+    /**************************************************************************************/
+    /* WIP FOR SIMPLIFICATION OF handle_request */
+    /**************************************************************************************/
+
+     /* 
+
+       // New helper function to encapsulate plan creation logic
+       async fn process_plan_creation(&self, user_query: String, request_id: &str) -> Result<Plan> {
+        let plan = self.create_plan(user_query).await?;
+        trace!(
+            "FullAgent: Plan created successfully for request ID: {}. Plan ID: {}",
+            request_id, plan.id
+        );
+        Ok(plan)
+    }
+
+
+
+    // New helper function to encapsulate plan execution and summarization
+    async fn execute_and_summarize_plan(&self, plan: &mut Plan, request_id: &str, conversation_id: &str, user_query: &str) -> Result<ExecutionResult> {
+        let _execution_outcome = self.execute_plan(plan).await;
+
+        match self.summarize_results(plan).await {
+            Ok(summary) => {
+                trace!(
+                    "FullAgent: Final summary generated for request ID {}.",
+                    request_id
+                );
+                Ok(ExecutionResult {
+                    request_id: request_id.to_string(),
+                    conversation_id: conversation_id.to_string(),
+                    success: plan.status == PlanStatus::Completed,
+                    output: summary,
+                    plan_details: Some(plan.clone()),
+                })
+            }
+            Err(e) => {
+                trace!(
+                    "FullAgent: Failed to summarize results for request ID {}: {}",
+                    request_id, e
+                );
+                let output_on_summary_fail = format!(
+                    "Plan processing finished with status {:?}, but summarization failed: {}",
+                    plan.status, e
+                );
+                Ok(ExecutionResult {
+                    request_id: request_id.to_string(),
+                    conversation_id: conversation_id.to_string(),
+                    success: false, // Mark as not fully successful if summarization fails
+                    output: output_on_summary_fail,
+                    plan_details: Some(plan.clone()),
+                })
+            }
+        }
+    }
+
+           
+    // New helper function for asynchronous evaluation logging
+    async fn log_evaluation_data(&self, request_id: &str, user_query: &str, execution_result: &Result<ExecutionResult>) {
+        if let Some(service) = self.evaluation_service.clone() {
+            let agent_config = self.agent_config.clone();
+            let user_query_clone = user_query.to_string();
+            let request_id_clone = request_id.to_string();
+
+            // Extract and clone the output string before spawning the task
+            let agent_output = match execution_result {
+                Ok(result) => result.output.clone(),
+                Err(e) => format!("Error during execution: {}", e),
+            };
+
+            tokio::spawn(async move {
+                let log_data = AgentLogData {
+                    agent_id: agent_config.agent_name().to_string(),
+                    request_id: request_id_clone,
+                    step_id: "".to_string(),
+                    original_user_query: user_query_clone.clone(),
+                    agent_input: user_query_clone,
+                    agent_output, // agent_output is now an owned String
+                    context_snapshot: None,
+                    success_criteria: None,
+                };
+
+                if let Err(e) = service.log_evaluation(log_data).await {
+                    warn!("Failed to log evaluation: {}", e);
+                }
+            });
+        }
+    }
+
+    async fn log_memory_data(&self, conversation_id: &str, user_query: &str, plan: &Plan, execution_result: &Result<ExecutionResult>) {
+        if let Some(service) = self.memory_service.clone() {
+            let agent_config = self.agent_config.clone();
+            let user_query_clone = user_query.to_string();
+            let conversation_id_clone = conversation_id.to_string();
+            let plan_clone = plan.clone(); // Clone the Plan to own it
+            let agent_name = agent_config.agent_name().to_string();
+
+            // Extract and clone the output string before spawning the task
+            let mut agent_response = match execution_result {
+                Ok(result) => result.output.clone(),
+                Err(e) => format!("Error during execution: {}", e),
+            };
+
+            tokio::spawn(async move {
+                if let Err(e) = service.log(conversation_id_clone.clone(), Role::User, user_query_clone, None).await {
+                    warn!("Failed to log user query to memory: {}", e);
+                }
+
+                if let Ok(plan_json) = serde_json::to_string(&plan_clone) {
+                    agent_response.push_str("\\n\\n");
+                    agent_response.push_str(&plan_json);
+                }
+
+                if let Err(e) = service.log(conversation_id_clone.clone(), Role::Agent, agent_response, Some(agent_name)).await {
+                    warn!("Failed to log agent response to memory: {}", e);
+                }
+            });
+        }
+    }
+
+   */
+    /**************************************************************************************/
+
+
+
     
     // Helper function to extract text from a Message
     // This function is not needed for now

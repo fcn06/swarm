@@ -138,112 +138,23 @@ impl Agent for OrchestrationAgent {
 
     }
 
-    async fn handle_request(&self, request: LlmMessage) ->anyhow::Result<ExecutionResult> {
+    async fn handle_request(&self, request: LlmMessage) ->anyhow::Result<ExecutionResult> { 
     
         let request_id = Uuid::new_v4().to_string();
         let conversation_id = Uuid::new_v4().to_string();
-
         let user_query = request.content.clone().unwrap_or_default();
-
         info!("---Full: Starting to handle user request --  Query: '{:?}'---",user_query);
 
-        match self.create_plan(user_query.clone()).await {
+        match self.process_plan_creation(user_query.clone(), &request_id).await {
             Ok(mut plan) => {
-                trace!(
-                    "FullAgent: Plan created successfully for request ID: {}. Plan ID: {}",
-                    request_id, plan.id
-                );
+                let execution_outcome = self.execute_and_summarize_plan(&mut plan, &request_id, &conversation_id, &user_query).await;
+                
+                // Log evaluation and memory data asynchronously
+                self.log_evaluation_data(&request_id, &user_query, &execution_outcome).await;
+                self.log_memory_data(&conversation_id, &user_query, &plan, &execution_outcome).await;
 
-                // Attempt to execute the plan
-                let _execution_outcome = self.execute_plan(&mut plan).await;
-
-                // Attempt to summarize results regardless of execution outcome
-                match self.summarize_results(&mut plan).await {
-                    Ok(summary) => {
-                        trace!(
-                            "FullAgent: Final summary generated for request ID {}.",
-                            request_id
-                        );
-
-                        /************************************************************************* */
-                        // These manage interactions with evaluation and memory service
-                        // Should be refactored and externalised
-                        /************************************************************************* */
-
-                        // Asynchronously log the evaluation without blocking the main flow
-                        if let Some(service) = self.evaluation_service.clone() {
-                            let agent_config = self.agent_config.clone();
-                            let log_data = AgentLogData {
-                                agent_id: agent_config.agent_name().to_string(),
-                                request_id: request_id.to_string(),
-                                step_id: "".to_string(),
-                                original_user_query: user_query.clone(),
-                                agent_input: user_query.clone(),
-                                agent_output: summary.clone(),
-                                context_snapshot: None,
-                                success_criteria: None,
-                            };
-
-                            tokio::spawn(async move {
-                                if let Err(e) = service.log_evaluation(log_data).await {
-                                    warn!("Failed to log evaluation: {}", e);
-                                }
-                            });
-                        }
-
-                        if let Some(service) = self.memory_service.clone() {
-                            let agent_config = self.agent_config.clone();
-                            
-                            let user_query_clone = user_query.clone();
-                            let summary_clone = summary.clone();
-                            let agent_name = agent_config.agent_name().to_string();
-                            let plan_clone = plan.clone();
-                            let conversation_id_clone= conversation_id.clone();
-
-                            tokio::spawn(async move {
-                                if let Err(e) = service.log(conversation_id_clone.clone(), Role::User, user_query_clone, None).await {
-                                    warn!("Failed to log user query to memory: {}", e);
-                                }
-                                let mut agent_response = summary_clone;
-                                if let Ok(plan_json) = serde_json::to_string(&plan_clone) {
-                                    agent_response.push_str("\n\n");
-                                    agent_response.push_str(&plan_json);
-                                }
-                                if let Err(e) = service.log(conversation_id_clone.clone(), Role::Agent, agent_response, Some(agent_name)).await {
-                                    warn!("Failed to log agent response to memory: {}", e);
-                                }
-                            });
-                        }
-
-                        /************************************************************************* */
-
-                        Ok(ExecutionResult {
-                            request_id,
-                            conversation_id:conversation_id,
-                            success: plan.status == PlanStatus::Completed,
-                            output: summary,
-                            plan_details: Some(plan),
-                        })
-                    }
-                    Err(e) => {
-                        trace!(
-                            "FullAgent: Failed to summarize results for request ID {}: {}",
-                            request_id, e
-                        );
-                        let output_on_summary_fail = format!(
-                            "Plan processing finished with status {:?}, but summarization failed: {}",
-                            plan.status, e
-                        );
-                        Ok(ExecutionResult {
-                            request_id,
-                            conversation_id,
-                            success: false, // Mark as not fully successful if summarization fails
-                            output: output_on_summary_fail,
-                            plan_details: Some(plan),
-                        })
-                    }
-                }
-            }
+                execution_outcome
+            },
             Err(e) => {
                 let error_msg = format!(
                     "FullAgent: Failed to create plan for request ID {}: {}",
@@ -259,8 +170,9 @@ impl Agent for OrchestrationAgent {
                 })
             }
         }
-    }
+    
 
+    }
 }
 
 impl OrchestrationAgent {
@@ -654,14 +566,7 @@ impl OrchestrationAgent {
             let execution_result = self.handle_request(llm_message_user_request).await;
             execution_result
         }
-
-
-
-    /**************************************************************************************/
-    /* WIP FOR SIMPLIFICATION OF handle_request */
-    /**************************************************************************************/
-
-     /* 
+     
 
        // New helper function to encapsulate plan creation logic
        async fn process_plan_creation(&self, user_query: String, request_id: &str) -> Result<Plan> {
@@ -676,7 +581,7 @@ impl OrchestrationAgent {
 
 
     // New helper function to encapsulate plan execution and summarization
-    async fn execute_and_summarize_plan(&self, plan: &mut Plan, request_id: &str, conversation_id: &str, user_query: &str) -> Result<ExecutionResult> {
+    async fn execute_and_summarize_plan(&self, plan: &mut Plan, request_id: &str, conversation_id: &str, _user_query: &str) -> Result<ExecutionResult> {
         let _execution_outcome = self.execute_plan(plan).await;
 
         match self.summarize_results(plan).await {
@@ -777,11 +682,7 @@ impl OrchestrationAgent {
         }
     }
 
-   */
-    /**************************************************************************************/
-
-
-
+   
     
     // Helper function to extract text from a Message
     // This function is not needed for now

@@ -63,7 +63,7 @@ Both of these elements will be useful for training / fine tuning of a LLM Model.
 ```
 You should now see logs from all agents as the orchestrator processes three sample requests. **Congratulations, you've just run your first swarm!**
 
-To understand what just happened, you can access the explanations of expected logs [here](./documentation/use_case_combined_agents/sample_logs/logs_orchestrator_call). Additionnally, feel free to inspect the configuration files in the `documentation/use_case_combined_agents` directory.
+To understand what just happened, you can access the explanations of expected logs [here](./documentation/use_case_combined_agents/sample_logs/logs_orchestrator_call). Additionnally, feel free to inspect the configuration files in the `documentation/use_case_combined_agents` directory. There is also a script to kill all the running processes created by this demo...
 
 ## **💡 Core Components of Swarm**
 

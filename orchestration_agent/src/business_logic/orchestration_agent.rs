@@ -4,6 +4,9 @@ use chrono::Utc;
 use std::collections::{HashMap, HashSet, VecDeque};
 use uuid::Uuid;
 use std::sync::Arc;
+use std::fs; // Add this line for file system operations
+//use std::io::prelude::*; // Add this line for read_to_string
+
 
 // Assuming llm_api crate is available and has these
 use llm_api::chat::{ChatLlmInteraction};
@@ -355,144 +358,14 @@ impl OrchestrationAgent {
 
         debug!("{}",skills_and_tools_description );
 
-        let prompt = format!(
-            "You are a planner agent that creates execution plans for user requests.
-
-            On top of your own skills, you have access to the following agent skills and MCP tools:
-            {}
-
-            As a last resort, if no specific skills or tools are applicable to the user's request, create a task that leverages your general knowledge to answer the user's query.
-
-
-            User request: {}
-
-
-            Based on the user request and available skills and tools, create a step-by-step plan to fulfill it.
-
-
-            The plan should be a JSON object with 'plan_summary' (a brief description of the overall plan) and 'tasks' (an array of task objects).
-
-
-            Each task object must have the following fields:
-
-
-            - 'id': A unique string ID for the task (e.g., 'task_1', 'task_web_search').
-
-
-            - 'description': A clear, concise description of what the task should achieve.
-
-
-            - 'skill_to_use': (Optional) The specific skill ID required from an A2A agent (e.g., 'skill_search_web', 'skill_calculate'). If a tool is to be used, this should be null.
-
-
-            - 'tool_to_use': (Optional) The name of the specific MCP tool to use (e.g., 'search_tool', 'calculator'). If a skill is to be used, this should be null.
-
-
-            - 'assigned_agent_id_preference': (Optional) If a specific skill is mentioned, suggest the ID of an agent that provides this skill (e.g., 'agent_search'). This is just a preference, the executor will find a suitable agent.
-
-
-            - 'tool_parameters': (Optional) If a tool is to be used, a JSON object containing the parameters for the tool call. Example: {{ \"query\": \"weather in London\" }}.
-
-
-            - 'dependencies': (Optional) An array of task IDs that must be completed before this task can start. If no dependencies, use an empty array or omit.
-
-
-            - 'expected_outcome': (Optional) A brief description of the expected result of the task.
-
-
-            Example Plan:
-
-
-            {{
-
-              \"plan_summary\": \"Search for information and summarize.\",
-
-              \"tasks\": [
-
-                {{
-
-                  \"id\": \"search_web\",
-
-                  \"description\": \"Search the web for information about the user request.\",
-
-                  \"skill_to_use\": \"skill_search_web\",
-
-                  \"tool_to_use\": null,
-
-                  \"assigned_agent_id_preference\": null,
-
-                  \"tool_parameters\": null,
-
-                  \"dependencies\": [],
-
-                  \"expected_outcome\": \"Relevant search results.\"
-
-                }},
-
-                {{
-
-                  \"id\": \"calculate_sum\",
-
-                  \"description\": \"Calculate the sum of two numbers.\",
-
-                  \"skill_to_use\": null,
-
-                  \"tool_to_use\": \"calculator\",
-
-                  \"assigned_agent_id_preference\": null,
-
-                  \"tool_parameters\": {{
-
-                    \"a\": 10,
-
-                    \"b\": 20
-
-                  }},                  
-
-                  \"dependencies\": [],
-
-                  \"expected_outcome\": \"The sum of the numbers.\"
-
-                }},
-
-                {{
-
-                  \"id\": \"general_knowledge_response\",
-
-                  \"description\": \"Answer the user's query using general knowledge.\",
-
-                  \"skill_to_use\": null,
-
-                  \"tool_to_use\": null,
-
-                  \"assigned_agent_id_preference\": null,
-
-                  \"tool_parameters\": null,
-
-                  \"dependencies\": [],
-
-                  \"expected_outcome\": \"A direct answer to the user's query based on general knowledge.\"
-
-                }},
-
-                {{
-
-                  \"id\": \"summarize_info\",
-
-                  \"description\": \"Summarize the information found from the web search.\",
-                  \"skill_to_use\": null,
-                  \"tool_to_use\": null,
-                  \"assigned_agent_id_preference\": null,
-                  \"tool_parameters\": null,
-                  \"dependencies\": [\"search_web\"],
-                  \"expected_outcome\": \"A concise summary.\"
-                }}]
-            }}
-
-            RETURN ONLY THE SIMPLE JSON REPRESENTING THE PLAN ON THE SAME FORMAT AS ABOVE.",
-
-            skills_and_tools_description, user_request
-        );
+        // Read the prompt template from the file
+        let prompt_template = fs::read_to_string("./configuration/prompts/orchestration_agent_prompt.txt")
+            .context("Failed to read orchestration_agent_prompt.txt")?;
+
+        // Manually replace placeholders since format! requires a literal format string
+        let prompt = prompt_template
+            .replacen("{}", &skills_and_tools_description, 1)
+            .replacen("{}", &user_request, 1);
 
         // This api returns raw text from llm
         let response_content = self.llm_interaction.call_api_simple_v2("user".to_string(),prompt.to_string()).await?;
@@ -691,10 +564,7 @@ impl OrchestrationAgent {
         Ok(())
     }
 
-
    
-
-    
     // todo:investigate about summarization
     // I have some erratic errors in case of general knowledge
     // not sure the output of internal search is transmitted in all cases
@@ -736,7 +606,7 @@ impl OrchestrationAgent {
 
             // Include the task output if available
             if let Some(output) = plan.task_results.get(&task_def.id) {
-                context.push_str(&format!(", Output: \"{}\"", output)); 
+                context.push_str(&format!(", Output: \"{}\" ", output)); 
             }
         }
 

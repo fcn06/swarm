@@ -3,6 +3,7 @@ use uuid::Uuid;
 use configuration::{AgentMcpConfig};
 use llm_api::chat::{ChatLlmInteraction};
 use std::sync::Arc;
+use tokio::sync::Mutex;
 
 
 // todo : change the prompt of mcp runtime , so that he tries to use internal knowledge if possible
@@ -23,7 +24,7 @@ use agent_protocol_backbone::planning::plan_definition::{ExecutionResult};
 #[derive(Clone)]
 pub struct BasicAgent {
     llm_interaction: ChatLlmInteraction,
-    mcp_agent:Option<McpAgent>
+    mcp_agent:Option<Arc<Mutex<McpAgent>>>
 }
 
 #[async_trait]
@@ -57,7 +58,7 @@ impl Agent for BasicAgent {
             Some(path) => {
                 let agent_mcp_config = AgentMcpConfig::load_agent_config(path.as_str()).expect("Error loading MCP config for planner");
                 let mcp_agent = McpAgent::new(agent_mcp_config).await?;
-                Some(mcp_agent)
+                Some(Arc::new(Mutex::new(mcp_agent)))
             },
         };
 
@@ -78,7 +79,8 @@ impl Agent for BasicAgent {
                 self.llm_interaction.call_api_simple("user".to_string(),request.content.expect("Empty Message").to_string()).await.unwrap()
 
             } else {
-                self.mcp_agent.clone().unwrap().run_agent_internal(request.clone())
+                let mut locked_mcp_agent = self.mcp_agent.as_ref().unwrap().lock().await;
+                locked_mcp_agent.run_agent_internal(request.clone())
                 .await
                 // todo : make it more robust
                 .unwrap()

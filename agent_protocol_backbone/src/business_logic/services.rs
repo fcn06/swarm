@@ -14,3 +14,6 @@ pub trait EvaluationService: Send + Sync {
 pub trait MemoryService: Send + Sync {
     async fn log(&self, conversation_id: String, role: Role, text: String, agent_name: Option<String>) -> Result<()>;
 }
+
+
+// todo:Do the same thing for DiscoveryService

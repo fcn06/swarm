@@ -80,48 +80,9 @@ impl Agent for OrchestrationAgent {
 
         // List available agents from config
         let agents_references =  agent_config.agent_agents_references().unwrap_or_default();
-        
-        // retrieve the agents available from config
-          let mut client_agents = HashMap::new();
-  
-          debug!("Full Agent: Connecting to A2a server agents...");
-          for agent_reference in &agents_references {
-              // Use agent_info (which implements AgentInfoProvider) to get details for connection
-              let agent_reference_details = agent_reference.get_agent_reference().await?;
-  
-              debug!(
-                  "FullAgent: Connecting to agent '{}' at {}",
-                  agent_reference_details.name, agent_reference_details.url
-              );
-  
-  
-              match A2AClient::connect(agent_reference_details.name.clone(), agent_reference_details.url.clone())
-                  .await
-              {
-                  Ok(client) => {
-                      debug!(
-                          "FullAgent: Successfully connected to agent '{}' at {}",
-                          client.id, client.uri
-                      );
-                      // Use the connected client's ID as the key
-                      client_agents.insert(client.id.clone(), client);
-  
-                  }
-                  Err(e) => {
-                      // Use details from agent_info for error reporting
-                      debug!(
-                          "FullAgent: Warning: Failed to connect to A2a agent '{}' at {}: {}",
-                          agent_reference_details.name, agent_reference_details.url, e
-                      );
-                  }
-              }
-          }
-  
-          if client_agents.is_empty() && !agents_references.is_empty() {
-              warn!(
-                  "FullAgent: Warning: No A2a server agents connected, planner capabilities will be limited to direct LLM interaction if any."
-              );
-          }
+       
+        // Get all clients for each agent defined in config
+        let client_agents = Self::connect_to_a2a_agents(&agents_references).await?;
   
           // Load MCP agent if specified in planner config
           let mcp_agent = Self::initialize_mcp_agent(&agent_config).await?;
@@ -176,6 +137,49 @@ impl Agent for OrchestrationAgent {
 }
 
 impl OrchestrationAgent {
+
+    async fn connect_to_a2a_agents(agents_references: &[AgentReference]) -> anyhow::Result<HashMap<String, A2AClient>> {
+        let mut client_agents = HashMap::new();
+
+        debug!("Full Agent: Connecting to A2a server agents...");
+        for agent_reference in agents_references {
+            // Use agent_info (which implements AgentInfoProvider) to get details for connection
+            let agent_reference_details = agent_reference.get_agent_reference().await?;
+
+            debug!(
+                "FullAgent: Connecting to agent '{}' at {}",
+                agent_reference_details.name, agent_reference_details.url
+            );
+
+            match A2AClient::connect(agent_reference_details.name.clone(), agent_reference_details.url.clone())
+                .await
+            {
+                Ok(client) => {
+                    debug!(
+                        "FullAgent: Successfully connected to agent '{}' at {}",
+                        client.id, client.uri
+                    );
+                    // Use the connected client's ID as the key
+                    client_agents.insert(client.id.clone(), client);
+                }
+                Err(e) => {
+                    // Use details from agent_info for error reporting
+                    debug!(
+                        "FullAgent: Warning: Failed to connect to A2a agent '{}' at {}: {}",
+                        agent_reference_details.name, agent_reference_details.url, e
+                    );
+                }
+            }
+        }
+
+        if client_agents.is_empty() && !agents_references.is_empty() {
+            warn!(
+                "FullAgent: Warning: No A2a server agents connected, planner capabilities will be limited to direct LLM interaction if any."
+            );
+        }
+        Ok(client_agents)
+    }
+
 
     async fn initialize_mcp_agent(agent_config: &AgentConfig) -> anyhow::Result<Option<McpAgent>> {
         match agent_config.agent_mcp_config_path() {
@@ -275,6 +279,7 @@ impl OrchestrationAgent {
             .context("Failed to read orchestration_agent_prompt.txt")?;
 
         // Manually replace placeholders since format! requires a literal format string
+        // there are two {}, so you have to execute replace twice
         let prompt = prompt_template
             .replacen("{}", &skills_and_tools_description, 1)
             .replacen("{}", &user_request, 1);

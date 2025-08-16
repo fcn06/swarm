@@ -187,23 +187,6 @@ pub async fn call_chat_completions_v2(
     }
 }
 
-/// for very simple calls without tools, one can use this simpler api
-pub async fn call_api_simple(
-    &self,
-    agent_role:String,
-    user_query:String,
-) -> anyhow::Result<Option<Message>> {
-
-    let messages_origin = vec![Message {
-        role: agent_role,
-        content: Some(user_query),
-        tool_call_id: None,
-        tool_calls:None
-    }];
-
-    self.call_api_message(messages_origin).await
-
-}
 
 
 pub async fn call_api_message(
@@ -246,13 +229,6 @@ pub async fn call_api_message(
                 .await?,
         );
 
-        /* 
-        println!(
-            "A2A Agent: LLM responded with plan content:{:?}",
-            response_content
-        );
-        */
-
         let response_message = Some(Message {
             role: "assistant".to_string(),
             content: Some(response_content.expect("Incorrect Answer")),
@@ -263,45 +239,28 @@ pub async fn call_api_message(
         Ok(response_message)
 }
 
-// Helper function to extract text from a Message
-pub async fn remove_think_tags( &self,result: String) -> anyhow::Result<String> {
-    let mut cleaned_result = String::new();
-    let mut in_think_tag = false;
-
-    
-    // Qwen sends back Json between ```json and ``` 
-    let result_clean= if result.contains("```json") {
-        let result_1=result.replace("```json", "");
-        result_1.replace("```", "")
-    } else {result};
-    let result=result_clean;
 
 
-    // LLama sends back Json between ```
-    let result_clean= if result.contains("```") {
-        let result_1=result.replace("```", "");
-        result_1.replace("```", "")
-    } else {result};
-    let result=result_clean;
+/// for very simple calls without tools, one can use this simpler api. Returns an Option<Message> for LLM
+pub async fn call_api_simple(
+    &self,
+    agent_role:String,
+    user_query:String,
+) -> anyhow::Result<Option<Message>> {
 
+    let messages_origin = vec![Message {
+        role: agent_role,
+        content: Some(user_query),
+        tool_call_id: None,
+        tool_calls:None
+    }];
 
-    // Gemini put Think tags regularly , including when you ask to return a simple Json 
-    for line in result.lines() {
-        if line.contains("<think>") {
-            in_think_tag = true;
-        }
-        if line.contains("</think>") {
-            in_think_tag = false;
-            continue;
-        } // Continue to avoid adding the </think> line itself
-        if !in_think_tag {
-            cleaned_result.push_str(line);
-        }
-    }
-    Ok(cleaned_result)
+    self.call_api_message(messages_origin).await
+
 }
 
-/// This api returns a String from llm instead of Option<Message>
+/// for very simple calls without tools, one can use this simpler api. This api returns a String from llm instead of Option<Message>
+/// This one should be used preferabbly
 pub async fn call_api_simple_v2(
     &self,
     agent_role:String,
@@ -355,5 +314,44 @@ pub async fn call_api_simple_v2(
     Ok(response_content)
 
 }
+
+
+    // Helper function to extract text from a Message
+    pub async fn remove_think_tags( &self,result: String) -> anyhow::Result<String> {
+        let mut cleaned_result = String::new();
+        let mut in_think_tag = false;
+
+        
+        // Qwen sends back Json between ```json and ``` 
+        let result_clean= if result.contains("```json") {
+            let result_1=result.replace("```json", "");
+            result_1.replace("```", "")
+        } else {result};
+        let result=result_clean;
+
+
+        // LLama sends back Json between ```
+        let result_clean= if result.contains("```") {
+            let result_1=result.replace("```", "");
+            result_1.replace("```", "")
+        } else {result};
+        let result=result_clean;
+
+
+        // Gemini put Think tags regularly , including when you ask to return a simple Json 
+        for line in result.lines() {
+            if line.contains("<think>") {
+                in_think_tag = true;
+            }
+            if line.contains("</think>") {
+                in_think_tag = false;
+                continue;
+            } // Continue to avoid adding the </think> line itself
+            if !in_think_tag {
+                cleaned_result.push_str(line);
+            }
+        }
+        Ok(cleaned_result)
+    }
 
 }

@@ -1,0 +1,21 @@
+You are an expert AI evaluator. Your task is to assess the provided 'Agent Output' based on the 'Original User Query' and 'Context/Criteria'.
+Original User Query: {}
+Agent Input for this step: {}
+Agent Output: {}
+Context/Criteria: {}
+
+Please provide a concise evaluation, focusing on:
+1. Accuracy: Does the output correctly address the user's intent?
+2. Completeness: Is all necessary information present?
+3. Compliance: Does it meet any implicit or explicit constraints from the query or context?
+4. Areas for Improvement: What specifically could be done better?
+
+Respond in a structured JSON format:
+```json
+{{
+"rating": "Good" | "Needs Improvement" | "Failed",
+"score": [1-10],
+"feedback": "Detailed textual feedback on accuracy, completeness, and compliance, with concrete suggestions for improvement.",
+"suggested_correction": "If applicable, a corrected or improved version of the output."
+}}
+```

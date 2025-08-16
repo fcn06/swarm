@@ -41,94 +41,62 @@ Each task object must have the following fields:
 
 - 'expected_outcome': (Optional) A brief description of the expected result of the task.
 
+You MUST Respond in a structured JSON format, as you see in this example plan :
 
-Example Plan:
-
-
+```json
 {{
 
-  \"plan_summary\": \"Search for information and summarize.\",
+  "plan_summary": "Search for information and summarize.",
 
-  \"tasks\": [
+  "tasks": [
 
     {{
-
-      \"id\": \"search_web\",
-
-      \"description\": \"Search the web for information about the user request.\",
-
-      \"skill_to_use\": \"skill_search_web\",
-
-      \"tool_to_use\": null,
-
-      \"assigned_agent_id_preference\": null,
-
-      \"tool_parameters\": null,
-
-      \"dependencies\": [],
-
-      \"expected_outcome\": \"Relevant search results.\"
-
+      "id": "search_web",
+      "description": "Search the web for information about the user request.",
+      "skill_to_use": "skill_search_web",
+      "tool_to_use": null,
+      "assigned_agent_id_preference": null,
+      "tool_parameters": null,
+      "dependencies": [],
+      "expected_outcome": "Relevant search results."
     }},
 
     {{
-
-      \"id\": \"calculate_sum\",
-
-      \"description\": \"Calculate the sum of two numbers.\",
-
-      \"skill_to_use\": null,
-
-      \"tool_to_use\": \"calculator\",
-
-      \"assigned_agent_id_preference\": null,
-
-      \"tool_parameters\": {{
-
-        \"a\": 10,
-
-        \"b\": 20
-
+      "id": "calculate_sum",
+      "description": "Calculate the sum of two numbers.",
+      "skill_to_use": null,
+      "tool_to_use": "calculator",
+      "assigned_agent_id_preference": null,
+      "tool_parameters": {{
+        "a": 10,
+        "b": 20
       }},                  
-
-      \"dependencies\": [],
-
-      \"expected_outcome\": \"The sum of the numbers.\"
-
+      "dependencies": [],
+      "expected_outcome": "The sum of the numbers."
     }},
 
     {{
 
-      \"id\": \"general_knowledge_response\",
-
-      \"description\": \"Answer the user's query using general knowledge.\",
-
-      \"skill_to_use\": null,
-
-      \"tool_to_use\": null,
-
-      \"assigned_agent_id_preference\": null,
-
-      \"tool_parameters\": null,
-
-      \"dependencies\": [],
-
-      \"expected_outcome\": \"A direct answer to the user's query based on general knowledge.\"
-
+      "id": "general_knowledge_response",
+      "description": "Answer the user's query using general knowledge.",
+      "skill_to_use": null,
+      "tool_to_use": null,
+      "assigned_agent_id_preference": null,
+      "tool_parameters": null,
+      "dependencies": [],
+      "expected_outcome": "A direct answer to the user's query based on general knowledge."
     }},
 
     {{
 
-      \"id\": \"summarize_info\",
-
-      \"description\": \"Summarize the information found from the web search.\",
-      \"skill_to_use\": null,
-      \"tool_to_use\": null,
-      \"assigned_agent_id_preference\": null,
-      \"tool_parameters\": null,
-      \"dependencies\": [\"search_web\"],
-      \"expected_outcome\": \"A concise summary.\"
+      "id": "summarize_info",
+      "description": "Summarize the information found from the web search.",
+      "skill_to_use": null,
+      "tool_to_use": null,
+      "assigned_agent_id_preference": null,
+      "tool_parameters": null,
+      "dependencies": ["search_web"],
+      "expected_outcome": "A concise summary."
     }}]
 }}
-
-RETURN ONLY THE SIMPLE JSON REPRESENTING THE PLAN ON THE SAME FORMAT AS ABOVE.
+```

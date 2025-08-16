@@ -2,7 +2,8 @@ use serde::{Deserialize, Serialize};
 use std::env;
 use chrono::Utc;
 use llm_api::chat::{ChatLlmInteraction};
-use anyhow::Result;
+use anyhow::{Context, Result};
+use std::fs;
 
 use tracing::trace;
 
@@ -78,34 +79,15 @@ impl JudgeAgent {
     /// Main function to evaluate agent output using a Judge LLM.
     pub async fn evaluate_agent_output(&self,log_data: AgentLogData) -> Result<EvaluatedAgentData> {
 
-        let prompt = format!(
-            r#"You are an expert AI evaluator. Your task is to assess the provided 'Agent Output' based on the 'Original User Query' and 'Context/Criteria'.
-    Original User Query: {}
-    Agent Input for this step: {}
-    Agent Output: {}
-    Context/Criteria: {}
+        // Read the prompt template from the file
+        let prompt_template = fs::read_to_string("./configuration/prompts/judge_agent_prompt.txt")
+            .context("Failed to read judge_agent_prompt.txt")?;
 
-    Please provide a concise evaluation, focusing on:
-    1. Accuracy: Does the output correctly address the user's intent?
-    2. Completeness: Is all necessary information present?
-    3. Compliance: Does it meet any implicit or explicit constraints from the query or context?
-    4. Areas for Improvement: What specifically could be done better?
-
-    Respond in a structured JSON format:
-    ```json
-    {{
-    "rating": "Good" | "Needs Improvement" | "Failed",
-    "score": [1-10],
-    "feedback": "Detailed textual feedback on accuracy, completeness, and compliance, with concrete suggestions for improvement.",
-    "suggested_correction": "If applicable, a corrected or improved version of the output."
-    }}
-    ```"#,
-            log_data.original_user_query,
-            log_data.agent_input,
-            log_data.agent_output,
-            log_data.context_snapshot.as_deref().unwrap_or("No specific context provided."),
-        );
-
+        let prompt = prompt_template
+            .replacen("{}", &log_data.original_user_query, 1)
+            .replacen("{}", &log_data.agent_input, 1)
+            .replacen("{}", &log_data.agent_output, 1)
+            .replacen("{}", &log_data.context_snapshot.as_deref().unwrap_or("No specific context provided."), 1);
         
         let response = self.llm_interaction.call_api_simple("user".to_string(), prompt).await?;
 

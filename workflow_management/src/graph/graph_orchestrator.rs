@@ -1,4 +1,4 @@
-use super::graph_definition::{Graph, Node, PlanContext, PlanState};
+use super::graph_definition::{Graph, PlanContext, PlanState};
 use std::collections::{HashMap, VecDeque};
 use thiserror::Error;
 
@@ -86,11 +86,11 @@ impl PlanExecutor {
 
     async fn handle_executing_step_state(&mut self) -> Result<(), PlanExecutorError> {
         let node_id = self.context.current_step_id.as_ref().cloned().ok_or_else(|| PlanExecutorError::InvalidState)?;
-        let node = self.context.graph.nodes.get(&node_id).cloned().ok_or_else(|| PlanExecutorError::MissingNode(node_id))?;
+        let node = self.context.graph.nodes.get(&node_id).cloned().ok_or_else(|| PlanExecutorError::MissingNode(node_id.clone()))?;
 
         match &node.node_type {
             super::graph_definition::NodeType::Task(task) => {
-                println!("Executing task: {}", task.name);
+                println!("Executing task: {}", task.description);
                 // Simulate task execution
                 let result = "Task completed successfully".to_string();
                 self.context.results.insert(node.id, result);

@@ -50,7 +50,7 @@ pub struct TaskDefinition {
     #[serde(default)]
     pub dependencies: Vec<String>, // IDs of tasks that must be completed before this one
     #[serde(default = "Utc::now")] // for tracking
-    created_at: chrono::DateTime<chrono::Utc>,
+    pub created_at: chrono::DateTime<chrono::Utc>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub task_output: Option<String>, // New field to store the actual output of the task
 }

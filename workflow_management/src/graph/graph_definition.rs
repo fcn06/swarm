@@ -1,23 +1,6 @@
+use agent_protocol_backbone::planning::plan_definition::TaskDefinition;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash)]
-pub enum TaskStatus {
-    Pending,
-    InProgress,
-    Completed,
-    Failed,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Task {
-    pub id: String,
-    pub name: String,
-    pub description: String,
-    pub status: TaskStatus,
-    pub sub_tasks: Option<Vec<String>>,
-    pub required_resources: Vec<String>,
-}
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash)]
 pub enum AgentStatus {
@@ -37,7 +20,7 @@ pub struct Agent {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum NodeType {
-    Task(Task),
+    Task(TaskDefinition),
     Agent(Agent),
 }
 

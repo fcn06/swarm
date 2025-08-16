@@ -150,7 +150,8 @@ impl PlanExecutor {
             }
         }
 
-        let mut queue: VecDeque<String> = in_degree.iter().filter(|(_, &degree)| degree == 0).map(|(id, _)| id.clone()).collect();
+        //let mut queue: VecDeque<String> = in_degree.iter().filter(|(_, &degree)| degree == 0).map(|(id, _)| id.clone()).collect();
+        let mut queue: VecDeque<String> = in_degree.iter().filter(|&(_, &degree)| degree == 0).map(|(id, _)| id.clone()).collect();
         let mut sorted_nodes = Vec::new();
 
         while let Some(u) = queue.pop_front() {

@@ -1,7 +1,7 @@
 [package]
 name = "workflow_management"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 a2a-rs= { workspace = true }
@@ -13,7 +13,13 @@ tokio = { workspace = true }
 chrono = { workspace = true }
 agent_protocol_backbone = { workspace = true }
 
+clap={ workspace = true}
 
-[lib]
+# Logging - optional
+tracing = { workspace = true}
+tracing-subscriber = { workspace = true}
+
+
+[[bin]]
 name = "workflow_management"
-path = "src/lib.rs"
+path = "bin/workflow_orchestrator_launch.rs"

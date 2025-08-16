@@ -8,7 +8,11 @@ Swarm is a Rust-based framework that allows you to build, connect, and orchestra
 
 ## **🌐 How It Works**
 
-The diagram below illustrates how our agents, powered by MCP and A2A, interact under the guidance of the Full Agent. This architecture allows agents to communicate with each other to achieve sub-goals, connect to the outside world, and execute complex plans.
+**Domain Agents are at the heart of our model. They are single purpose domain specific agents.** \
+They can access to their own LLM and their own set of tools. ( For example they can be customer care agents, customer ordering agent, weather agent, ...)
+
+**Orchestrator agents are connected to a set of domain agents.** \
+They also have their own llm, and their own set of tools. In order to fulfill a user request, orchestrator will scan the skills and tools available , set up a plan , delegate tasks to appropriate agents and monitor execution until user query is fulfilled.
 
 <p align="center" width="60%">
     <img width="60%" src="./documentation/illustrations/Simple_Representation_Architecture.png">

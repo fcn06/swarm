@@ -1,0 +1,48 @@
+{
+    "workflow": {
+      "name": "User Query Processing with Branching Logic",
+      "description": "A multi-agent workflow that processes a user query with conditional routing based on an initial analysis.",
+      "tasks": [
+        {
+          "id": "agent_A",
+          "description": "Initial processing of the user query.",
+          "input": "user_query",
+          "output": "processed_data",
+          "dependencies": []
+        },
+        {
+          "id": "agent_B",
+          "description": "Handles a specific outcome from Agent A.",
+          "input": "processed_data",
+          "output": "outcome_B_data",
+          "dependencies": [
+            "agent_A"
+          ],
+          "condition": "if outcome is X"
+        },
+        {
+          "id": "agent_C",
+          "description": "Handles all other outcomes from Agent A.",
+          "input": "processed_data",
+          "output": "outcome_C_data",
+          "dependencies": [
+            "agent_A"
+          ],
+          "condition": "if outcome is not X"
+        },
+        {
+          "id": "agent_D",
+          "description": "Processes final data from Agent B and C to formulate a user response.",
+          "input": [
+            "outcome_B_data",
+            "outcome_C_data"
+          ],
+          "output": "final_answer",
+          "dependencies": [
+            "agent_B",
+            "agent_C"
+          ]
+        }
+      ]
+    }
+  }

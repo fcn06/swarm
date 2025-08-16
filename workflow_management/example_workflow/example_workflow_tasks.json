@@ -1,0 +1,25 @@
+{
+    "plan_name": "User Request Fulfillment",
+    "tasks": [
+      {
+        "id": "task_A",
+        "type": "data_retrieval",
+        "dependencies": []
+      },
+      {
+        "id": "task_B",
+        "type": "data_processing",
+        "dependencies": ["task_A"]
+      },
+      {
+        "id": "task_C",
+        "type": "analysis",
+        "dependencies": ["task_A"]
+      },
+      {
+        "id": "task_D",
+        "type": "report_generation",
+        "dependencies": ["task_B", "task_C"]
+      }
+    ]
+  }

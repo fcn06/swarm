@@ -34,6 +34,7 @@ pub struct Node {
 pub struct Edge {
     pub source: String,
     pub target: String,
+    pub condition: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

@@ -1,35 +1,35 @@
 {
-    "plan_name": "User Query Processing with Branching Logic",
+    "plan_name": "Conditional Greeting Workflow",
     "tasks": [
       {
-        "id": "agent_A",
-        "type": "agent_task",
-        "description": "Initial processing of the user query.",
+        "id": "task_greet",
+        "type": "greet",
+        "description": "Greets a specific entity.",
+        "tool_parameters": {
+            "name": "Jupiter"
+        },
         "dependencies": []
       },
       {
-        "id": "agent_B",
-        "type": "agent_task",
-        "description": "Handles a specific outcome from Agent A.",
+        "id": "task_jupiter_branch",
+        "type": "farewell",
+        "description": "This task runs if the greeting was for Jupiter.",
         "dependencies": [
-          "agent_A"
+          { 
+            "source": "task_greet", 
+            "condition": "result == 'Hello, Jupiter!'" 
+          }
         ]
       },
       {
-        "id": "agent_C",
-        "type": "agent_task",
-        "description": "Handles all other outcomes from Agent A.",
+        "id": "task_other_branch",
+        "type": "farewell",
+        "description": "This task runs if the greeting was NOT for Jupiter.",
         "dependencies": [
-          "agent_A"
-        ]
-      },
-      {
-        "id": "agent_D",
-        "type": "agent_task",
-        "description": "Processes final data from Agent B and C to formulate a user response.",
-        "dependencies": [
-          "agent_B",
-          "agent_C"
+          { 
+            "source": "task_greet", 
+            "condition": "result != 'Hello, Jupiter!'" 
+          }
         ]
       }
     ]

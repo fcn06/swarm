@@ -19,9 +19,15 @@ pub enum ConfigurationError {
 struct JsonTask {
     id: String,
     #[serde(rename = "type")]
-    task_type: String,
+    skill_to_use: String,
     description: Option<String>,
-    dependencies: Vec<String>,
+    dependencies: Vec<JsonDependency>,
+}
+
+#[derive(Deserialize, Debug)]
+struct JsonDependency {
+    source: String,
+    condition: Option<String>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -40,13 +46,13 @@ pub fn load_graph_from_file(file_path: &str) -> Result<Graph, ConfigurationError
     for task in workflow.tasks {
         let task_definition = TaskDefinition {
             id: task.id.clone(),
-            description: task.description.unwrap_or(task.task_type),
-            skill_to_use: Some("greet".to_string()), // template for now
+            description: task.description.unwrap_or_else(|| task.skill_to_use.clone()),
+            skill_to_use: Some(task.skill_to_use),
             tool_to_use: None,
             tool_parameters: None,
             assigned_agent_id_preference: None,
             expected_outcome: None,
-            dependencies: task.dependencies.clone(),
+            dependencies: task.dependencies.iter().map(|d| d.source.clone()).collect(),
             created_at: Utc::now(),
             task_output: None,
         };
@@ -59,8 +65,9 @@ pub fn load_graph_from_file(file_path: &str) -> Result<Graph, ConfigurationError
 
         for dep in task.dependencies {
             edges.push(Edge {
-                source: dep,
+                source: dep.source,
                 target: task.id.clone(),
+                condition: dep.condition,
             });
         }
     }

@@ -41,7 +41,7 @@ pub fn load_graph_from_file(file_path: &str) -> Result<Graph, ConfigurationError
         let task_definition = TaskDefinition {
             id: task.id.clone(),
             description: task.description.unwrap_or(task.task_type),
-            skill_to_use: None,
+            skill_to_use: Some("greet".to_string()), // template for now
             tool_to_use: None,
             tool_parameters: None,
             assigned_agent_id_preference: None,

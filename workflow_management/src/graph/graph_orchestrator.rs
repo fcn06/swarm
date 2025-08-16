@@ -1,5 +1,7 @@
 use super::graph_definition::{Graph, PlanContext, PlanState};
+use crate::tasks::task_registry::TaskRegistry;
 use std::collections::{HashMap, VecDeque};
+use std::sync::Arc;
 use thiserror::Error;
 
 #[derive(Error, Debug, PartialEq)]
@@ -10,18 +12,22 @@ pub enum PlanExecutorError {
     ExecutionFailed(String),
     #[error("Invalid state transition")]
     InvalidState,
+    #[error("Task runner not found for skill: {0}")]
+    TaskRunnerNotFound(String),
 }
 
 pub struct PlanExecutor {
     context: PlanContext,
     sorted_nodes: VecDeque<String>,
+    task_registry: Arc<TaskRegistry>,
 }
 
 impl PlanExecutor {
-    pub fn new(graph: Graph) -> Self {
+    pub fn new(graph: Graph, task_registry: Arc<TaskRegistry>) -> Self {
         Self {
             context: PlanContext::new(graph),
             sorted_nodes: VecDeque::new(),
+            task_registry,
         }
     }
 
@@ -85,21 +91,22 @@ impl PlanExecutor {
     }
 
     async fn handle_executing_step_state(&mut self) -> Result<(), PlanExecutorError> {
-        let node_id = self.context.current_step_id.as_ref().cloned().ok_or_else(|| PlanExecutorError::InvalidState)?;
+        let node_id = self.context.current_step_id.as_ref().cloned().ok_or(PlanExecutorError::InvalidState)?;
         let node = self.context.graph.nodes.get(&node_id).cloned().ok_or_else(|| PlanExecutorError::MissingNode(node_id.clone()))?;
 
         match &node.node_type {
             super::graph_definition::NodeType::Task(task) => {
-                println!("Executing task: {}", task.description);
-                // Simulate task execution
-                let result = "Task completed successfully".to_string();
+                let skill = task.skill_to_use.as_ref().ok_or_else(|| PlanExecutorError::TaskRunnerNotFound("No skill specified".to_string()))?;
+                let runner = self.task_registry.get(skill).ok_or_else(|| PlanExecutorError::TaskRunnerNotFound(skill.clone()))?;
+
+                let dependencies = self.get_task_dependencies(task);
+                let result = runner.execute(task, &dependencies).await.map_err(|e| PlanExecutorError::ExecutionFailed(e.to_string()))?;
+
                 self.context.results.insert(node.id, result);
-                println!("State: ExecutingStep -> ProcessingAgentResponse");
                 self.context.plan_state = PlanState::ProcessingAgentResponse;
             }
             super::graph_definition::NodeType::Agent(agent) => {
                 println!("Executing agent: {}", agent.name);
-                println!("State: ExecutingStep -> AwaitingAgentResponse");
                 self.context.plan_state = PlanState::AwaitingAgentResponse;
             }
         }
@@ -107,11 +114,9 @@ impl PlanExecutor {
     }
 
     async fn handle_awaiting_response_state(&mut self) -> Result<(), PlanExecutorError> {
-        // In a real scenario, this would involve asynchronous waiting for an external agent's response.
-        // Here, we simulate receiving a response immediately.
         println!("State: AwaitingAgentResponse -> ProcessingAgentResponse");
         let response = "Agent responded successfully".to_string();
-        let node_id = self.context.current_step_id.as_ref().cloned().ok_or_else(|| PlanExecutorError::InvalidState)?;
+        let node_id = self.context.current_step_id.as_ref().cloned().ok_or(PlanExecutorError::InvalidState)?;
         self.context.results.insert(node_id, response);
         self.context.plan_state = PlanState::ProcessingAgentResponse;
         Ok(())
@@ -121,7 +126,6 @@ impl PlanExecutor {
         let node_id = self.context.current_step_id.as_ref().ok_or(PlanExecutorError::InvalidState)?;
         let result = self.context.results.get(node_id).ok_or(PlanExecutorError::InvalidState)?;
         println!("Processed response for {}: {}", node_id, result);
-        println!("State: ProcessingAgentResponse -> DecidingNextStep");
         self.context.plan_state = PlanState::DecidingNextStep;
         Ok(())
     }
@@ -150,8 +154,7 @@ impl PlanExecutor {
             }
         }
 
-        //let mut queue: VecDeque<String> = in_degree.iter().filter(|(_, &degree)| degree == 0).map(|(id, _)| id.clone()).collect();
-        let mut queue: VecDeque<String> = in_degree.iter().filter(|&(_, &degree)| degree == 0).map(|(id, _)| id.clone()).collect();
+        let mut queue: VecDeque<String> = in_degree.iter().filter(|(_, &degree)| degree == 0).map(|(id, _)| id.clone()).collect();
         let mut sorted_nodes = Vec::new();
 
         while let Some(u) = queue.pop_front() {
@@ -173,5 +176,15 @@ impl PlanExecutor {
         }
 
         Ok(sorted_nodes)
+    }
+
+    fn get_task_dependencies(&self, task: &agent_protocol_backbone::planning::plan_definition::TaskDefinition) -> HashMap<String, String> {
+        let mut dependencies = HashMap::new();
+        for dep_id in &task.dependencies {
+            if let Some(result) = self.context.results.get(dep_id) {
+                dependencies.insert(dep_id.clone(), result.clone());
+            }
+        }
+        dependencies
     }
 }

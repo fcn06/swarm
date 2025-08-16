@@ -1,24 +1,19 @@
 [package]
 name = "workflow_management"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 
 [dependencies]
-a2a-rs= { workspace = true }
-
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
-chrono = { workspace = true }
+chrono ={ workspace = true }
 agent_protocol_backbone = { workspace = true }
-
-clap={ workspace = true}
-
-# Logging - optional
-tracing = { workspace = true}
-tracing-subscriber = { workspace = true}
-
+async-trait = { workspace = true }
+clap = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
 
 [[bin]]
 name = "workflow_management"

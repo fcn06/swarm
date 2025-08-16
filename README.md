@@ -150,10 +150,10 @@ Getting your Swarm agents up and running is straightforward. For maximum flexibi
 
 The Swarm project is composed of several specialized sub-crates, each serving a distinct purpose:
 
-*   `agent_discovery_service`: An optional HTTP service where agents can register themselves. It exposes an endpoint to list all available agents, facilitating dynamic discovery.
-*   `agent_memory_service`: A Work In Progress capability for all agents to share their interactions and ensure better coordination.
-*   `agent_evaluation_service`: A Work In Progress capability for all agents to have their performance evaluated ( Llm as a Judge Model).
-*   `configuration`: Contains Default Location of Swarm configuration files, making it easy to customize agent behavior.
+*   `agent_discovery_service`: An HTTP service where agents can register themselves. It exposes an endpoint to list all available agents, facilitating dynamic discovery.
+*   `agent_memory_service`: A capability for all agents to share their interactions and ensure better coordination.
+*   `agent_evaluation_service`: A capability for all agents to have their performance evaluated ( Llm as a Judge Model).
+*   `configuration`: Contains Default Location of Swarm configuration files, and default prompts, making it easy to customize agent behavior.
 *   `agent_protocol_backbone`: Contains foundational elements to launch an agent and enable its request processing capabilities.
 *   `basic_agent`: Provides Business logic to launch a basic agent.
 *   `orchestration_agent`: Provides Business logic to launch an orchestration agent.
@@ -177,7 +177,7 @@ We're continuously working on improvements, including:
 *   **Directed Graph of Agents:** Connect agents in a pre defined pipeline to execute complex tasks.
 *   **Code Refactoring:** Continuously improving code clarity and maintainability.
 *   **Unit Tests:** Enhancing robustness and reliability across the codebase.
-*   **Scalable & Asynchronous Communication** Leveraging Tokio to enable agents to process requests from multiple clients in parallel.
+*   **Scalable & Asynchronous Communication** Work on improved scalability.
 *   **Improved UI** Improve the UI to interact with any kind of agent.
 *   **Test with Llama.cpp Server** Test with llama.cpp server so that we can connect all kind of fine tuned models for single domain agents.
 

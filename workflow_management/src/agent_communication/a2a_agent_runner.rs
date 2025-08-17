@@ -1,24 +1,36 @@
-use crate::agent_communication::agent_runner::AgentRunner;
-use agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient;
+use a2a_rs::{
+    HttpClient,
+    domain::{ AgentSkill},
+};
 
-//use agent_core::a2a_protocol::{A2ARequest, A2AResponse};
-
-use agent_core::planning::plan_definition::TaskDefinition;
-use async_trait::async_trait;
 use std::sync::Arc;
+use std::collections::HashMap;
 use url::Url;
 use uuid::Uuid;
 
+use async_trait::async_trait;
+
+use crate::agent_communication::agent_runner::AgentRunner;
+use crate::agent_communication::a2a_agent_interaction::A2AAgentInteraction;
+use agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient;
+
+use agent_core::business_logic::services::EvaluationService;
+use agent_core::business_logic::services::MemoryService;
+use agent_core::planning::plan_definition::TaskDefinition;
+
+
+use configuration::AgentReference;
+
+
 /// An AgentRunner that communicates using the A2A protocol over HTTP.
 pub struct A2AAgentRunner {
+    //agents_references: Vec<AgentReference>,
+    //client_agents: HashMap<String, A2AAgentInteraction>,
+    //evaluation_service: Option<Arc<dyn EvaluationService>>,
+    //memory_service: Option<Arc<dyn MemoryService>>,
     discovery_client: Arc<AgentDiscoveryServiceClient>,
 }
 
-impl A2AAgentRunner {
-    pub fn new(discovery_client: Arc<AgentDiscoveryServiceClient>) -> Self {
-        Self { discovery_client }
-    }
-}
 
 #[async_trait]
 impl AgentRunner for A2AAgentRunner {
@@ -77,3 +89,19 @@ impl AgentRunner for A2AAgentRunner {
 
     }
 }
+
+
+impl A2AAgentRunner {
+    pub fn new( 
+        //agents_references: Vec<AgentReference>,
+        //evaluation_service: Option<Arc<dyn EvaluationService>>,
+        //memory_service: Option<Arc<dyn MemoryService>>,
+        discovery_client: Arc<AgentDiscoveryServiceClient>) -> Self {
+
+        
+        Self { discovery_client }
+    
+    }
+}
+
+

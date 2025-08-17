@@ -2,6 +2,8 @@
 use serde::{Serialize,Deserialize};
 use std::fs; // Assuming you might want logging here too
 
+use tracing::{Level};
+use tracing_subscriber::{prelude::*, fmt, layer::Layer, Registry, filter};
 
 //////////////////////////////////////////////////////////////////////
 // CONFIG FOR MCP
@@ -127,4 +129,28 @@ impl AgentReference {
     pub async fn get_agent_reference(&self) -> anyhow::Result<AgentReference> {
         Ok(self.clone())
     }
+}
+
+///////////////////////////////////////////////////////////////
+// SETUP LOGGING LEVEL
+///////////////////////////////////////////////////////////////
+
+pub fn setup_logging(log_level: &str) {
+    let level = match log_level {
+        "trace" => Level::TRACE,
+        "debug" => Level::DEBUG,
+        "info" => Level::INFO,
+        "warn" => Level::WARN,
+        "error" => Level::ERROR,
+        _ => Level::INFO,
+    };
+
+    let subscriber = Registry::default().with(
+        fmt::layer()
+            .compact()
+            .with_ansi(true)
+            .with_filter(filter::LevelFilter::from_level(level)),
+    );
+
+    tracing::subscriber::set_global_default(subscriber).unwrap();
 }

@@ -1,7 +1,9 @@
 use clap::Parser;
 use std::sync::Arc;
-use tracing::{info, warn, error, Level};
-use tracing_subscriber::{prelude::*, fmt, layer::Layer, Registry, filter};
+
+use tracing::{info, warn, error};
+use configuration::setup_logging;
+
 use workflow_management::agent_communication::{
     agent_registry::AgentRegistry, a2a_agent_runner::A2AAgentRunner,
 };
@@ -39,6 +41,7 @@ async fn main() {
 
     // 2. Setup Agent Communication
     let discovery_client = Arc::new(AgentDiscoveryServiceClient::new(args.discovery_url));
+
     let mut agent_registry = AgentRegistry::new();
     agent_registry.register(Arc::new(A2AAgentRunner::new(discovery_client)));
     let agent_registry = Arc::new(agent_registry);
@@ -61,22 +64,3 @@ async fn main() {
     }
 }
 
-fn setup_logging(log_level: &str) {
-    let level = match log_level {
-        "trace" => Level::TRACE,
-        "debug" => Level::DEBUG,
-        "info" => Level::INFO,
-        "warn" => Level::WARN,
-        "error" => Level::ERROR,
-        _ => Level::INFO,
-    };
-
-    let subscriber = Registry::default().with(
-        fmt::layer()
-            .compact()
-            .with_ansi(true)
-            .with_filter(filter::LevelFilter::from_level(level)),
-    );
-
-    tracing::subscriber::set_global_default(subscriber).unwrap();
-}

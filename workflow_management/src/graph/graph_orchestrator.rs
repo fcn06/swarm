@@ -164,13 +164,13 @@ impl PlanExecutor {
         Err(PlanExecutorError::ExecutionFailed(reason))
     }
 
-    fn get_task_dependencies(&self, task: &agent_protocol_backbone::planning::plan_definition::TaskDefinition) -> HashMap<String, String> {
+    fn get_task_dependencies(&self, task: &agent_core::planning::plan_definition::TaskDefinition) -> HashMap<String, String> {
         task.dependencies.iter().filter_map(|dep_id| 
             self.context.results.get(dep_id).map(|res| (dep_id.clone(), res.clone()))
         ).collect()
     }
 
-    fn get_task_definition_for_agent(&self, agent_node_id: &str) -> Result<&agent_protocol_backbone::planning::plan_definition::TaskDefinition, PlanExecutorError> {
+    fn get_task_definition_for_agent(&self, agent_node_id: &str) -> Result<&agent_core::planning::plan_definition::TaskDefinition, PlanExecutorError> {
         // This is a placeholder. In a real scenario, an agent node might have its own
         // associated task, or we might need to find the task that assigned this agent.
         // For now, we'll assume the agent node IS a task node.

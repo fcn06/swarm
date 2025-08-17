@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 agent_core = { workspace = true }
+configuration = { workspace = true }
 agent_discovery_service = { workspace = true }
 
 a2a-rs= { workspace = true }
@@ -17,6 +18,8 @@ tokio = { workspace = true }
 chrono ={ workspace = true }
 
 async-trait = { workspace = true }
+
+anyhow={ workspace = true }
 
 clap = { workspace = true }
 tracing = { workspace = true }

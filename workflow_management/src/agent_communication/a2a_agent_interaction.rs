@@ -4,16 +4,13 @@ use a2a_rs::{
     services::AsyncA2AClient,
 };
 
-
 use async_trait::async_trait;
-
 use tracing::{info,warn,debug,error};
-
-use agent_core::agent_interaction_protocol::agent_interaction::AgentInteraction;
 use anyhow::Result;
 use std::sync::Arc;
 use tokio::time::{sleep, Duration};
 
+use agent_core::agent_interaction_protocol::agent_interaction::AgentInteraction;
 
 
 #[derive(Clone)]

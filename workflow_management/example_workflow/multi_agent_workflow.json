@@ -1,0 +1,62 @@
+{
+    "plan_name": "Personalized Weather Notification",
+    "tasks": [
+      {
+        "id": "fetch_customer_data",
+        "agent_name": "Customer Data Retriever",
+        "type": "customer_data_access",
+        "description": "Fetches customer data using their ID.",
+        "tool_parameters": {
+          "customer_id": "12345"
+        },
+        "dependencies": []
+      },
+      {
+        "id": "fetch_weather_forecast",
+        "agent_name": "Weather Information Agent",
+        "type": "weather_information_retrieval",
+        "description": "Fetches the weather forecast for the customer's location.",
+        "tool_parameters": {
+          "location": "{{fetch_customer_data.result.address.city}}"
+        },
+        "dependencies": [
+          {
+            "source": "fetch_customer_data"
+          }
+        ]
+      },
+      {
+        "id": "compose_personalized_message",
+        "agent_name": "Content Generation Agent",
+        "type": "content_creation",
+        "description": "Composes a personalized message using customer and weather data.",
+        "tool_parameters": {
+          "customer_name": "{{fetch_customer_data.result.name}}",
+          "weather_forecast": "{{fetch_weather_forecast.result.forecast}}"
+        },
+        "dependencies": [
+          {
+            "source": "fetch_customer_data"
+          },
+          {
+            "source": "fetch_weather_forecast"
+          }
+        ]
+      },
+      {
+        "id": "send_notification",
+        "agent_name": "Notification Agent",
+        "type": "send_email",
+        "description": "Sends the personalized message to the customer.",
+        "tool_parameters": {
+          "email_address": "{{fetch_customer_data.result.email}}",
+          "message": "{{compose_personalized_message.result.message}}"
+        },
+        "dependencies": [
+          {
+            "source": "compose_personalized_message"
+          }
+        ]
+      }
+    ]
+  }

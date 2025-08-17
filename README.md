@@ -163,6 +163,7 @@ The Swarm project is composed of several specialized sub-crates, each serving a 
 *   `orchestration_agent`: Provides Business logic to launch an orchestration agent.
 *   `mcp_runtime`: A runtime to connect to a ModelContextProtocol Server. Designed to be embedded into an agent
 *   `llm_api`: Offers a convenient interface for interacting with various Large Language Models via an OpenAI-compatible API.
+*   `workflow_management`: Work In Progress to define Graph of Agents or Tasks , that can be loaded and executed. Will enable to fulfill more complex use cases.
 *   `documentation`: Contains a series of example of toml config file for all sort of agents ( weather forecast, customer domain, web scraper, joke telling,...).
 *   `examples`: Contains multiple illustrative examples to help you interact with Swarm:
     *   `mcp_agent_endpoint`: A testing utility for an MCP runtime to receive and process requests through an MCP server.
@@ -176,7 +177,7 @@ Swarm is currently a project for discovery and exploration! While not production
 We're continuously working on improvements, including:
 
 *   **Dynamic Discovery:** Enable agents to understand dynamically what relevant skills are available to define an execution plan.
-*   **Workflow Management Runtime:** Defining and Executing a Pipeline of both tasks and Agents. ( Could be launched as a standalone or embedded into an agent)
+*   **Workflow Management Runtime:** WIP : Defining and Executing a Pipeline of both tasks and Agents. ( Could be launched as a standalone or embedded into an agent)
 *   **Context Enrichment:** Enrich the request with relevant context, to make a plan more accurate.
 *   **Identity Management:** Use Self Sovereign Identity concept to enable agent to have its own proven identity.
 *   **Code Refactoring:** Continuously improving code clarity and maintainability.

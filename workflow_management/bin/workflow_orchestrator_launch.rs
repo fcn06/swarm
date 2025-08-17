@@ -12,6 +12,7 @@ use workflow_management::graph::graph_orchestrator::PlanExecutor;
 use workflow_management::tasks::task_registry::TaskRegistry;
 use workflow_management::tasks::example_tasks::{GreetTask, FarewellTask};
 use agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient;
+use configuration::AgentReference;
 
 /// Command-line arguments
 #[derive(Parser, Debug)]
@@ -29,7 +30,7 @@ struct Args {
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() ->anyhow::Result<()> {
     let args = Args::parse();
     setup_logging(&args.log_level);
 
@@ -40,10 +41,14 @@ async fn main() {
     let task_registry = Arc::new(task_registry);
 
     // 2. Setup Agent Communication
+    
+    // Define discovery service
     let discovery_client = Arc::new(AgentDiscoveryServiceClient::new(args.discovery_url));
+    // define agents available. In future will be dynamic
+    let agents_references=vec![AgentReference{name:"generic_search".to_string(),url:"http://127.0.0.1:8080".to_string(),is_default:Some(true)}];
 
     let mut agent_registry = AgentRegistry::new();
-    agent_registry.register(Arc::new(A2AAgentRunner::new(discovery_client)));
+    agent_registry.register(Arc::new(A2AAgentRunner::new(agents_references, None,None,discovery_client).await?));
     let agent_registry = Arc::new(agent_registry);
 
     // 3. Load workflow and execute
@@ -62,5 +67,6 @@ async fn main() {
             error!("Error loading workflow: {}", e);
         }
     }
+    Ok(())
 }
 

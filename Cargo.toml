@@ -7,7 +7,7 @@ members = [ "configuration","llm_api",
                 "agent_evaluation_service",
                 "agent_core",
                 "basic_agent","mcp_runtime","orchestration_agent",
-               "workflow_management",
+#               "workflow_management",
                 "examples/*"]
 
 [workspace.dependencies]

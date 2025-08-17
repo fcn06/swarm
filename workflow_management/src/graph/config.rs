@@ -15,12 +15,14 @@ pub enum ConfigurationError {
     JsonParseError(#[from] serde_json::Error),
 }
 
+/// Definitions of the fields in the workflow definition
 #[derive(Deserialize, Debug)]
 struct JsonTask {
     id: String,
     #[serde(rename = "type")]
     skill_to_use: String,
     description: Option<String>,
+    assigned_agent_id_preference:Option<String>,
     dependencies: Vec<JsonDependency>,
 }
 
@@ -50,7 +52,7 @@ pub fn load_graph_from_file(file_path: &str) -> Result<Graph, ConfigurationError
             skill_to_use: Some(task.skill_to_use),
             tool_to_use: None,
             tool_parameters: None,
-            assigned_agent_id_preference: None,
+            assigned_agent_id_preference: Some(task.assigned_agent_id_preference.clone().expect("REASON")),
             expected_outcome: None,
             dependencies: task.dependencies.iter().map(|d| d.source.clone()).collect(),
             created_at: Utc::now(),

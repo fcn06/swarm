@@ -4,7 +4,7 @@
       {
         "id": "fetch_customer_data",
         "agent_name": "Customer Data Retriever",
-        "assigned_agent_id_preference": "Customer Data Retriever",
+        "assigned_agent_id_preference": "Basic_Agent",
         "type": "customer_data_access",
         "description": "Fetches customer data using their ID.",
         "tool_parameters": {
@@ -15,7 +15,7 @@
       {
         "id": "fetch_weather_forecast",
         "agent_name": "Weather Information Agent",
-        "assigned_agent_id_preference": "Weather Information Agent",
+        "assigned_agent_id_preference": "Basic_Agent",
         "type": "weather_information_retrieval",
         "description": "Fetches the weather forecast for the customer's location.",
         "tool_parameters": {
@@ -30,7 +30,7 @@
       {
         "id": "compose_personalized_message",
         "agent_name": "Content Generation Agent",
-        "assigned_agent_id_preference": "Content Generation Agent",
+        "assigned_agent_id_preference": "Basic_Agent",
         "type": "content_creation",
         "description": "Composes a personalized message using customer and weather data.",
         "tool_parameters": {
@@ -49,7 +49,7 @@
       {
         "id": "send_notification",
         "agent_name": "Notification Agent",
-        "assigned_agent_id_preference": "Notification Agent",
+        "assigned_agent_id_preference": "Basic_Agent",
         "type": "send_email",
         "description": "Sends the personalized message to the customer.",
         "tool_parameters": {

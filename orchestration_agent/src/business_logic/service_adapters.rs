@@ -4,7 +4,7 @@ use agent_evaluation_service::evaluation_service_client::agent_evaluation_client
 use agent_evaluation_service::evaluation_server::judge_agent::AgentLogData;
 use agent_memory_service::memory_service_client::agent_memory_client::AgentMemoryServiceClient;
 use agent_memory_service::models::Role;
-use agent_protocol_backbone::business_logic::services::{EvaluationService, MemoryService};
+use agent_core::business_logic::services::{EvaluationService, MemoryService};
 
 // Adapter for AgentEvaluationServiceClient
 pub struct AgentEvaluationServiceAdapter {

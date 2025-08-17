@@ -1,9 +1,9 @@
 use crate::agent_communication::agent_runner::AgentRunner;
 use agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient;
 
-//use agent_protocol_backbone::a2a_protocol::{A2ARequest, A2AResponse};
+//use agent_core::a2a_protocol::{A2ARequest, A2AResponse};
 
-use agent_protocol_backbone::planning::plan_definition::TaskDefinition;
+use agent_core::planning::plan_definition::TaskDefinition;
 use async_trait::async_trait;
 use std::sync::Arc;
 use url::Url;

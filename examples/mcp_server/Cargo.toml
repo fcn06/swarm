@@ -6,9 +6,7 @@ edition = "2024"
 # https://github.com/modelcontextprotocol/rust-sdk/tree/main/examples/servers/src
 
 [dependencies]
-#rmcp= { git = "https://github.com/modelcontextprotocol/rust-sdk.git", features = ["server", "transport-sse-server", "transport-io"] , rev="73188eff6fcc8fc152949ac1d5df0439607ba3ad"}
-rmcp= { git = "https://github.com/modelcontextprotocol/rust-sdk.git", features = ["server", "transport-sse-server", "transport-io"] }
-
+rmcp= { git = "https://github.com/modelcontextprotocol/rust-sdk.git", features = ["server", "transport-sse-server", "transport-io"],  rev="209dbac50f51737ad953c3a2c8e28f3619b6c277"  }
 
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }

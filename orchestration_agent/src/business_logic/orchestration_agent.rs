@@ -26,10 +26,10 @@ use configuration::AgentMcpConfig;
 use mcp_runtime::mcp_agent_logic::agent::McpAgent;
 use llm_api::chat::Message as LlmMessage;
 use std::env;
-use agent_protocol_backbone::business_logic::agent::{Agent};
+use agent_core::business_logic::agent::{Agent};
 
 
-use agent_protocol_backbone::planning::plan_definition::{
+use agent_core::planning::plan_definition::{
     ExecutionResult, Plan, PlanResponse, PlanStatus, 
 };
 
@@ -38,7 +38,7 @@ use configuration::{AgentConfig,AgentReference};
 use async_trait::async_trait;
 use agent_evaluation_service::evaluation_server::judge_agent::AgentLogData;
 use agent_memory_service::models::Role;
-use agent_protocol_backbone::business_logic::services::{EvaluationService, MemoryService};
+use agent_core::business_logic::services::{EvaluationService, MemoryService};
 
 
 /// Agent that that can interact with other available agents, and also embed MCP runtime if needed

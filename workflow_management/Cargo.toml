@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-agent_protocol_backbone = { workspace = true }
+agent_core = { workspace = true }
 agent_discovery_service = { workspace = true }
 
 a2a-rs= { workspace = true }

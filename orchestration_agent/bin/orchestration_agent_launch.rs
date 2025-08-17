@@ -1,7 +1,7 @@
-use agent_protocol_backbone::business_logic::agent::Agent;
+use agent_core::business_logic::agent::Agent;
 use configuration::AgentConfig;
 use orchestration_agent::business_logic::orchestration_agent::OrchestrationAgent;
-use agent_protocol_backbone::server::agent_server::AgentServer;
+use agent_core::server::agent_server::AgentServer;
 use std::sync::Arc;
 
 use clap::Parser;
@@ -14,7 +14,7 @@ use tracing_subscriber::{
     Registry, filter
 };
 
-use agent_protocol_backbone::business_logic::services::{EvaluationService, MemoryService};
+use agent_core::business_logic::services::{EvaluationService, MemoryService};
 use agent_evaluation_service::evaluation_service_client::agent_evaluation_client::AgentEvaluationServiceClient;
 use agent_memory_service::memory_service_client::agent_memory_client::AgentMemoryServiceClient;
 use orchestration_agent::business_logic::service_adapters::{AgentEvaluationServiceAdapter, AgentMemoryServiceAdapter};

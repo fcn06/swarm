@@ -1,18 +1,33 @@
 use a2a_rs::{
     HttpClient,
-    domain::{ Message, Part,AgentSkill},
-    services::AsyncA2AClient,
+    domain::{ AgentSkill},
 };
-use anyhow::Result;
 
 use std::sync::Arc;
-use tracing::{info,debug,error,warn};
+use async_trait::async_trait;
 
-use tokio::time::{sleep, Duration};
 
-/////////////////////////////////////////////////////////
-// Client to connect to a2a server
-/////////////////////////////////////////////////////////
+#[async_trait]
+pub trait AgentInteraction: Send + Sync  + Clone + 'static {
+    async fn connect(id: String, uri: String) -> anyhow::Result<Self>;
+    async fn execute_task(&self, task_description: &str, _skill_to_use: &str) -> anyhow::Result<String>;
+    fn get_skills(&self) -> &[AgentSkill];
+    fn has_skill(&self, skill_name: &str) -> bool ;
+    fn agent_id(&self) -> String ;
+    fn agent_name(&self) -> String ;
+    fn agent_uri(&self) -> String ;
+    fn agent_skills(&self) -> Vec<AgentSkill> ;
+    fn agent_remote_http_client(&self) -> Arc<HttpClient> ;
+}
+
+
+
+
+
+
+
+/*
+
 
 #[derive(Clone)]
 pub struct A2AClient {
@@ -146,3 +161,7 @@ impl A2AClient {
         &self.id
     }
 }
+
+
+
+*/

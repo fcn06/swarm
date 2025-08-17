@@ -1,4 +1,4 @@
-use agent_protocol_backbone::planning::plan_definition::TaskDefinition;
+use agent_core::planning::plan_definition::TaskDefinition;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 

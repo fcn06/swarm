@@ -158,7 +158,7 @@ The Swarm project is composed of several specialized sub-crates, each serving a 
 *   `agent_memory_service`: A capability for all agents to share their interactions and ensure better coordination.
 *   `agent_evaluation_service`: A capability for all agents to have their performance evaluated ( Llm as a Judge Model).
 *   `configuration`: Contains Default Location of Swarm configuration files, and default prompts, making it easy to customize agent behavior.
-*   `agent_protocol_backbone`: Contains foundational elements to launch an agent and enable its request processing capabilities.
+*   `agent_core`: Contains foundational elements to launch an agent, interact with an agent and enable request processing capabilities of an agent.
 *   `basic_agent`: Provides Business logic to launch a basic agent.
 *   `orchestration_agent`: Provides Business logic to launch an orchestration agent.
 *   `mcp_runtime`: A runtime to connect to a ModelContextProtocol Server. Designed to be embedded into an agent

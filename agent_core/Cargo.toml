@@ -1,5 +1,5 @@
 [package]
-name = "agent_protocol_backbone"
+name = "agent_core"
 version = "0.1.0"
 edition = "2024"
 

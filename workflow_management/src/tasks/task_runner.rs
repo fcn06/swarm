@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use async_trait::async_trait;
-use agent_protocol_backbone::planning::plan_definition::TaskDefinition;
+use agent_core::planning::plan_definition::TaskDefinition;
 
 /// A trait for any task that can be executed by the PlanExecutor.
 #[async_trait]

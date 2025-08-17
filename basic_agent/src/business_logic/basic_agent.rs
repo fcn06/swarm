@@ -13,11 +13,11 @@ use mcp_runtime::mcp_agent_logic::agent::McpAgent;
 use llm_api::chat::Message as LlmMessage;
 use std::env;
 
-use agent_protocol_backbone::business_logic::agent::{Agent};
-use agent_protocol_backbone::business_logic::services::{EvaluationService, MemoryService};
+use agent_core::business_logic::agent::{Agent};
+use agent_core::business_logic::services::{EvaluationService, MemoryService};
 
 use configuration::AgentConfig;
-use agent_protocol_backbone::planning::plan_definition::{ExecutionResult};
+use agent_core::planning::plan_definition::{ExecutionResult};
 
 
 /// Modern A2A server setup 

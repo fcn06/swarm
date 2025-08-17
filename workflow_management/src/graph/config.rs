@@ -1,5 +1,5 @@
 use super::graph_definition::{Edge, Graph, Node, NodeType};
-use agent_protocol_backbone::planning::plan_definition::TaskDefinition;
+use agent_core::planning::plan_definition::TaskDefinition;
 use chrono::Utc;
 use serde::Deserialize;
 use std::collections::HashMap;

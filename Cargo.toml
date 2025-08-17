@@ -5,14 +5,15 @@ resolver = "3"
 members = [ "configuration","llm_api",
                 "agent_discovery_service","agent_memory_service",
                 "agent_evaluation_service",
-                "agent_protocol_backbone","basic_agent","mcp_runtime","orchestration_agent",
+                "agent_core",
+                "basic_agent","mcp_runtime","orchestration_agent",
 #               "workflow_management",
                 "examples/*"]
 
 [workspace.dependencies]
 llm_api = { path = "./llm_api" }
 configuration = { path = "./configuration" }
-agent_protocol_backbone = { path = "./agent_protocol_backbone" }
+agent_core = { path = "./agent_core" }
 agent_evaluation_service = { path = "./agent_evaluation_service" }
 agent_memory_service = { path = "./agent_memory_service" }
 mcp_runtime = { path = "./mcp_runtime" }

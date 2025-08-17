@@ -1,7 +1,7 @@
 use configuration::AgentConfig;
 use basic_agent::business_logic::basic_agent::BasicAgent;
-use agent_protocol_backbone::server::agent_server::AgentServer;
-use agent_protocol_backbone::business_logic::agent::Agent;
+use agent_core::server::agent_server::AgentServer;
+use agent_core::business_logic::agent::Agent;
 
 
 use clap::Parser;

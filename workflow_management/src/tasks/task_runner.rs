@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use async_trait::async_trait;
-use agent_core::planning::plan_definition::TaskDefinition;
+use crate::graph::graph_definition::Activity;
 
 /// A trait for any task that can be executed by the PlanExecutor.
 #[async_trait]
@@ -11,15 +11,14 @@ pub trait TaskRunner: Send + Sync {
     /// Executes the task.
     ///
     /// # Arguments
-    /// * `task_definition` - The full definition of the task.
-    /// * `dependencies` - A map of dependency task IDs to their string results.
+    /// * `activity` - The activity to be executed.
+    /// * `dependencies` - A map of dependency activity IDs to their string results.
     ///
     /// # Returns
-    /// A `Result` containing the string output of the task or an error.
+    /// A `Result` containing the string output of the activity or an error.
     async fn execute(
         &self,
-
-        task_definition: &TaskDefinition,
+        activity: &Activity,
         dependencies: &HashMap<String, String>,
     ) -> Result<String, Box<dyn std::error::Error + Send + Sync>>;
 }

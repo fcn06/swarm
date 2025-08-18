@@ -1,5 +1,5 @@
 {
-    "plan_name": "Personalized Weather Notification",
+    "plan_name": "Mix workflow of tasks and agents",
     "activities": [
       {
         "activity_type": "delegation_agent",
@@ -73,6 +73,54 @@
           }
         ],
         "expected_outcome": "Email notification sent successfully."
+      },
+      {
+        "activity_type": "direct_task_execution",
+        "id": "task_greet",
+        "description": "Greets a specific entity.",
+        "type": "greet",
+        "skill_to_use": "greet",
+        "assigned_agent_id_preference": null,
+        "tool_to_use": null,
+        "tool_parameters": {
+            "name": "Jupiter"
+        },
+        "dependencies": [],
+        "expected_outcome": "A greeting message."
+      },
+      {
+        "activity_type": "direct_task_execution",
+        "id": "task_jupiter_branch",
+        "description": "This activity runs if the greeting was for Jupiter.",
+        "type": "farewell",
+        "skill_to_use": "farewell",
+        "assigned_agent_id_preference": null,
+        "tool_to_use": null,
+        "tool_parameters": null,
+        "dependencies": [
+          { 
+            "source": "task_greet", 
+            "condition": "result == 'Hello, Jupiter!'" 
+          }
+        ],
+        "expected_outcome": "A farewell message specific to Jupiter."
+      },
+      {
+        "activity_type": "direct_task_execution",
+        "id": "task_other_branch",
+        "description": "This activity runs if the greeting was NOT for Jupiter.",
+        "type": "farewell",
+        "skill_to_use": "farewell",
+        "assigned_agent_id_preference": null,
+        "tool_to_use": null,
+        "tool_parameters": null,
+        "dependencies": [
+          { 
+            "source": "task_greet", 
+            "condition": "result != 'Hello, Jupiter!'" 
+          }
+        ],
+        "expected_outcome": "A general farewell message."
       }
     ]
 }

@@ -1,5 +1,5 @@
 use crate::tasks::task_runner::TaskRunner;
-use agent_core::planning::plan_definition::TaskDefinition;
+use crate::graph::graph_definition::Activity;
 use async_trait::async_trait;
 use std::collections::HashMap;
 
@@ -13,10 +13,10 @@ impl TaskRunner for GreetTask {
 
     async fn execute(
         &self,
-        task_definition: &TaskDefinition,
+        activity: &Activity,
         _dependencies: &HashMap<String, String>,
     ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
-        let name = task_definition
+        let name = activity
             .tool_parameters
             .as_ref()
             .and_then(|params| params.get("name"))
@@ -37,7 +37,7 @@ impl TaskRunner for FarewellTask {
 
     async fn execute(
         &self,
-        task_definition: &TaskDefinition,
+        activity: &Activity,
         dependencies: &HashMap<String, String>,
     ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
         // This task can use the output of a dependency
@@ -47,7 +47,7 @@ impl TaskRunner for FarewellTask {
             .map(|s| s.as_str())
             .unwrap_or("...");
             
-        let name = task_definition
+        let name = activity
             .tool_parameters
             .as_ref()
             .and_then(|params| params.get("name"))

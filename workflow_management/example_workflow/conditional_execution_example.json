@@ -1,36 +1,53 @@
 {
     "plan_name": "Conditional Greeting Workflow",
-    "tasks": [
+    "activities": [
       {
+        "activity_type": "direct_task_execution",
         "id": "task_greet",
-        "type": "greet",
         "description": "Greets a specific entity.",
+        "type": "greet",
+        "skill_to_use": "greet",
+        "assigned_agent_id_preference": null,
+        "tool_to_use": null,
         "tool_parameters": {
             "name": "Jupiter"
         },
-        "dependencies": []
+        "dependencies": [],
+        "expected_outcome": "A greeting message."
       },
       {
+        "activity_type": "direct_task_execution",
         "id": "task_jupiter_branch",
+        "description": "This activity runs if the greeting was for Jupiter.",
         "type": "farewell",
-        "description": "This task runs if the greeting was for Jupiter.",
+        "skill_to_use": "farewell",
+        "assigned_agent_id_preference": null,
+        "tool_to_use": null,
+        "tool_parameters": null,
         "dependencies": [
           { 
             "source": "task_greet", 
             "condition": "result == 'Hello, Jupiter!'" 
           }
-        ]
+        ],
+        "expected_outcome": "A farewell message specific to Jupiter."
       },
       {
+        "activity_type": "direct_task_execution",
         "id": "task_other_branch",
+        "description": "This activity runs if the greeting was NOT for Jupiter.",
         "type": "farewell",
-        "description": "This task runs if the greeting was NOT for Jupiter.",
+        "skill_to_use": "farewell",
+        "assigned_agent_id_preference": null,
+        "tool_to_use": null,
+        "tool_parameters": null,
         "dependencies": [
           { 
             "source": "task_greet", 
             "condition": "result != 'Hello, Jupiter!'" 
           }
-        ]
+        ],
+        "expected_outcome": "A general farewell message."
       }
     ]
   }

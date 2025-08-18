@@ -1,6 +1,7 @@
-use super::graph_definition::{Edge, Graph, Node, NodeType};
-use agent_core::planning::plan_definition::TaskDefinition;
-use chrono::Utc;
+use super::graph_definition::{Edge, Graph, Node, NodeType, ActivityType, Activity, Dependency};
+
+//use chrono::Utc;
+
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::fs;
@@ -17,16 +18,21 @@ pub enum ConfigurationError {
 
 /// Definitions of the fields in the workflow definition
 #[derive(Deserialize, Debug)]
-struct JsonTask {
+struct JsonActivity {
+    activity_type: ActivityType,
     id: String,
+    description: String,
     #[serde(rename = "type")]
-    skill_to_use: String,
-    description: Option<String>,
-    assigned_agent_id_preference:Option<String>,
+    r#type: Option<String>,
+    skill_to_use: Option<String>,
+    assigned_agent_id_preference: Option<String>,
+    tool_to_use: Option<String>,
+    tool_parameters: Option<serde_json::Value>,
     dependencies: Vec<JsonDependency>,
+    expected_outcome: Option<String>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug,Clone)]
 struct JsonDependency {
     source: String,
     condition: Option<String>,
@@ -35,7 +41,7 @@ struct JsonDependency {
 #[derive(Deserialize, Debug)]
 struct JsonWorkflow {
     plan_name: String,
-    tasks: Vec<JsonTask>,
+    activities: Vec<JsonActivity>,
 }
 
 pub fn load_graph_from_file(file_path: &str) -> Result<Graph, ConfigurationError> {
@@ -45,30 +51,31 @@ pub fn load_graph_from_file(file_path: &str) -> Result<Graph, ConfigurationError
     let mut nodes = HashMap::new();
     let mut edges = Vec::new();
 
-    for task in workflow.tasks {
-        let task_definition = TaskDefinition {
-            id: task.id.clone(),
-            description: task.description.unwrap_or_else(|| task.skill_to_use.clone()),
-            skill_to_use: Some(task.skill_to_use),
-            tool_to_use: None,
-            tool_parameters: None,
-            assigned_agent_id_preference: Some(task.assigned_agent_id_preference.clone().expect("REASON")),
-            expected_outcome: None,
-            dependencies: task.dependencies.iter().map(|d| d.source.clone()).collect(),
-            created_at: Utc::now(),
-            task_output: None,
+    for activity in workflow.activities {
+        let activity_definition = Activity {
+            activity_type: activity.activity_type,
+            id: activity.id.clone(),
+            description: activity.description.clone(),
+            r#type: activity.r#type,
+            skill_to_use: activity.skill_to_use,
+            assigned_agent_id_preference: activity.assigned_agent_id_preference,
+            tool_to_use: activity.tool_to_use,
+            tool_parameters: activity.tool_parameters,
+            dependencies: activity.dependencies.clone().into_iter().map(|d| Dependency { source: d.source }).collect(),
+            expected_outcome: activity.expected_outcome,
+            activity_output: None,
         };
 
         let node = Node {
-            id: task.id.clone(),
-            node_type: NodeType::Task(task_definition),
+            id: activity.id.clone(),
+            node_type: NodeType::Activity(activity_definition),
         };
-        nodes.insert(task.id.clone(), node);
+        nodes.insert(activity.id.clone(), node);
 
-        for dep in task.dependencies {
+        for dep in activity.dependencies {
             edges.push(Edge {
                 source: dep.source,
-                target: task.id.clone(),
+                target: activity.id.clone(),
                 condition: dep.condition,
             });
         }

@@ -17,6 +17,10 @@ impl AgentRegistry {
         self.runners.insert(runner.name(), runner);
     }
 
+    pub fn register_with_name(&mut self, name: String, runner: Arc<dyn AgentRunner>) {
+        self.runners.insert(name, runner);
+    }
+
     pub fn get(&self, name: &str) -> Option<Arc<dyn AgentRunner>> {
         self.runners.get(name).cloned()
     }

@@ -1,5 +1,5 @@
-use agent_core::planning::plan_definition::TaskDefinition;
 use async_trait::async_trait;
+use crate::graph::graph_definition::Activity;
 
 #[async_trait]
 pub trait AgentRunner: Send + Sync {
@@ -15,6 +15,6 @@ pub trait AgentRunner: Send + Sync {
     /// 4. Parsing the response and returning the result.
     async fn invoke(
         &self,
-        task: &TaskDefinition,
+        activity: &Activity,
     ) -> Result<String, Box<dyn std::error::Error + Send + Sync>>;
 }

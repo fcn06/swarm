@@ -44,11 +44,23 @@ async fn main() ->anyhow::Result<()> {
     
     // Define discovery service
     let discovery_client = Arc::new(AgentDiscoveryServiceClient::new(args.discovery_url));
-    // define agents available. In future will be dynamic
-    let agents_references=vec![AgentReference{name:"generic_search".to_string(),url:"http://127.0.0.1:8080".to_string(),is_default:Some(true)}];
 
+    // Define Agent Registry
     let mut agent_registry = AgentRegistry::new();
-    agent_registry.register(Arc::new(A2AAgentRunner::new(agents_references, None,None,discovery_client).await?));
+
+    // Register a specific A2AAgentRunner for "Basic_Agent"
+    let basic_agent_runner = A2AAgentRunner::new(
+        vec![AgentReference{
+            name: "Basic_Agent".to_string(),
+            url: "http://127.0.0.1:8080".to_string(),
+            is_default: Some(true)
+        }],
+        None,
+        None,
+        discovery_client.clone()
+    ).await?;
+    agent_registry.register_with_name("Basic_Agent".to_string(), Arc::new(basic_agent_runner));
+
     let agent_registry = Arc::new(agent_registry);
 
     // 3. Load workflow and execute

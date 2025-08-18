@@ -1,4 +1,3 @@
-use agent_core::planning::plan_definition::TaskDefinition;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -9,19 +8,41 @@ pub enum AgentStatus {
     Unavailable,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Agent {
+#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
+pub enum ActivityType {
+    #[serde(rename = "delegation_agent")]
+    DelegationAgent,
+    #[serde(rename = "direct_tool_use")]
+    DirectToolUse,
+    #[serde(rename = "direct_task_execution")]
+    DirectTaskExecution,
+}
+
+#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
+pub struct Activity {
+    pub activity_type: ActivityType,
     pub id: String,
-    pub name: String,
-    pub role: String,
-    pub status: AgentStatus,
-    pub available_tools: Vec<String>,
+    pub description: String,
+    pub r#type: Option<String>, // Renamed from 'type' to 'r#type' to avoid keyword conflict
+    pub skill_to_use: Option<String>,
+    pub assigned_agent_id_preference: Option<String>,
+    pub tool_to_use: Option<String>,
+    pub tool_parameters: Option<serde_json::Value>,
+    #[serde(default)]
+    pub dependencies: Vec<Dependency>,
+    pub expected_outcome: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub activity_output: Option<String>,
+}
+
+#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
+pub struct Dependency {
+    pub source: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum NodeType {
-    Task(TaskDefinition),
-    Agent(Agent),
+    Activity(Activity),
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

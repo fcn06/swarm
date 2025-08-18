@@ -1,4 +1,4 @@
-use super::graph_definition::{Graph, PlanContext, PlanState};
+use super::graph_definition::{Graph, PlanContext, PlanState, ActivityType, Activity, NodeType};
 use crate::agent_communication::agent_registry::AgentRegistry;
 use crate::tasks::condition_evaluator::evaluate_condition;
 use crate::tasks::task_registry::TaskRegistry;
@@ -22,6 +22,11 @@ pub enum PlanExecutorError {
     DefaultAgentExecutionFailed(String),
     #[error("Cyclic dependency detected")]
     CyclicDependency,
+    #[error("Missing tool to use for DirectToolUse activity: {0}")]
+    MissingTool(String),
+    #[error("Missing skill to use for DirectTaskExecution activity: {0}")]
+    MissingSkill(String),
+
 }
 
 pub struct PlanExecutor {
@@ -75,7 +80,7 @@ impl PlanExecutor {
     }
 
     fn handle_initializing_state(&mut self) -> Result<(), PlanExecutorError> {
-        for (node_id, node) in &self.context.graph.nodes {
+        for (node_id, _node) in &self.context.graph.nodes {
             let dep_count = self.context.graph.edges.iter().filter(|e| e.target == *node_id).count();
             self.dependency_tracker.insert(node_id.clone(), dep_count);
         }
@@ -101,7 +106,7 @@ impl PlanExecutor {
         } else if self.context.results.len() == self.context.graph.nodes.len() {
             self.context.plan_state = PlanState::Completed;
         } else {
-            // If the queue is empty but not all nodes are done, it could be a dead-end due to conditions
+            // If the queue is empty but not all nodes are done, it could be a dead-end due to conditions or incomplete graph
             self.context.plan_state = PlanState::Completed;
         }
         Ok(())
@@ -112,24 +117,36 @@ impl PlanExecutor {
         let node = self.context.graph.nodes.get(&node_id).cloned().ok_or_else(|| PlanExecutorError::MissingNode(node_id.clone()))?;
     
         let result = match &node.node_type {
-            super::graph_definition::NodeType::Task(task) => {
-                let skill = task.skill_to_use.as_ref().ok_or_else(|| PlanExecutorError::TaskRunnerNotFound("No skill specified".to_string()))?;
-                
-                if let Some(runner) = self.task_registry.get(skill) {
-                    let dependencies = self.get_task_dependencies(task);
-                    runner.execute(task, &dependencies).await.map_err(|e| PlanExecutorError::ExecutionFailed(e.to_string()))?
-                } else {
-                    // Default agent fallback
-                    let runner = self.agent_registry.get("a2a_http_runner").ok_or_else(|| PlanExecutorError::AgentRunnerNotFound("a2a_http_runner".to_string()))?;
-                    runner.invoke(task).await.map_err(|e| PlanExecutorError::DefaultAgentExecutionFailed(e.to_string()))?
+            NodeType::Activity(activity) => {
+                match activity.activity_type {
+                    ActivityType::DelegationAgent => {
+                        let agent_id = activity.assigned_agent_id_preference.as_ref().unwrap_or(&"a2a_http_runner".to_string()).to_string();
+                        let runner = self.agent_registry.get(&agent_id).ok_or_else(|| PlanExecutorError::AgentRunnerNotFound(agent_id.clone()))?;
+                        // For delegation, we pass the activity itself as the task to the agent runner.
+                        // The agent runner will need to know how to interpret this activity.
+                        runner.invoke(activity).await.map_err(|e| PlanExecutorError::ExecutionFailed(e.to_string()))?
+                    },
+                    ActivityType::DirectToolUse => {
+                        let tool_name = activity.tool_to_use.as_ref().ok_or_else(|| PlanExecutorError::MissingTool(activity.id.clone()))?;
+                        let skill = format!("tool_use_{}", tool_name);
+                        if let Some(runner) = self.task_registry.get(&skill) {
+                            let dependencies = self.get_activity_dependencies(activity);
+                            runner.execute(activity, &dependencies).await.map_err(|e| PlanExecutorError::ExecutionFailed(e.to_string()))?
+                        } else {
+                            return Err(PlanExecutorError::TaskRunnerNotFound(skill));
+                        }
+                    },
+                    ActivityType::DirectTaskExecution => {
+                        let skill = activity.skill_to_use.as_ref().ok_or_else(|| PlanExecutorError::MissingSkill(activity.id.clone()))?;
+                        if let Some(runner) = self.task_registry.get(skill) {
+                            let dependencies = self.get_activity_dependencies(activity);
+                            runner.execute(activity, &dependencies).await.map_err(|e| PlanExecutorError::ExecutionFailed(e.to_string()))?
+                        } else {
+                            return Err(PlanExecutorError::TaskRunnerNotFound(skill.clone()));
+                        }
+                    },
                 }
-            }
-            super::graph_definition::NodeType::Agent(agent_node) => {
-                // For now, we assume agent nodes are also defined by a task. This can be evolved.
-                let task_def = self.get_task_definition_for_agent(&node_id)?;
-                let runner = self.agent_registry.get("a2a_http_runner").ok_or_else(|| PlanExecutorError::AgentRunnerNotFound("a2a_http_runner".to_string()))?;
-                runner.invoke(task_def).await.map_err(|e| PlanExecutorError::ExecutionFailed(e.to_string()))?
-            }
+            },
         };
     
         self.context.results.insert(node_id.clone(), result.clone());
@@ -172,21 +189,9 @@ impl PlanExecutor {
         Err(PlanExecutorError::ExecutionFailed(reason))
     }
 
-    fn get_task_dependencies(&self, task: &agent_core::planning::plan_definition::TaskDefinition) -> HashMap<String, String> {
-        task.dependencies.iter().filter_map(|dep_id| 
-            self.context.results.get(dep_id).map(|res| (dep_id.clone(), res.clone()))
+    fn get_activity_dependencies(&self, activity: &Activity) -> HashMap<String, String> {
+        activity.dependencies.iter().filter_map(|dep| 
+            self.context.results.get(&dep.source).map(|res| (dep.source.clone(), res.clone()))
         ).collect()
-    }
-
-    fn get_task_definition_for_agent(&self, agent_node_id: &str) -> Result<&agent_core::planning::plan_definition::TaskDefinition, PlanExecutorError> {
-        // This is a placeholder. In a real scenario, an agent node might have its own
-        // associated task, or we might need to find the task that assigned this agent.
-        // For now, we'll assume the agent node IS a task node.
-        if let Some(node) = self.context.graph.nodes.get(agent_node_id) {
-            if let super::graph_definition::NodeType::Task(task_def) = &node.node_type {
-                return Ok(task_def);
-            }
-        }
-        Err(PlanExecutorError::InvalidState)
     }
 }

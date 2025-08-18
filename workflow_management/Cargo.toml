@@ -29,6 +29,8 @@ reqwest = { workspace = true }
 url = { workspace = true }
 uuid = { workspace = true }
 
+regex="1"
+
 [[bin]]
 name = "workflow_management"
 path = "bin/workflow_orchestrator_launch.rs"

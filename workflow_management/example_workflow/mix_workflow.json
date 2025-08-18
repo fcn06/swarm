@@ -1,27 +1,23 @@
 {
-    "plan_name": "Mix workflow of tasks and agents",
+    "plan_name": "Mixed Workflow - Tool and Agent",
     "activities": [
       {
         "activity_type": "delegation_agent",
         "id": "fetch_customer_data",
         "description": "Fetches customer data using their ID.",
         "type": "customer_data_access",
-        "skill_to_use": null,
         "assigned_agent_id_preference": "Basic_Agent",
-        "tool_to_use": null,
         "tool_parameters": {
           "customer_id": "12345"
         },
         "dependencies": [],
-        "expected_outcome": "Customer data (e.g., name, address, email)."
+        "expected_outcome": "Customer data as a JSON object."
       },
       {
-        "activity_type": "delegation_agent",
+        "activity_type": "direct_tool_use",
         "id": "fetch_weather_forecast",
-        "description": "Fetches the weather forecast for the customer's location.",
+        "description": "Fetches the weather forecast for the customer's location using a direct tool.",
         "type": "weather_information_retrieval",
-        "skill_to_use": null,
-        "assigned_agent_id_preference": "Basic_Agent",
         "tool_to_use": "weather_api",
         "tool_parameters": {
           "location": "{{fetch_customer_data.result.address.city}}"
@@ -32,95 +28,6 @@
           }
         ],
         "expected_outcome": "Weather forecast for the specified location."
-      },
-      {
-        "activity_type": "delegation_agent",
-        "id": "compose_personalized_message",
-        "description": "Composes a personalized message using customer and weather data.",
-        "type": "content_creation",
-        "skill_to_use": null,
-        "assigned_agent_id_preference": "Basic_Agent",
-        "tool_to_use": null,
-        "tool_parameters": {
-          "customer_name": "{{fetch_customer_data.result.name}}",
-          "weather_forecast": "{{fetch_weather_forecast.result.forecast}}"
-        },
-        "dependencies": [
-          {
-            "source": "fetch_customer_data"
-          },
-          {
-            "source": "fetch_weather_forecast"
-          }
-        ],
-        "expected_outcome": "A personalized message for the customer."
-      },
-      {
-        "activity_type": "delegation_agent",
-        "id": "send_notification",
-        "description": "Sends the personalized message to the customer.",
-        "type": "send_email",
-        "skill_to_use": null,
-        "assigned_agent_id_preference": "Basic_Agent",
-        "tool_to_use": "email_sender",
-        "tool_parameters": {
-          "email_address": "{{fetch_customer_data.result.email}}",
-          "message": "{{compose_personalized_message.result.message}}"
-        },
-        "dependencies": [
-          {
-            "source": "compose_personalized_message"
-          }
-        ],
-        "expected_outcome": "Email notification sent successfully."
-      },
-      {
-        "activity_type": "direct_task_execution",
-        "id": "task_greet",
-        "description": "Greets a specific entity.",
-        "type": "greet",
-        "skill_to_use": "greet",
-        "assigned_agent_id_preference": null,
-        "tool_to_use": null,
-        "tool_parameters": {
-            "name": "Jupiter"
-        },
-        "dependencies": [],
-        "expected_outcome": "A greeting message."
-      },
-      {
-        "activity_type": "direct_task_execution",
-        "id": "task_jupiter_branch",
-        "description": "This activity runs if the greeting was for Jupiter.",
-        "type": "farewell",
-        "skill_to_use": "farewell",
-        "assigned_agent_id_preference": null,
-        "tool_to_use": null,
-        "tool_parameters": null,
-        "dependencies": [
-          { 
-            "source": "task_greet", 
-            "condition": "result == 'Hello, Jupiter!'" 
-          }
-        ],
-        "expected_outcome": "A farewell message specific to Jupiter."
-      },
-      {
-        "activity_type": "direct_task_execution",
-        "id": "task_other_branch",
-        "description": "This activity runs if the greeting was NOT for Jupiter.",
-        "type": "farewell",
-        "skill_to_use": "farewell",
-        "assigned_agent_id_preference": null,
-        "tool_to_use": null,
-        "tool_parameters": null,
-        "dependencies": [
-          { 
-            "source": "task_greet", 
-            "condition": "result != 'Hello, Jupiter!'" 
-          }
-        ],
-        "expected_outcome": "A general farewell message."
       }
     ]
-}
+  }

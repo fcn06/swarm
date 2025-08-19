@@ -229,6 +229,10 @@ impl PlanExecutor {
     }
 
     fn handle_completion_state(&mut self) -> Result<(), PlanExecutorError> {
+
+
+        // todo:logs memory and evaluation
+
         println!(
             "Plan executed successfully. Final results: {:?}",
             self.context.results

@@ -12,12 +12,16 @@ use tokio::time::{sleep, Duration};
 
 use agent_core::agent_interaction_protocol::agent_interaction::AgentInteraction;
 
-
+/// This structure enable Interaction with an A2A enabled single Agent
 #[derive(Clone)]
 pub struct A2AAgentInteraction {
+    /// The Id of the agent
     pub id: String,
+    /// The uri of the agent
     pub uri: String,
+    /// The Skills of the Agent
     pub skills:Vec<AgentSkill>, // Skills this agent offers
+    /// An Http Client to communicate with the agent
     client: Arc<HttpClient>, // Assuming HttpClient is part of a2a_rs or defined elsewhere
 }
 
@@ -46,6 +50,7 @@ impl AgentInteraction for A2AAgentInteraction {
             client: Arc::new(client),
         })
     }
+
 
     /// Execute a task on the A2A server agent.
     async fn execute_task(&self, task_description: &str, _skill_to_use: &str) -> Result<String> {

@@ -12,10 +12,13 @@ use workflow_management::graph::graph_orchestrator::PlanExecutor;
 use workflow_management::tasks::task_registry::TaskRegistry;
 use workflow_management::tools::tool_registry::ToolRegistry;
 
+use mcp_runtime::mcp_agent_logic::agent::McpAgent;
+use workflow_management::tools::mcp_tool_runner::McpToolRunner;
+
+
 mod tasks;
 mod tools;
-//use workflow_management::tasks::example_tasks::{FarewellTask, GreetTask};
-//use workflow_management::tools::example_tools::WeatherApiTool;
+
 
 use crate::tasks::example_tasks::{FarewellTask, GreetTask};
 use crate::tools::example_tools::WeatherApiTool;
@@ -31,8 +34,11 @@ struct Args {
     #[clap(long, default_value = "info")]
     log_level: String,
     /// Discovery service URL
-    #[clap(long, default_value = "http://localhost:8000")]
+    #[clap(long, default_value = "http://localhost:5000")]
     discovery_url: String,
+    /// MCP Config
+    #[clap(long, default_value = "configuration/mcp_runtime_config.toml")]
+    mcp_config_path: String,
 }
 
 #[tokio::main]
@@ -48,7 +54,14 @@ async fn main() -> anyhow::Result<()> {
 
     // 2. Create and populate the ToolRegistry
     let mut tool_registry = ToolRegistry::new();
+    // Injected tool
     tool_registry.register(Arc::new(WeatherApiTool));
+
+    // Dynamically defined tools via MCP
+    //let mcp_agent = McpToolRunner::initialize_mcp_agent(args.mcp_config_path).await?;
+    //let mcp_tool_runner = McpToolRunner::new(mcp_agent.expect("No MCP Defined"), "general_api".to_string());
+    //tool_registry.register(Arc::new(mcp_tool_runner));
+
     let tool_registry = Arc::new(tool_registry);
 
     // 3. Create and populate the AgentRegistry

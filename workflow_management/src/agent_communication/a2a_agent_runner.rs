@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use tracing::{debug, warn};
+use tracing::{debug, warn,info};
 
 use agent_core::agent_interaction_protocol::agent_interaction::AgentInteraction;
 use agent_core::business_logic::services::{EvaluationService, MemoryService};
@@ -29,7 +29,7 @@ impl AgentRunner for A2AAgentRunner {
         "a2a_http_runner".to_string()
     }
 
-    /// This function is called by the workflow_runtime when an activity is delegated to an agent.
+    /// This function is called by the workflow_runtime when an activity is delegated to an agent in order to execute an activity.
     async fn invoke(
         &self,
         activity: &Activity,
@@ -59,6 +59,7 @@ impl AgentRunner for A2AAgentRunner {
 }
 
 impl A2AAgentRunner {
+    /// This function instantiate an AgentRunner 
     pub async fn new(
         agents_references: Vec<AgentReference>,
         evaluation_service: Option<Arc<dyn EvaluationService>>,
@@ -76,6 +77,7 @@ impl A2AAgentRunner {
         })
     }
 
+    /// This function retrieves a list of clients agents , the list of agents that are referenced
     async fn connect_to_a2a_agents(
         agents_references: &[AgentReference],
     ) -> anyhow::Result<HashMap<String, A2AAgentInteraction>> {
@@ -116,4 +118,42 @@ impl A2AAgentRunner {
         }
         Ok(client_agents)
     }
+
+    #[allow(dead_code)]
+    async fn find_agent_with_skill(&self, skill: &str, _task_id: &str) -> Option<&A2AAgentInteraction> {
+
+        // 1. Try to find the agent with appropriate skill 
+        for (agent_id, agent) in &self.client_agents {
+            info!("WorkFlow Management: agent_id : '{}' with skill '{}'.",agent_id, skill);
+            // Access skills directly from the A2AClient struct
+            if agent.has_skill(skill) {
+                // Use the has_skill method
+                info!("WorkFlow Management: Found agent '{}' with skill '{}'.",agent_id, skill);
+                return Some(agent);
+            }
+        }
+
+         // 2. If no agent with the specific skill is found, try to find the default agent
+         warn!("WorkFlow Management: No agent found with skill '{}'. Attempting to find default agent.", skill);
+
+         for agent_ref_config in &self.agents_references {
+             if agent_ref_config.is_default == Some(true) {
+                 // We need to find the A2AClient instance associated with this default SimpleAgentReference
+                 // We can do this by matching the name or ID. Assuming client.id is agent_reference.name
+                 if let Some(default_agent_client) = self.client_agents.get(&agent_ref_config.name) {
+                     info!(
+                         "WorkFlow Management: Found default agent '{}' as fallback.",
+                         default_agent_client.id
+                     );
+                     return Some(default_agent_client);
+                 }
+             }
+         }
+ 
+         // 3. If no agent with the skill and no default agent are found
+         warn!("WorkFlow Management: No suitable agent (skill-matching or default) found for skill '{}'.", skill);
+         None
+    }
+
+
 }

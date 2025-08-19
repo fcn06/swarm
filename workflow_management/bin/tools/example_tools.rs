@@ -1,4 +1,4 @@
-use super::tool_runner::ToolRunner;
+use workflow_management::tools::tool_runner::ToolRunner;
 use async_trait::async_trait;
 use serde_json::{json, Value};
 use std::error::Error;

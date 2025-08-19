@@ -1,5 +1,5 @@
-use crate::tasks::task_runner::TaskRunner;
-use crate::graph::graph_definition::Activity;
+use workflow_management::tasks::task_runner::TaskRunner;
+use workflow_management::graph::graph_definition::Activity;
 use async_trait::async_trait;
 use std::collections::HashMap;
 

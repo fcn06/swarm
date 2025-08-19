@@ -9,10 +9,16 @@ use workflow_management::agent_communication::{
 };
 use workflow_management::graph::config::load_graph_from_file;
 use workflow_management::graph::graph_orchestrator::PlanExecutor;
-use workflow_management::tasks::example_tasks::{FarewellTask, GreetTask};
 use workflow_management::tasks::task_registry::TaskRegistry;
-use workflow_management::tools::example_tools::WeatherApiTool;
 use workflow_management::tools::tool_registry::ToolRegistry;
+
+mod tasks;
+mod tools;
+//use workflow_management::tasks::example_tasks::{FarewellTask, GreetTask};
+//use workflow_management::tools::example_tools::WeatherApiTool;
+
+use crate::tasks::example_tasks::{FarewellTask, GreetTask};
+use crate::tools::example_tools::WeatherApiTool;
 
 /// Command-line arguments
 #[derive(Parser, Debug)]
@@ -45,7 +51,7 @@ async fn main() -> anyhow::Result<()> {
     tool_registry.register(Arc::new(WeatherApiTool));
     let tool_registry = Arc::new(tool_registry);
 
-    // 3. Setup Agent Communication
+    // 3. Create and populate the AgentRegistry
     let discovery_client = Arc::new(AgentDiscoveryServiceClient::new(args.discovery_url));
     let mut agent_registry = AgentRegistry::new();
 
@@ -64,8 +70,8 @@ async fn main() -> anyhow::Result<()> {
     .await?;
     agent_registry.register_with_name("Basic_Agent".to_string(), Arc::new(basic_agent_runner));
     
-    
     let agent_registry = Arc::new(agent_registry);
+
 
     // 4. Load workflow and execute
     let workflow_file = &args.graph_file;
@@ -84,5 +90,6 @@ async fn main() -> anyhow::Result<()> {
             error!("Error loading workflow: {}", e);
         }
     }
+    
     Ok(())
 }

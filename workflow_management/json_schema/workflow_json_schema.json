@@ -1,0 +1,100 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Workflow Management Plan Schema",
+    "description": "Schema for a plan with multiple activities, such as a weather notification system.",
+    "type": "object",
+    "properties": {
+      "plan_name": {
+        "description": "The name of the overall plan.",
+        "type": "string"
+      },
+      "activities": {
+        "description": "An array of individual activities within the plan.",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "activity_type": {
+              "description": "The type of activity. Currently, only 'delegation_agent' is expected.",
+              "type": "string",
+              "enum": ["delegation_agent","direct_task_execution","direct_tool_use"]
+            },
+            "id": {
+              "description": "A unique identifier for the activity.",
+              "type": "string"
+            },
+            "description": {
+              "description": "A human-readable description of what the activity does.",
+              "type": "string"
+            },
+            "type": {
+              "description": "A specific, operational type for the activity (e.g., 'weather_information_retrieval').",
+              "type": "string"
+            },
+            "skill_to_use": {
+              "description": "The specific skill required for the activity, or null if none.",
+              "anyOf": [
+                { "type": "string" },
+                { "type": "null" }
+              ]
+            },
+            "assigned_agent_id_preference": {
+              "description": "The preferred agent to execute this activity",
+              "anyOf": [
+                { "type": "string" },
+                { "type": "null" }
+              ]
+            },
+            "tool_to_use": {
+              "description": "The tool to be used, or null if no specific tool is required.",
+              "anyOf": [
+                { "type": "string" },
+                { "type": "null" }
+              ]
+            },
+            "tool_parameters": {
+              "description": "An object containing parameters for the tool. The properties within this object are dynamic.",
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "dependencies": {
+              "description": "An array of objects, each specifying a dependency on another activity.",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "source": {
+                    "description": "The ID of the source activity this activity depends on.",
+                    "type": "string"
+                  }
+                },
+                "required": ["source"],
+                "additionalProperties": false
+              }
+            },
+            "expected_outcome": {
+              "description": "A description of the expected result of the activity.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "activity_type",
+            "id",
+            "description",
+            "type",
+            "skill_to_use",
+            "assigned_agent_id_preference",
+            "tool_to_use",
+            "tool_parameters",
+            "dependencies",
+            "expected_outcome"
+          ]
+        }
+      }
+    },
+    "required": ["plan_name", "activities"],
+    "additionalProperties": false
+  }
+  

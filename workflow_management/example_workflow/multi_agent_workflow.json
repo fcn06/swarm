@@ -32,7 +32,7 @@
           }
         ],
         "expected_outcome": "Weather forecast for the specified location."
-      },
+      }, 
       {
         "activity_type": "delegation_agent",
         "id": "compose_personalized_message",

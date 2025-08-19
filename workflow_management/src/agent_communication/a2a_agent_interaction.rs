@@ -28,9 +28,6 @@ impl AgentInteraction for A2AAgentInteraction {
         // create a client to remopte agent
         let client = HttpClient::new(uri.clone());
 
-        // check formatting, for testing purpose
-        //println!("{}",format!("{}/skills",uri));
-
         // Get skills from remote agents
         let http_client = reqwest::Client::new();
         let response = http_client
@@ -52,6 +49,7 @@ impl AgentInteraction for A2AAgentInteraction {
 
     /// Execute a task on the A2A server agent.
     async fn execute_task(&self, task_description: &str, _skill_to_use: &str) -> Result<String> {
+        
         ////////////////////////////////////////////////////////////////////////////////
         // EXAMPLE OF REAL WORLD TASK EXECUTION
 
@@ -103,7 +101,7 @@ impl AgentInteraction for A2AAgentInteraction {
             .collect::<Vec<_>>()
             .join("\n");
 
-        info!("Received response: {:?}", response);
+        debug!("Received response: {:?}", response);
 
         Ok(response)
 

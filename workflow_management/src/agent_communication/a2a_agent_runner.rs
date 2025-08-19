@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use serde_json::json;
 use tracing::{debug, warn};
 
 use agent_core::agent_interaction_protocol::agent_interaction::AgentInteraction;
@@ -40,29 +39,22 @@ impl AgentRunner for A2AAgentRunner {
             .as_ref()
             .ok_or("Missing agent ID preference in activity definition")?;
 
-        let _agent_client = self
+        let agent_client = self
             .client_agents
             .get(preferred_agent_id)
             .ok_or(format!("Agent '{}' not found", preferred_agent_id))?;
 
-        // MOCK IMPLEMENTATION: Return a valid JSON object.
-        // In a real implementation, you would use the `_agent_client` to make a remote call.
-        if activity.id == "fetch_customer_data" {
-            let mock_response = json!({
-                "result": {
-                    "name": "John Doe",
-                    "email": "john.doe@example.com",
-                    "address": {
-                        "street": "123 Main St",
-                        "city": "New York"
-                    }
-                }
-            });
-            return Ok(mock_response.to_string());
-        }
+            /******************************************************/
+        // execute the task by remote agent
+        let outcome=agent_client.execute_task(&activity.description, &activity.skill_to_use.clone().unwrap_or_else(|| "default_skill".to_string())).await?;
+        
+        debug!("A2AAgentRunner : {}",outcome);
 
-        // Default mock response for other activities
-        Ok("\"Mock_Agent_Runner_Default_Response\"".to_string())
+        Ok(outcome)
+
+        // MOCK IMPLEMENTATION: Return a valid JSON object.
+        // Ok("\"Mock_Agent_Runner_Default_Response\"".to_string())
+
     }
 }
 

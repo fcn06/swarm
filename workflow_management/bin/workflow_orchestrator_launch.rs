@@ -49,6 +49,7 @@ async fn main() -> anyhow::Result<()> {
     let discovery_client = Arc::new(AgentDiscoveryServiceClient::new(args.discovery_url));
     let mut agent_registry = AgentRegistry::new();
 
+     
     // Register a runner for "Basic_Agent"
     let basic_agent_runner = A2AAgentRunner::new(
         vec![AgentReference {
@@ -62,6 +63,8 @@ async fn main() -> anyhow::Result<()> {
     )
     .await?;
     agent_registry.register_with_name("Basic_Agent".to_string(), Arc::new(basic_agent_runner));
+    
+    
     let agent_registry = Arc::new(agent_registry);
 
     // 4. Load workflow and execute

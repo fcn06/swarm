@@ -4,13 +4,12 @@
       {
         "activity_type": "delegation_agent",
         "id": "fetch_customer_data",
-        "description": "Fetches customer 12345 data using their ID.",
+        "description": "Fetches customer data for customer_id  12345.",
         "type": "customer_data_access",
         "skill_to_use": null,
         "assigned_agent_id_preference": "Basic_Agent",
         "tool_to_use": null,
         "tool_parameters": {
-          "customer_id": "12345"
         },
         "dependencies": [],
         "expected_outcome": "Customer data (e.g., name, address, email)."
@@ -22,9 +21,9 @@
         "type": "weather_information_retrieval",
         "skill_to_use": null,
         "assigned_agent_id_preference": "Basic_Agent",
-        "tool_to_use": "weather_api",
+        "tool_to_use": null,
         "tool_parameters": {
-          "location": "{{fetch_customer_data.result.address.city}}"
+         
         },
         "dependencies": [
           {

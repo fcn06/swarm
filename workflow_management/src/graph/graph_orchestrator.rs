@@ -139,64 +139,65 @@ impl PlanExecutor {
             .cloned()
             .ok_or_else(|| PlanExecutorError::MissingNode(node_id.clone()))?;
 
-        if let NodeType::Activity(original_activity) = &node.node_type {
-            let activity = self.interpolate_parameters(original_activity)?;
-            let result = match activity.activity_type {
-                ActivityType::DelegationAgent => {
-                    let agent_id = activity
-                        .assigned_agent_id_preference
-                        .as_ref()
-                        .ok_or_else(|| {
-                            PlanExecutorError::AgentRunnerNotFound(
-                                "No agent preference specified".to_string(),
-                            )
-                        })?;
-                    let runner = self
-                        .agent_registry
-                        .get(agent_id)
-                        .ok_or_else(|| PlanExecutorError::AgentRunnerNotFound(agent_id.clone()))?;
-                    runner
-                        .invoke(&activity)
-                        .await
-                        .map_err(|e| PlanExecutorError::ExecutionFailed(e.to_string()))?
-                }
-                ActivityType::DirectToolUse => {
-                    let tool_name = activity
-                        .tool_to_use
-                        .as_ref()
-                        .ok_or_else(|| PlanExecutorError::MissingTool(activity.id.clone()))?;
-                    let runner = self
-                        .tool_registry
-                        .get(tool_name)
-                        .ok_or_else(|| PlanExecutorError::ToolRunnerNotFound(tool_name.clone()))?;
-                    let params = activity.tool_parameters.as_ref().unwrap_or(&Value::Null);
-                    runner
-                        .run(params)
-                        .await
-                        .map_err(|e| PlanExecutorError::ExecutionFailed(e.to_string()))?
-                }
-                ActivityType::DirectTaskExecution => {
-                    let skill = activity
-                        .skill_to_use
-                        .as_ref()
-                        .ok_or_else(|| PlanExecutorError::MissingSkill(activity.id.clone()))?;
-                    let runner = self
-                        .task_registry
-                        .get(skill)
-                        .ok_or_else(|| PlanExecutorError::TaskRunnerNotFound(skill.clone()))?;
-                    let dependencies = self.get_activity_dependencies(&activity);
-                    runner
-                        .execute(&activity, &dependencies)
-                        .await
-                        .map_err(|e| PlanExecutorError::ExecutionFailed(e.to_string()))?
-                }
-            };
+        let NodeType::Activity(original_activity) = &node.node_type;
 
-            self.context.results.insert(node_id.clone(), result.clone());
-            println!("Executed node '{}', result: '{}'", node_id, result);
-            self.update_downstream_dependencies(&node_id, &result)?;
-            self.context.plan_state = PlanState::DecidingNextStep;
-        }
+        let activity = self.interpolate_parameters(original_activity)?;
+        let result = match activity.activity_type {
+            ActivityType::DelegationAgent => {
+                let agent_id = activity
+                    .assigned_agent_id_preference
+                    .as_ref()
+                    .ok_or_else(|| {
+                        PlanExecutorError::AgentRunnerNotFound(
+                            "No agent preference specified".to_string(),
+                        )
+                    })?;
+                let runner = self
+                    .agent_registry
+                    .get(agent_id)
+                    .ok_or_else(|| PlanExecutorError::AgentRunnerNotFound(agent_id.clone()))?;
+                runner
+                    .invoke(&activity)
+                    .await
+                    .map_err(|e| PlanExecutorError::ExecutionFailed(e.to_string()))?
+            }
+            ActivityType::DirectToolUse => {
+                let tool_name = activity
+                    .tool_to_use
+                    .as_ref()
+                    .ok_or_else(|| PlanExecutorError::MissingTool(activity.id.clone()))?;
+                let runner = self
+                    .tool_registry
+                    .get(tool_name)
+                    .ok_or_else(|| PlanExecutorError::ToolRunnerNotFound(tool_name.clone()))?;
+                let params = activity.tool_parameters.as_ref().unwrap_or(&Value::Null);
+                runner
+                    .run(params)
+                    .await
+                    .map_err(|e| PlanExecutorError::ExecutionFailed(e.to_string()))?
+            }
+            ActivityType::DirectTaskExecution => {
+                let skill = activity
+                    .skill_to_use
+                    .as_ref()
+                    .ok_or_else(|| PlanExecutorError::MissingSkill(activity.id.clone()))?;
+                let runner = self
+                    .task_registry
+                    .get(skill)
+                    .ok_or_else(|| PlanExecutorError::TaskRunnerNotFound(skill.clone()))?;
+                let dependencies = self.get_activity_dependencies(&activity);
+                runner
+                    .execute(&activity, &dependencies)
+                    .await
+                    .map_err(|e| PlanExecutorError::ExecutionFailed(e.to_string()))?
+            }
+        };
+
+        self.context.results.insert(node_id.clone(), result.clone());
+        println!("Executed node '{}', result: '{}'", node_id, result);
+        self.update_downstream_dependencies(&node_id, &result)?;
+        self.context.plan_state = PlanState::DecidingNextStep;
+
         Ok(())
     }
 
@@ -285,23 +286,23 @@ impl PlanExecutor {
                                 ))
                             })?;
 
-                        let result_json: Value =
-                            serde_json::from_str(result_str).map_err(|e| {
-                                PlanExecutorError::InterpolationFailed(format!(
-                                    "Failed to parse result of '{}' as JSON: {}",
-                                    source_id, e
-                                ))
-                            })?;
-
-                        let value_to_insert = if parts.len() > 1 {
-                            let path_keys = parts[1].split('.');
-                            let mut current_value = &result_json;
-                            for key in path_keys {
-                                current_value = current_value.get(key).unwrap_or(&Value::Null);
+                        let value_to_insert = match serde_json::from_str(result_str) {
+                            Ok(result_json) => {
+                                if parts.len() > 1 {
+                                    let path_keys = parts[1].split('.');
+                                    let mut current_value: &Value = &result_json;
+                                    for key in path_keys {
+                                        current_value = current_value.get(key).unwrap_or(&Value::Null);
+                                    }
+                                    current_value.clone()
+                                } else {
+                                    result_json
+                                }
+                            },
+                            Err(_) => {
+                                // If not valid JSON, treat as plain text
+                                Value::String(result_str.to_string())
                             }
-                            current_value.clone()
-                        } else {
-                            result_json
                         };
 
                         replacements.push((key.clone(), value_to_insert));

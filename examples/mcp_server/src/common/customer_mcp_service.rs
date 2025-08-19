@@ -30,7 +30,7 @@ impl CustomerMcpService {
         &self,Parameters(StructRequestCustomerDetails { _customer_id }): Parameters<StructRequestCustomerDetails>) 
             -> Result<CallToolResult, McpError> {
         Ok(CallToolResult::success(vec![Content::text(
-            r#"{"Full Name": "Company A", "address": "Sunny Street"}"#,
+            r#"{"Full Name": "Company A", "address": "Sunny Street BOSTON"}"#,
         )]))
     }
 }

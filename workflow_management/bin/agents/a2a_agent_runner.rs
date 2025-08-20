@@ -9,9 +9,9 @@ use agent_core::business_logic::services::{EvaluationService, MemoryService};
 use agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient;
 use configuration::AgentReference;
 
-use crate::agent_communication::a2a_agent_interaction::A2AAgentInteraction;
-use crate::agent_communication::agent_runner::AgentRunner;
-use crate::graph::graph_definition::Activity;
+use super::a2a_agent_interaction::A2AAgentInteraction;
+use workflow_management::agent_communication::agent_runner::AgentRunner;
+use workflow_management::graph::graph_definition::Activity;
 
 /// An AgentRunner that communicates using the A2A protocol over HTTP.
 #[allow(dead_code)]

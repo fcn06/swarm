@@ -1,78 +1,106 @@
 {
-    "plan_name": "Personalized Weather Notification",
-    "activities": [
-      {
-        "activity_type": "delegation_agent",
-        "id": "fetch_customer_data",
-        "description": "Fetches customer 12345 data using their ID.",
-        "type": "customer_data_access",
+  "plan_name": "Personalized Weather Notification",
+  "activities": [
+    {
+      "activity_type": "delegation_agent",
+      "id": "fetch_customer_data",
+      "description": "Fetches customer 12345 data using their ID.",
+      "type": "customer_data_access",
+      "agent": {
         "skill_to_use": null,
-        "assigned_agent_id_preference": "Basic_Agent",
-        "tool_to_use": null,
-        "tool_parameters": {
-          "customer_id": "12345"
-        },
-        "dependencies": [],
-        "expected_outcome": "Customer data (e.g., name, address, email)."
+        "assigned_agent_id_preference": "Basic_Agent"
       },
-      {
-        "activity_type": "delegation_agent",
-        "id": "fetch_weather_forecast",
-        "description": "Fetches the weather forecast for the customer's location.",
-        "type": "weather_information_retrieval",
-        "skill_to_use": null,
-        "assigned_agent_id_preference": "Basic_Agent",
-        "tool_to_use": "weather_api",
-        "tool_parameters": {
-          "location": "{{fetch_customer_data.result.address.city}}"
-        },
-        "dependencies": [
-          {
-            "source": "fetch_customer_data"
+      "tools": [
+        {
+          "tool_to_use": null,
+          "tool_parameters": {
+            "customer_id": "12345"
           }
-        ],
-        "expected_outcome": "Weather forecast for the specified location."
-      }, 
-      {
-        "activity_type": "delegation_agent",
-        "id": "compose_personalized_message",
-        "description": "Composes a personalized message using customer and weather data.",
-        "type": "content_creation",
+        }
+      ],
+      "tasks_parameters": {},
+      "dependencies": [],
+      "expected_outcome": "Customer data (e.g., name, address, email)."
+    },
+    {
+      "activity_type": "delegation_agent",
+      "id": "fetch_weather_forecast",
+      "description": "Fetches the weather forecast for the customer's location.",
+      "type": "weather_information_retrieval",
+      "agent": {
         "skill_to_use": null,
-        "assigned_agent_id_preference": "Basic_Agent",
-        "tool_to_use": null,
-        "tool_parameters": {
-          "customer_name": "{{fetch_customer_data.result.name}}",
-          "weather_forecast": "{{fetch_weather_forecast.result.forecast}}"
-        },
-        "dependencies": [
-          {
-            "source": "fetch_customer_data"
-          },
-          {
-            "source": "fetch_weather_forecast"
-          }
-        ],
-        "expected_outcome": "A personalized message for the customer."
+        "assigned_agent_id_preference": "Basic_Agent"
       },
-      {
-        "activity_type": "delegation_agent",
-        "id": "send_notification",
-        "description": "Sends the personalized message to the customer.",
-        "type": "send_email",
-        "skill_to_use": null,
-        "assigned_agent_id_preference": "Basic_Agent",
-        "tool_to_use": "email_sender",
-        "tool_parameters": {
-          "email_address": "{{fetch_customer_data.result.email}}",
-          "message": "{{compose_personalized_message.result.message}}"
-        },
-        "dependencies": [
-          {
-            "source": "compose_personalized_message"
+      "tools": [
+        {
+          "tool_to_use": "weather_api",
+          "tool_parameters": {
+            "location": "{{fetch_customer_data.result.address.city}}"
           }
-        ],
-        "expected_outcome": "Email notification sent successfully."
-      }
-    ]
+        }
+      ],
+      "tasks_parameters": {},
+      "dependencies": [
+        {
+          "source": "fetch_customer_data"
+        }
+      ],
+      "expected_outcome": "Weather forecast for the specified location."
+    },
+    {
+      "activity_type": "delegation_agent",
+      "id": "compose_personalized_message",
+      "description": "Composes a personalized message using customer and weather data.",
+      "type": "content_creation",
+      "agent": {
+        "skill_to_use": null,
+        "assigned_agent_id_preference": "Basic_Agent"
+      },
+      "tools": [
+        {
+          "tool_to_use": null,
+          "tool_parameters": {
+            "customer_name": "{{fetch_customer_data.result.name}}",
+            "weather_forecast": "{{fetch_weather_forecast.result.forecast}}"
+          }
+        }
+      ],
+      "tasks_parameters": {},
+      "dependencies": [
+        {
+          "source": "fetch_customer_data"
+        },
+        {
+          "source": "fetch_weather_forecast"
+        }
+      ],
+      "expected_outcome": "A personalized message for the customer."
+    },
+    {
+      "activity_type": "delegation_agent",
+      "id": "send_notification",
+      "description": "Sends the personalized message to the customer.",
+      "type": "send_email",
+      "agent": {
+        "skill_to_use": null,
+        "assigned_agent_id_preference": "Basic_Agent"
+      },
+      "tools": [
+        {
+          "tool_to_use": "email_sender",
+          "tool_parameters": {
+            "email_address": "{{fetch_customer_data.result.email}}",
+            "message": "{{compose_personalized_message.result.message}}"
+          }
+        }
+      ],
+      "tasks_parameters": {},
+      "dependencies": [
+        {
+          "source": "compose_personalized_message"
+        }
+      ],
+      "expected_outcome": "Email notification sent successfully."
+    }
+  ]
 }

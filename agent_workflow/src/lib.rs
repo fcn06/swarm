@@ -175,46 +175,4 @@ impl AgentWorkflow {
     }
 }
 
-#[async_trait]
-impl AgentDelegate for AgentWorkflow {
-    fn name(&self) -> String {
-        "AgentWorkflow".to_string()
-    }
 
-    async fn handle_request(
-        &self,
-        _task_id: String,
-        _input: &str,
-    ) -> Result<String, anyhow::Error> {
-        info!("AgentWorkflow received a request.");
-        // In a real scenario, the input would drive the dynamic workflow creation.
-        // For now, we'll demonstrate by creating a predefined workflow.
-
-        let graph = self.create_dynamic_weather_notification_workflow().await?;
-        let results = self.execute_workflow_plan(graph).await?;
-
-        info!("Workflow execution completed. Final results: {:?}", results);
-        Ok(format!("Workflow executed. Results: {:?}", results))
-    }
-
-    async fn handle_tool_output(
-        &self,
-        _task_id: String,
-        _tool_name: String,
-        _output: &str,
-    ) -> Result<(), anyhow::Error> {
-        // AgentWorkflow typically orchestrates, so it might not directly handle tool outputs
-        // unless it's designed to react to intermediate tool results.
-        Ok(())
-    }
-
-    async fn handle_llm_response(
-        &self,
-        _task_id: String,
-        _response: &ChatCompletionRequest,
-    ) -> Result<(), anyhow::Error> {
-        // AgentWorkflow typically orchestrates, so it might not directly handle LLM responses
-        // unless it's designed to react to intermediate LLM outputs for dynamic adjustments.
-        Ok(())
-    }
-}

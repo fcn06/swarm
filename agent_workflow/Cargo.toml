@@ -4,24 +4,41 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-async-trait = "0.1.80"
-log = "0.4.21"
-serde = { version = "1.0.197", features = ["derive"] }
-serde_json = "1.0.114"
-tokio = { version = "1.36.0", features = ["full"] }
-anyhow = "1.0.81"
-regex = "1.10.4" # For interpolation
-
 # Internal dependencies
-agent_core = { path = "../agent_core" }
-llm_api = { path = "../llm_api" }
-mcp_runtime = { path = "../mcp_runtime" }
-workflow_management = { path = "../workflow_management" }
+configuration = { workspace = true }
+llm_api = { workspace = true }
+agent_core = { workspace = true }
+mcp_runtime={ workspace = true }
+agent_evaluation_service = { workspace = true }
+agent_memory_service = { workspace = true }
+agent_discovery_service={ workspace = true }
+workflow_management = { workspace = true }
 
-[build-dependencies]
-toml = "0.8.10"
-serde = { version = "1.0.197", features = ["derive"] }
+# Network dependencies
+tokio= { workspace = true }
+async-trait = { workspace = true }
+reqwest={ workspace = true }
+rustls = { workspace = true }
+
+# Protocol dependencies
+a2a-rs= { workspace = true }
+rmcp= { workspace = true }
+
+# General dependencies
+serde={ workspace = true }
+serde_json={ workspace = true }
+anyhow = { workspace = true }
+toml={ workspace = true }
+clap = { workspace = true }
+regex = "1.11" # For interpolation
+uuid = { workspace = true }
+chrono = { workspace = true }
+
+# Logging
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
 
 [[bin]]
 name = "launch_agent_workflow"
-path = "src/bin/launch_agent_workflow.rs"
+path = "bin/launch_agent_workflow.rs"

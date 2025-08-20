@@ -66,7 +66,6 @@ impl A2AAgentRunner {
         memory_service: Option<Arc<dyn MemoryService>>,
         discovery_service_client: Arc<AgentDiscoveryServiceClient>,
     ) -> anyhow::Result<Self> {
-        
         let client_agents = Self::connect_to_a2a_agents(&agents_references).await?;
 
         Ok(Self {

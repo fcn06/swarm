@@ -1,5 +1,5 @@
 [package]
-name = "agent_workflow"
+name = "workflow_agent"
 version = "0.1.0"
 edition = "2021"
 
@@ -41,4 +41,4 @@ tracing-subscriber = { workspace = true }
 
 [[bin]]
 name = "launch_agent_workflow"
-path = "bin/launch_agent_workflow.rs"
+path = "bin/launch_workflow_agent.rs"

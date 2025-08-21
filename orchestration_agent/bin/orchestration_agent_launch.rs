@@ -94,7 +94,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         None
     };
 
-    let agent = OrchestrationAgent::new(orchestration_agent_config.clone(), evaluation_service, memory_service).await?;
+    let agent = OrchestrationAgent::new(orchestration_agent_config.clone(), evaluation_service, memory_service,None).await?;
 
 
     // Create the modern server, and pass the runtime elements

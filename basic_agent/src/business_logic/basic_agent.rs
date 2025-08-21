@@ -18,7 +18,7 @@ use agent_core::business_logic::services::{EvaluationService, MemoryService};
 
 use configuration::AgentConfig;
 use agent_core::planning::plan_definition::{ExecutionResult};
-
+use agent_core::business_logic::services::WorkflowServiceApi;
 
 /// Modern A2A server setup 
 #[derive(Clone)]
@@ -34,7 +34,8 @@ impl Agent for BasicAgent {
     async fn new(
         agent_config: AgentConfig,
         _evaluation_service: Option<Arc<dyn EvaluationService>>,
-        _memory_service: Option<Arc<dyn MemoryService>>
+        _memory_service: Option<Arc<dyn MemoryService>>,
+        _workflow_service: Option<Arc<dyn WorkflowServiceApi>>,
     ) -> anyhow::Result<Self> {
 
                // Set model to be used

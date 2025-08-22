@@ -43,7 +43,7 @@ struct Args {
     #[clap(long, default_value = "./workflow_management/example_workflow/multi_agent_workflow.json")]
     graph_file: String,
     /// Log level
-    #[clap(long, default_value = "info")]
+    #[clap(long, default_value = "warn")]
     log_level: String,
     /// MCP Config
     #[clap(long, default_value = "./configuration/mcp_runtime_config.toml")]
@@ -145,7 +145,7 @@ async fn main()-> Result<(), Box<dyn std::error::Error>>{
 
 
     /************************************************/
-    /* Get a Workflow Registry                      */
+    /* Get a Workflow Registries Instance           */
     /************************************************/ 
     let workflow_registries = WorkFlowRegistries::init(
         task_registry.clone(),

@@ -16,7 +16,7 @@ use agent_discovery_service::discovery_server::server::DiscoveryServer;
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Args {
-    #[clap(long, default_value = "info")]
+    #[clap(long, default_value = "warn")]
     log_level: String,
     #[clap(long, default_value = "0.0.0.0:4000")]
     uri: String,

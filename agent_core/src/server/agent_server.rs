@@ -66,9 +66,9 @@ impl<T:Agent> AgentServer<T> {
                         tokio::time::sleep(std::time::Duration::from_secs(delay)).await;
                         delay *= 2; // Exponential backoff
                     } else {
-                        tracing::error!("Failed to register with discovery service after {} attempts. Error: {}", max_retries, e);
-                        // Optionally, return an error here if registration is critical
-                        return Err(e.into());
+                        tracing::error!("Failed to register with discovery service after {} attempts. Error: {}. Proceeding without discovery service registration.", max_retries, e);
+                        // Allow the agent to start even if registration fails
+                        return Ok(());
                     }
                 }
             }

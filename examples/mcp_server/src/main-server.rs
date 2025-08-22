@@ -30,7 +30,7 @@ struct Args {
     /// Configuration file path (TOML format)
     #[clap(long, default_value = "8000")]
     port: String,
-    #[clap(long, default_value = "info")]
+    #[clap(long, default_value = "warn")]
     log_level: String,
     #[clap(subcommand)]
     command: Commands,

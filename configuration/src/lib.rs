@@ -4,6 +4,7 @@ use std::fs; // Assuming you might want logging here too
 
 use tracing::{Level};
 use tracing_subscriber::{prelude::*, fmt, layer::Layer, Registry, filter};
+use tracing_subscriber::EnvFilter;
 
 //////////////////////////////////////////////////////////////////////
 // CONFIG FOR MCP
@@ -135,7 +136,7 @@ impl AgentReference {
 // SETUP LOGGING LEVEL
 ///////////////////////////////////////////////////////////////
 
-pub fn setup_logging(log_level: &str) {
+pub fn setup_logging_old(log_level: &str) {
     let level = match log_level {
         "trace" => Level::TRACE,
         "debug" => Level::DEBUG,
@@ -150,6 +151,23 @@ pub fn setup_logging(log_level: &str) {
             .compact()
             .with_ansi(true)
             .with_filter(filter::LevelFilter::from_level(level)),
+    );
+
+    tracing::subscriber::set_global_default(subscriber).unwrap();
+}
+
+pub fn setup_logging(log_level: &str) {
+
+    let default_filter = log_level.to_string(); // Use the provided log_level as the default
+
+    let env_filter = EnvFilter::try_from_default_env()
+        .unwrap_or_else(|_| EnvFilter::new(default_filter));
+
+    let subscriber = Registry::default().with(
+        fmt::layer()
+            .compact()
+            .with_ansi(true)
+            .with_filter(env_filter),
     );
 
     tracing::subscriber::set_global_default(subscriber).unwrap();

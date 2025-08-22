@@ -36,7 +36,7 @@ struct Args {
     #[clap(long, default_value = "./workflow_management/example_workflow/multi_agent_workflow.json")]
     graph_file: String,
     /// Log level
-    #[clap(long, default_value = "info")]
+    #[clap(long, default_value = "warn")]
     log_level: String,
     /// Discovery service URL
     #[clap(long, default_value = "http://localhost:5000")]

@@ -30,7 +30,7 @@ struct Args {
     /// Configuration file path (TOML format)
     #[clap(long, default_value = "8000")]
     port: String,
-    #[clap(long, default_value = "warn")]
+    #[clap(long, default_value = "info")]
     log_level: String,
     #[clap(subcommand)]
     command: Commands,
@@ -88,7 +88,7 @@ async fn main() -> anyhow::Result<()> {
     /************************************************/ 
 
     let bind_address = format!("{}:{}", args.host, args.port);
-    println!("Server listening on: {}", bind_address);
+    println!("MCP Server listening on: {} with command: {:?}", bind_address, args.command);
 
     /************************************************/
     /*  Defining which tools to enable , and launch */

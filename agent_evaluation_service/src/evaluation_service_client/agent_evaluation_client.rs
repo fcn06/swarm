@@ -1,6 +1,7 @@
 use reqwest::{Client};
 use crate::evaluation_server::judge_agent::AgentLogData;
 
+
 #[derive(Debug,Clone)]
 pub struct AgentEvaluationServiceClient {
     evaluation_service_url: String,
@@ -25,4 +26,7 @@ impl AgentEvaluationServiceClient {
 
         Ok(response.json::<String>().await?)
     }
+
+      
+    
 }

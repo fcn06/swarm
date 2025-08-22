@@ -55,7 +55,7 @@ impl EvaluationServer {
     /// Start the HTTP server.
     pub async fn start_http(&self) -> anyhow::Result<()> {
         let listener = tokio::net::TcpListener::bind(self.uri.clone()).await?;
-        info!("Evaluation Server started at {}", self.uri);
+        println!("Evaluation Server started at {}", self.uri);
         axum::serve(listener, self.app.clone()).await?;
         Ok(())
     }

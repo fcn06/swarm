@@ -45,7 +45,7 @@ impl MemoryServer {
     pub async fn start_http(&self) -> anyhow::Result<()> {
         // Run our app with hyper
         let listener = tokio::net::TcpListener::bind(self.uri.clone()).await?;
-        println!("Server started on {}", self.uri);
+        println!("Memory Server started on {}", self.uri);
         axum::serve(listener, self.app.clone()).await?;
 
         Ok(())

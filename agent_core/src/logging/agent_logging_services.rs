@@ -18,6 +18,12 @@ pub struct AgentLogging {
 
 impl AgentLogging  {
 
+    pub fn new(evaluation_service: Option<Arc<dyn EvaluationService>>, memory_service: Option<Arc<dyn MemoryService>>) -> Self {
+        Self {
+            evaluation_service,
+            memory_service,
+        }
+    }
 
     // New helper function for asynchronous evaluation logging
     async fn log_evaluation_data(&self,agent_name: &str, request_id: &str, user_query: &str, execution_result: &Result<ExecutionResult>) {

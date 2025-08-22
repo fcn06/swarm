@@ -14,7 +14,7 @@ use llm_api::chat::Message as LlmMessage;
 use std::env;
 
 use agent_core::business_logic::agent::{Agent};
-use agent_core::business_logic::services::{EvaluationService, MemoryService};
+use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService};
 
 use configuration::AgentConfig;
 use agent_core::planning::plan_definition::{ExecutionResult};
@@ -35,6 +35,7 @@ impl Agent for BasicAgent {
         agent_config: AgentConfig,
         _evaluation_service: Option<Arc<dyn EvaluationService>>,
         _memory_service: Option<Arc<dyn MemoryService>>,
+        _discovery_service: Option<Arc<dyn DiscoveryService>>,
         _workflow_service: Option<Arc<dyn WorkflowServiceApi>>,
     ) -> anyhow::Result<Self> {
 

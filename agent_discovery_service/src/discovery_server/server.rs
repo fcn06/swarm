@@ -53,7 +53,7 @@ impl DiscoveryServer {
     /// Start the HTTP server.
     pub async fn start_http(&self) -> anyhow::Result<()> {
         let listener = tokio::net::TcpListener::bind(&self.uri).await?;
-        info!("Discovery Server started at {}", self.uri);
+        println!("Discovery Server started on {}", self.uri);
         axum::serve(listener, self.app.clone()).await?;
         Ok(())
     }

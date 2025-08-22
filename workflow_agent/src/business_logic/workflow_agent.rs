@@ -10,8 +10,8 @@ use crate::business_logic::workflow_registries::WorkFlowRegistries;
 
 use configuration::AgentConfig;
 use agent_core::business_logic::services::EvaluationService;
-
 use agent_core::business_logic::services::MemoryService;
+use agent_core::business_logic::services::DiscoveryService;
 use agent_core::business_logic::services::WorkflowServiceApi;
 use workflow_management::graph::config::load_graph_from_file;
 
@@ -29,6 +29,7 @@ use agent_core::business_logic::agent::Agent;
 pub struct WorkFlowAgent {
     agent_config: Arc<AgentConfig>,
     workflow_registries: Arc<WorkFlowRegistries>,
+    discovery_service: Arc<dyn DiscoveryService>,
 }
 
 #[async_trait]
@@ -37,6 +38,7 @@ impl Agent for WorkFlowAgent {
         agent_config: AgentConfig,
         _evaluation_service: Option<Arc<dyn EvaluationService>>,
         _memory_service: Option<Arc<dyn MemoryService>>,
+        discovery_service: Option<Arc<dyn DiscoveryService>>,
         workflow_service: Option<Arc<dyn WorkflowServiceApi>>,
     ) -> anyhow::Result<Self> {
         let llm_full_api_key = env::var("LLM_WORKFLOW_API_KEY").expect("LLM_WORKFLOW_API_KEY must be set");
@@ -46,14 +48,17 @@ impl Agent for WorkFlowAgent {
             llm_full_api_key,
         );
 
-        
         let workflow_registries = workflow_service
             .and_then(|ws| ws.as_any().downcast_ref::<WorkFlowRegistries>().map(|wr| Arc::new(wr.clone())))
             .ok_or_else(|| anyhow::anyhow!("WorkFlowRegistries not provided or invalid type"))?;
 
+        let discovery_service = discovery_service
+            .ok_or_else(|| anyhow::anyhow!("DiscoveryService not provided"))?;
+
         Ok(Self {
             agent_config: Arc::new(agent_config),
             workflow_registries,
+            discovery_service,
         })
     }
 
@@ -62,7 +67,7 @@ impl Agent for WorkFlowAgent {
         let conversation_id = Uuid::new_v4().to_string();
         let user_query = request.content.clone().unwrap_or_default();
 
-        info!("---WorkflowAgent: Starting to handle user request -- Query: '{}'---", user_query);
+        info!("---WorkflowAgent: Starting to handle user request -- Query: \'{}\'---", user_query);
 
         let graph_file="./workflow_management/example_workflow/multi_agent_workflow.json";
         

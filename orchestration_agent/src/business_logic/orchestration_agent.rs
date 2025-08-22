@@ -38,7 +38,7 @@ use configuration::{AgentConfig,AgentReference};
 use async_trait::async_trait;
 use agent_evaluation_service::evaluation_server::judge_agent::AgentLogData;
 use agent_memory_service::models::Role;
-use agent_core::business_logic::services::{EvaluationService, MemoryService};
+use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService};
 use agent_core::business_logic::services::WorkflowServiceApi;
 
 /// Agent that that can interact with other available agents, and also embed MCP runtime if needed
@@ -61,6 +61,7 @@ impl Agent for OrchestrationAgent {
         agent_config: AgentConfig,
         evaluation_service: Option<Arc<dyn EvaluationService>>,
         memory_service: Option<Arc<dyn MemoryService>>,
+        _discovery_service: Option<Arc<dyn DiscoveryService>>,
         _workflow_service: Option<Arc<dyn WorkflowServiceApi>>,
     ) -> anyhow::Result<Self> {
 

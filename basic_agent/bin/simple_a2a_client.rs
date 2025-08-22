@@ -189,7 +189,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Got response with status: {:?}", task_3.status.state);
 
     if let Some(response_message_3) = task_3.status.message {
-        println!("Agent response:");
+        println!("\nAgent response:");
         for part in response_message_3.parts {
             match part {
                 Part::Text { text, .. } => println!("  {}", text),
@@ -199,7 +199,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // Get the task again to verify it's stored
-    println!("Retrieving task...");
+    println!("\nRetrieving task...");
     let task_3 = client.get_task(&task_id_3, None).await?;
     println!(
         "Retrieved task with ID: {} and state: {:?}",
@@ -236,7 +236,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 
     if let Some(response_message_4) = task_4.status.message {
-        println!("Agent response:");
+        println!("\nAgent response:");
         for part in response_message_4.parts {
             match part {
                 Part::Text { text, .. } => println!("  {}", text),
@@ -246,7 +246,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // Get the task again to verify it's stored
-    println!("Retrieving task...");
+    println!("\nRetrieving task...");
     let task_4 = client.get_task(&task_id_4, None).await?;
     println!(
         "Retrieved task with ID: {} and state: {:?}",

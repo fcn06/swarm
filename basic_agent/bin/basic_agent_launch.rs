@@ -21,7 +21,7 @@ struct Args {
     /// Configuration file path (TOML format)
     #[clap(long, default_value = "configuration/agent_basic_config.toml")]
     config_file: String,
-    #[clap(long, default_value = "warn")]
+    #[clap(long, default_value = "info")]
     log_level: String,
 }
 
@@ -66,10 +66,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // load a2a config file and initialize appropriateruntime
     let basic_agent_config = AgentConfig::load_agent_config(&args.config_file).expect("Incorrect Basic Agent config file");
   
-    let agent = BasicAgent::new(basic_agent_config.clone(), None, None,None).await?;
+    let agent = BasicAgent::new(basic_agent_config.clone(), None, None,None,None).await?;
 
     // Create the modern server, and pass the runtime elements
-    let server = AgentServer::<BasicAgent>::new(basic_agent_config, agent).await?;
+    let server = AgentServer::<BasicAgent>::new(basic_agent_config, agent,None).await?;
 
     println!("🌐 Starting HTTP server only...");
     server.start_http().await?;

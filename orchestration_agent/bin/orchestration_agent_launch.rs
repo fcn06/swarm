@@ -14,7 +14,7 @@ use tracing_subscriber::{
     Registry, filter
 };
 
-use agent_core::business_logic::services::{EvaluationService, MemoryService};
+use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService};
 use agent_evaluation_service::evaluation_service_client::agent_evaluation_client::AgentEvaluationServiceClient;
 use agent_memory_service::memory_service_client::agent_memory_client::AgentMemoryServiceClient;
 use orchestration_agent::business_logic::service_adapters::{AgentEvaluationServiceAdapter, AgentMemoryServiceAdapter};
@@ -27,7 +27,7 @@ struct Args {
     /// Configuration file path (TOML format)
     #[clap(long, default_value = "configuration/agent_orchestration_config.toml")]
     config_file: String,
-    #[clap(long, default_value = "warn")]
+    #[clap(long, default_value = "info")]
     log_level: String,
 }
 
@@ -94,11 +94,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         None
     };
 
-    let agent = OrchestrationAgent::new(orchestration_agent_config.clone(), evaluation_service, memory_service,None).await?;
+    // The OrchestrationAgent does not currently use a DiscoveryService internally, so we pass None.
+    // If it were to use one, we would instantiate an adapter here similar to the others.
+    let discovery_service: Option<Arc<dyn DiscoveryService>> = None;
+
+    let agent = OrchestrationAgent::new(orchestration_agent_config.clone(), evaluation_service, memory_service, discovery_service, None).await?;
 
 
     // Create the modern server, and pass the runtime elements
-    let server = AgentServer::<OrchestrationAgent>::new(orchestration_agent_config, agent).await?;
+    let server = AgentServer::<OrchestrationAgent>::new(orchestration_agent_config, agent,None).await?;
 
     println!("🌐 Starting HTTP server only...");
     server.start_http().await?;

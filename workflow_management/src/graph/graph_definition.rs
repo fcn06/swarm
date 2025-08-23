@@ -41,7 +41,7 @@ pub struct ActivityInput {
     pub agent: AgentConfigInput,
     pub tools: Vec<ToolConfigInput>,
     #[serde(default)]
-    pub tasks_parameters: HashMap<String, String>,
+    pub tasks_parameters: HashMap<String, serde_json::Value>, // MODIFIED: Changed from String to serde_json::Value
     #[serde(default)]
     pub dependencies: Vec<Dependency>,
     pub expected_outcome: String, // 'expected_outcome' is required in the schema
@@ -68,7 +68,7 @@ pub struct Activity {
     pub dependencies: Vec<Dependency>,
     pub expected_outcome: Option<String>,
     #[serde(default)]
-    pub tasks_parameters: HashMap<String, String>, // Added tasks_parameters
+    pub tasks_parameters: HashMap<String, serde_json::Value>, // MODIFIED: Changed from String to serde_json::Value
     #[serde(skip_serializing_if = "Option::is_none")]
     pub activity_output: Option<String>,
 }

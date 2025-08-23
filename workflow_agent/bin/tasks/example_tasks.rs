@@ -2,6 +2,7 @@ use workflow_management::tasks::task_runner::TaskRunner;
 use workflow_management::graph::graph_definition::Activity;
 use async_trait::async_trait;
 use std::collections::HashMap;
+use serde_json::Value; // Added this import
 
 pub struct GreetTask;
 
@@ -14,7 +15,7 @@ impl TaskRunner for GreetTask {
     async fn execute(
         &self,
         activity: &Activity,
-        _dependencies: &HashMap<String, String>,
+        _dependencies: &HashMap<String, Value>, // Modified type
     ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
         let name = activity
             .tool_parameters
@@ -38,13 +39,13 @@ impl TaskRunner for FarewellTask {
     async fn execute(
         &self,
         activity: &Activity,
-        dependencies: &HashMap<String, String>,
+        dependencies: &HashMap<String, Value>, // Modified type
     ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
         // This task can use the output of a dependency
         let greeting = dependencies
             .values()
             .next()
-            .map(|s| s.as_str())
+            .and_then(|v| v.as_str()) // Modified to get str from Value
             .unwrap_or("...");
             
         let name = activity

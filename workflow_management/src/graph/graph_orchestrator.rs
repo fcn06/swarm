@@ -215,7 +215,9 @@ impl PlanExecutor {
                 let mut condition_met = true;
                 if let Some(condition) = &edge.condition {
                     let mut dependencies = HashMap::new();
-                    dependencies.insert(completed_node_id.to_string(), result.to_string());
+                    let result_value = serde_json::from_str(result)
+                        .unwrap_or_else(|_| Value::String(result.to_string()));
+                    dependencies.insert(completed_node_id.to_string(), result_value);
                     condition_met = evaluate_condition(condition, &dependencies);
                 }
 
@@ -249,7 +251,7 @@ impl PlanExecutor {
         Err(PlanExecutorError::ExecutionFailed(reason))
     }
 
-    fn get_activity_dependencies(&self, activity: &Activity) -> HashMap<String, String> {
+    fn get_activity_dependencies(&self, activity: &Activity) -> HashMap<String, Value> {
         activity
             .dependencies
             .iter()
@@ -257,7 +259,11 @@ impl PlanExecutor {
                 self.context
                     .results
                     .get(&dep.source)
-                    .map(|res| (dep.source.clone(), res.clone()))
+                    .map(|res_str| {
+                        let parsed_value = serde_json::from_str(res_str)
+                            .unwrap_or_else(|_| Value::String(res_str.to_string()));
+                        (dep.source.clone(), parsed_value)
+                    })
             })
             .collect()
     }
@@ -324,42 +330,45 @@ impl PlanExecutor {
         // Interpolate tasks_parameters
         let mut tasks_replacements = Vec::new();
         for (key, value) in hydrated_activity.tasks_parameters.iter() {
-            if let Some(cap) = re.captures(value) {
-                let path = &cap[1];
-                let parts: Vec<&str> = path.splitn(2, '.').collect();
-                if parts.is_empty() {
-                    continue;
-                }
-
-                let source_id = parts[0];
-                let result_str =
-                    self.context.results.get(source_id).ok_or_else(|| {
-                        PlanExecutorError::InterpolationFailed(format!(
-                            "Dependency result for '{}' not found",
-                            source_id
-                        ))
-                    })?;
-
-                let value_to_insert = match serde_json::from_str(result_str) {
-                    Ok(result_json) => {
-                        if parts.len() > 1 {
-                            let path_keys = parts[1].split('.');
-                            let mut current_value: &Value = &result_json;
-                            for key in path_keys {
-                                current_value = current_value.get(key).unwrap_or(&Value::Null);
-                            }
-                            current_value.as_str().unwrap_or("").to_string()
-                        } else {
-                            result_json.as_str().unwrap_or("").to_string()
-                        }
-                    },
-                    Err(_) => {
-                        // If not valid JSON, treat as plain text
-                        result_str.to_string()
+            // Only attempt interpolation if the current value is a string, otherwise keep it as is
+            if let Value::String(s) = value {
+                if let Some(cap) = re.captures(s) {
+                    let path = &cap[1];
+                    let parts: Vec<&str> = path.splitn(2, '.').collect();
+                    if parts.is_empty() {
+                        continue;
                     }
-                };
 
-                tasks_replacements.push((key.clone(), value_to_insert));
+                    let source_id = parts[0];
+                    let result_str =
+                        self.context.results.get(source_id).ok_or_else(|| {
+                            PlanExecutorError::InterpolationFailed(format!(
+                                "Dependency result for '{}' not found",
+                                source_id
+                            ))
+                        })?;
+
+                    let value_to_insert = match serde_json::from_str(result_str) {
+                        Ok(result_json) => {
+                            if parts.len() > 1 {
+                                let path_keys = parts[1].split('.');
+                                let mut current_value: &Value = &result_json;
+                                for key in path_keys {
+                                    current_value = current_value.get(key).unwrap_or(&Value::Null);
+                                }
+                                current_value.clone() // Keep as Value
+                            } else {
+                                result_json // Keep as Value
+                            }
+                        },
+                        Err(_) => {
+                            // If not valid JSON, treat as plain text, wrapped in Value::String
+                            Value::String(result_str.to_string())
+                        }
+                    };
+
+                    tasks_replacements.push((key.clone(), value_to_insert));
+                }
             }
         }
 

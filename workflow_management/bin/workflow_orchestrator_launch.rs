@@ -45,7 +45,7 @@ struct Args {
     #[clap(long, default_value = "./configuration/mcp_runtime_config.toml")]
     mcp_config_path: String,
     /// User Query
-    #[clap(long, default_value = "default user query")]
+    #[clap(long, default_value = "Prepare a personalized email wishing a good day for company with customer_id 12345. You will mention the weather in the email.")]
     user_query: String,
 }
 

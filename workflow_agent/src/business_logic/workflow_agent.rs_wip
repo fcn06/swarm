@@ -1,0 +1,172 @@
+use std::sync::Arc;
+use async_trait::async_trait;
+use tracing::{info, error,warn};
+use uuid::Uuid;
+use std::env;
+
+use llm_api::chat::{ChatLlmInteraction};
+
+use crate::business_logic::workflow_registries::WorkFlowRegistries;
+
+use configuration::AgentConfig;
+use agent_core::business_logic::services::EvaluationService;
+use agent_core::business_logic::services::MemoryService;
+use agent_core::business_logic::services::DiscoveryService;
+use agent_core::business_logic::services::WorkflowServiceApi;
+use workflow_management::graph::config::load_graph_from_file;
+use workflow_management::graph::graph_definition::{Graph, WorkflowPlanInput};
+
+use workflow_management::graph::{ graph_orchestrator::PlanExecutor};
+
+
+use agent_core::planning::plan_definition::ExecutionResult;
+use llm_api::chat::Message as LlmMessage;
+use agent_core::business_logic::agent::Agent;
+
+
+/// Agent that executes predefined workflows.
+#[allow(dead_code)]
+#[derive(Clone)]
+pub struct WorkFlowAgent {
+    agent_config: Arc<AgentConfig>,
+    workflow_registries: Arc<WorkFlowRegistries>,
+    discovery_service: Arc<dyn DiscoveryService>,
+    llm_interaction: ChatLlmInteraction,
+}
+
+#[async_trait]
+impl Agent for WorkFlowAgent {
+    async fn new(
+        agent_config: AgentConfig,
+        _evaluation_service: Option<Arc<dyn EvaluationService>>,
+        _memory_service: Option<Arc<dyn MemoryService>>,
+        discovery_service: Option<Arc<dyn DiscoveryService>>,
+        workflow_service: Option<Arc<dyn WorkflowServiceApi>>,
+    ) -> anyhow::Result<Self> {
+        let llm_full_api_key = env::var("LLM_WORKFLOW_API_KEY").expect("LLM_WORKFLOW_API_KEY must be set");
+        let llm_interaction = ChatLlmInteraction::new(
+            agent_config.agent_llm_url(),
+            agent_config.agent_model_id(),
+            llm_full_api_key,
+        );
+
+        let workflow_registries = workflow_service
+            .and_then(|ws| ws.as_any().downcast_ref::<WorkFlowRegistries>().map(|wr| Arc::new(wr.clone())))
+            .ok_or_else(|| anyhow::anyhow!("WorkFlowRegistries not provided or invalid type"))?;
+
+        let discovery_service = discovery_service
+            .ok_or_else(|| anyhow::anyhow!("DiscoveryService not provided"))?;
+
+        Ok(Self {
+            agent_config: Arc::new(agent_config),
+            workflow_registries,
+            discovery_service,
+            llm_interaction,
+        })
+    }
+
+    async fn handle_request(&self, request: LlmMessage) -> anyhow::Result<ExecutionResult> {
+        let request_id = Uuid::new_v4().to_string();
+        let conversation_id = Uuid::new_v4().to_string();
+        let user_query = request.content.clone().unwrap_or_default();
+
+        info!("---WorkflowAgent: Starting to handle user request -- Query: \'{}\'---", user_query);
+
+        // Gather all available capabilities for the LLM
+        let capabilities_description = self.get_available_capabilities_description().await;
+        debug!("Available Capabilities: {}", capabilities_description);
+
+        // Read the prompt template from the file
+        let prompt_template = std::fs::read_to_string("./configuration/prompts/workflow_agent_prompt.txt")
+            .context("Failed to read workflow_agent_prompt.txt")?;
+
+        // Manually replace placeholders for capabilities and user query
+        let prompt = prompt_template
+            .replacen("{}", &capabilities_description, 1)
+            .replacen("{}", &user_query, 1);
+
+        // Call LLM to create the workflow plan dynamically
+        let llm_response_content = self.llm_interaction.call_api_simple_v2("user".to_string(), prompt).await?;
+        let llm_response_content = llm_response_content.ok_or_else(|| anyhow::anyhow!("LLM returned no content for workflow creation"))?;
+
+        info!("WorkflowAgent: LLM responded with workflow content: {:?}", llm_response_content);
+
+        let workflow_plan_input: WorkflowPlanInput = 
+            serde_json::from_str(&llm_response_content)
+                .context(format!("Failed to parse LLM workflow response as JSON: {}. Raw: {}", llm_response_content, llm_response_content))?;
+        
+        let graph: Graph = workflow_plan_input.into(); // Convert WorkflowPlanInput to Graph
+
+        info!("Workflow loaded successfully. Plan: {}", graph.plan_name);
+                
+        let mut executor =
+            PlanExecutor::new(
+                graph,
+                self.workflow_registries.task_registry.clone(),
+                self.workflow_registries.agent_registry.clone(),
+                self.workflow_registries.tool_registry.clone(),
+                user_query.clone(), // Pass user_query here
+            );
+        
+        match executor.execute_plan().await {
+            Ok(execution_outcome) => {
+                info!("Workflow execution completed successfully.");
+                // You might want to return a more specific ExecutionResult based on execution_outcome
+                Ok(ExecutionResult { 
+                    request_id: request_id.clone(), 
+                    conversation_id: conversation_id.clone(), 
+                    success: true, 
+                    output: format!("Workflow executed successfully. Outcome: {:?}", execution_outcome), 
+                    plan_details: None 
+                })
+            },
+            Err(e) => {
+                warn!("Error executing plan: {}", e);
+                Err(anyhow::anyhow!("Workflow execution failed: {}", e))
+            }
+        }
+    }
+}
+
+impl WorkFlowAgent {
+    async fn get_available_capabilities_description(&self) -> String {
+        let mut description = "Available capabilities: ".to_string();
+
+        // Agent Skills
+        description.push_str("\n--- Agent Skills ---\n");
+        if self.workflow_registries.agent_registry.get_all().is_empty() {
+            description.push_str("- No A2A agents registered.\n");
+        } else {
+            for (agent_name, agent_runner) in self.workflow_registries.agent_registry.get_all() {
+                description.push_str(&format!("Agent: '{}'\n", agent_name));
+                // Assuming A2AAgentRunner has a way to describe its agent's skills
+                // This part might need adjustment based on how A2AAgentRunner exposes skills
+                // For now, let's just list the agent name.
+                // A more detailed implementation would involve the A2AAgentRunner querying its agent for skills.
+            }
+        }
+
+        // Tools
+        description.push_str("\n--- Tools ---\n");
+        if self.workflow_registries.tool_registry.get_all().is_empty() {
+            description.push_str("- No tools registered.\n");
+        } else {
+            for (tool_name, tool_runner) in self.workflow_registries.tool_registry.get_all() {
+                description.push_str(&format!("Tool Name: '{}' -- Description: '{}'\n", tool_name, tool_runner.description()));
+            }
+        }
+
+        // Tasks (e.g., internal tasks)
+        description.push_str("\n--- Internal Tasks ---\n");
+        if self.workflow_registries.task_registry.get_all().is_empty() {
+            description.push_str("- No internal tasks registered.\n");
+        }
+         else {
+            for (task_name, task_runner) in self.workflow_registries.task_registry.get_all() {
+                description.push_str(&format!("Task Name: '{}' -- Description: '{}'\n", task_name, task_runner.description()));
+            }
+        }
+
+        description
+    }
+}

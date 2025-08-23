@@ -18,6 +18,8 @@ The root of the project contains the main `Cargo.toml` file, which defines the w
 - **`llm_api`**: This crate provides an interface to the Language Model (LLM) API, allowing agents to leverage its capabilities.
 - **`mcp_runtime`**: This component is responsible for managing the Master Control Program (MCP) runtime, which orchestrates the overall behavior of the swarm.
 - **`orchestration_agent`**: This agent is responsible for orchestrating complex tasks that require the coordination of multiple agents.
+- **`workflow_agent`**: This agent is responsible for executing predefined workflows, coordinating tasks and agents as per the workflow definition.
+- **`workflow_management`**: This crate provides functionalities for defining, managing, and orchestrating complex multi-agent workflows.
 
 ## Core Components
 

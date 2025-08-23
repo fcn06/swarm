@@ -82,7 +82,7 @@ echo "F) Launch Workflow Management Agent listening on port 8180, connected to o
 echo $'\n'
 echo "Workflow Agent"
 echo $'\n'
-./target/release/launch_agent_workflow --config-file "documentation/demo_workflow_management/agent_workflow_config.toml" --log-level "warn"  &
+./target/release/launch_agent_workflow --config-file "documentation/demo_workflow_management/agent_workflow_config.toml" --graph-file "documentation/demo_workflow_management/multi_agent_workflow.json" --log-level "warn"  &
 # If you want to have specific log level you can specify it on command line ( trace, debug, info, warn, error. Default is warn)
 #./target/release/launch_agent_workflow --config-file "documentation/demo_workflow_management/agent_workflow_config.toml" --log-level "debug" &
 sleep 5
@@ -104,11 +104,7 @@ echo $'\n'
 echo $'\n'
 
 echo "When it is finished..." 
-echo "* You can access evaluations of the orchestrator by the LLM Judge :"
-echo "curl http://127.0.0.1:7000/evaluations"
-echo "* You can access what is recorded by memory service:"
-echo "curl http://127.0.0.1:5000/conversation/{conversation_id}"
 echo "* You can access registered agents:"
 echo "curl http://127.0.0.1:4000/agents"
-echo "Just Try them"
+echo "Just Try it"
 echo $'\n'

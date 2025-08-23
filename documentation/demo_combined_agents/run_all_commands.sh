@@ -71,7 +71,7 @@ echo $'\n'
 echo "Weather Domain Agent"
 echo $'\n'
 
-./target/release/basic_agent_launch --config-file "documentation/use_case_combined_agents/weather_domain_agent.toml"  --log-level "warn" &
+./target/release/basic_agent_launch --config-file "documentation/demo_combined_agents/weather_domain_agent.toml"  --log-level "warn" &
 
 sleep 5
 echo $'\n'
@@ -79,14 +79,14 @@ echo $'\n'
 echo $'\n'
 echo "Customer Domain Agent"
 echo $'\n'
-./target/release/basic_agent_launch  --config-file "documentation/use_case_combined_agents/customer_domain_agent.toml"  --log-level "warn" &
+./target/release/basic_agent_launch  --config-file "documentation/demo_combined_agents/customer_domain_agent.toml"  --log-level "warn" &
 sleep 5
 echo $'\n'
 
 echo $'\n'
 echo "Web Scraper Domain Agent"
 echo $'\n'
-./target/release/basic_agent_launch  --config-file "documentation/use_case_combined_agents/web_scraper_domain_agent.toml"  --log-level "warn" &
+./target/release/basic_agent_launch  --config-file "documentation/demo_combined_agents/web_scraper_domain_agent.toml"  --log-level "warn" &
 sleep 8
 echo $'\n'
 
@@ -97,9 +97,9 @@ echo "F) Launch Orchestration agent listening on port 9080, connected to three i
 echo $'\n'
 echo "Orchestrator Agent"
 echo $'\n'
-./target/release/orchestration_agent_launch --config-file "documentation/use_case_combined_agents/agent_orchestration_config.toml" --log-level "warn"  &
+./target/release/orchestration_agent_launch --config-file "documentation/demo_combined_agents/agent_orchestration_config.toml" --log-level "warn"  &
 # If you want to have specific log level you can specify it on command line ( trace, debug, info, warn, error. Default is warn)
-#./target/release/orchestration_agent_launch --config-file "documentation/use_case_combined_agents/agent_full_config.toml" --log-level "debug" &
+#./target/release/orchestration_agent_launch --config-file "documentation/demo_combined_agents/agent_full_config.toml" --log-level "debug" &
 sleep 5
 echo $'\n'
 

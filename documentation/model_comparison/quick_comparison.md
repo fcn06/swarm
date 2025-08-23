@@ -13,7 +13,7 @@ We have tested the following LLM providers, which offer generous free plans:
 
 Below is a summary of our findings. The models were evaluated based on their performance in three key areas: General Purpose, MCP (Model Context Protocol), and Orchestration.
 
-| Provider | Model | General Purpose | MCP | Orchestration | Use Case & Comments |
+| Provider | Model | General Purpose | MCP | Orchestration / Workflow Management | Use Case & Comments |
 | :--- | :--- | :---: | :---: | :---: | :--- |
 | Groq | qwen/qwen3-32b | ✓ | ✓ | ✓ | **Recommended for most use cases.** Works well and is very fast, but you may encounter rate limiting with the free plan. |
 | Groq | openai/gpt-oss-20b | ✓ | ✓ | ✓ | **A good alternative to Qwen.** Works well and is very fast, but you may encounter rate limiting with the free plan. |

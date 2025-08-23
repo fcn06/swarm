@@ -52,22 +52,47 @@ export LLM_FULL_API_KEY=<YOUR-GEMINI-API_KEY>
 export LLM_JUDGE_API_KEY=<YOUR-GROQ-API_KEY>
 ```
 
-### Step 3: Run the Demo!
+### Step 3: Choose Your Adventure: Dive In: Choose a Demo !
 
-We've prepared a script that launches a full orchestration scenario, including three specialized agents and one orchestrator.
+We've prepared two distinct demos to show you what this project can do. Pick the one that best suits your interests!
 
-The outcome is evaluated by another Llm acting as a judge.\
-The conversations , and the plan for execution are stored in memory service.\
-Both of these elements will be useful for training / fine tuning of a LLM Model.
+--- 
+**_Option 1: The Orchestration Demo_** 
 
+Ready to see multiple agents working together? This demo launches a full orchestration scenario where a central orchestrator directs three specialized agents. It's the perfect way to see how complex, collaborative tasks can be managed.
+
+The outcome is even evaluated by an LLM acting as a judge. All conversations and the execution plan are stored in a memory service, which can be super useful for training or fine-tuning an LLM model down the road.
+
+To run this demo, just execute the following command from the project's root directory:
 
 ```bash
 # This command must be run from the root of the swarm project
-./documentation/use_case_combined_agents/run_all_commands.sh
+./documentation/demo_combined_agents/run_all_commands.sh
 ```
-You should now see logs from all agents as the orchestrator processes three sample requests. **Congratulations, you've just run your first swarm!**
 
-To understand what just happened, you can access the explanations of expected logs [here](./documentation/use_case_combined_agents/sample_logs/logs_orchestrator_call). Additionnally, feel free to inspect the configuration files in the `documentation/use_case_combined_agents` directory. There is also a script to kill all the running processes created by this demo...
+You'll see logs from all agents as the orchestrator processes three sample requests.
+
+For sample logs without running the project, you can go [here](./documentation/demo_combined_agents/sample_logs/logs_orchestrator_call).
+For a deeper look, you can access explanations of the expected logs and inspect the configuration files `documentation/demo_combined_agents directory`.
+
+---
+
+**_Option 2: The Workflow Demo_** 
+
+If you're more interested in structured, sequential tasks, this demo is for you. It focuses on a single workflow agent that manages a specific, predefined workflow from start to finish. This is an excellent choice if you're looking to build agents for automated, step-by-step processes.
+
+To run this demo, use the following command from the root of the project:
+
+```bash
+# This command must be run from the root of the swarm project
+./documentation/demo_workflow_management/run_all_commands.sh
+```
+---
+
+**Congratulations, you've just run your first swarm!**
+
+Feel free to inspect the configuration files for both demos to get a better understanding of how they work.
+
 
 ## **💡 Core Components of Swarm**
 

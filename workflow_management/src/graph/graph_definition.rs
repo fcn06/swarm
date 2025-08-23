@@ -123,15 +123,17 @@ pub struct PlanContext {
     pub graph: Graph,
     pub current_step_id: Option<String>,
     pub results: HashMap<String, String>,
+    pub user_query: String, // Add this field
 }
 
 impl PlanContext {
-    pub fn new(graph: Graph) -> Self {
+    pub fn new(graph: Graph, user_query: String) -> Self { // Modify signature
         Self {
             plan_state: PlanState::Idle,
             graph,
             current_step_id: None,
             results: HashMap::new(),
+            user_query, // Initialize user_query
         }
     }
 }

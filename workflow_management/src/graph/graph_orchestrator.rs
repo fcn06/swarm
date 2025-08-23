@@ -48,9 +48,10 @@ impl PlanExecutor {
         task_registry: Arc<TaskRegistry>,
         agent_registry: Arc<AgentRegistry>,
         tool_registry: Arc<ToolRegistry>,
+        user_query: String, // Add user_query here
     ) -> Self {
         Self {
-            context: PlanContext::new(graph),
+            context: PlanContext::new(graph, user_query), // Pass user_query to PlanContext::new
             task_registry,
             agent_registry,
             tool_registry,

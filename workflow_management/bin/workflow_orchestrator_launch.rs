@@ -44,6 +44,9 @@ struct Args {
     /// MCP Config
     #[clap(long, default_value = "./configuration/mcp_runtime_config.toml")]
     mcp_config_path: String,
+    /// User Query
+    #[clap(long, default_value = "default user query")]
+    user_query: String,
 }
 
 #[tokio::main]
@@ -112,7 +115,7 @@ async fn main() -> anyhow::Result<()> {
             info!("Workflow loaded successfully. Plan: {}", graph.plan_name);
             //info!("Workflow loaded successfully. Plan: {:?}", graph);
             let mut executor =
-                PlanExecutor::new(graph, task_registry, agent_registry, tool_registry);
+                PlanExecutor::new(graph, task_registry, agent_registry, tool_registry, args.user_query);
             if let Err(e) = executor.execute_plan().await {
                 warn!("Error executing plan: {}", e);
             }

@@ -86,6 +86,7 @@ impl Agent for WorkFlowAgent {
                         self.workflow_registries.task_registry.clone(),
                         self.workflow_registries.agent_registry.clone(),
                         self.workflow_registries.tool_registry.clone(),
+                        user_query.clone(), // Pass user_query here
                     );
                 
                 match executor.execute_plan().await {

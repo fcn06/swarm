@@ -70,6 +70,8 @@ To run this demo, just execute the following command from the project's root dir
 ./documentation/demo_combined_agents/run_all_commands.sh
 ```
 
+**Congratulations, you've just run your first swarm!**
+
 You'll see logs from all agents as the orchestrator processes three sample requests.
 
 For sample logs without running the project, you can go [here](./documentation/demo_combined_agents/sample_logs/logs_orchestrator_call).
@@ -79,7 +81,7 @@ For a deeper look, you can access explanations of the expected logs and inspect 
 
 **_Option 2: The Workflow Demo_** 
 
-If you're more interested in structured, sequential tasks, this demo is for you. It focuses on a single workflow agent that manages a specific, predefined workflow from start to finish. This is an excellent choice if you're looking to build agents for automated, step-by-step processes.
+If you're more interested in structured, sequential tasks, this demo is for you. It focuses on a single workflow that manages a specific, predefined workflow from start to finish.The demo runs a mix of direct tool calls and actions delegated to agents. This is an excellent choice if you're looking to build agents for automated, step-by-step processes.
 
 To run this demo, use the following command from the root of the project:
 
@@ -89,7 +91,7 @@ To run this demo, use the following command from the root of the project:
 ```
 ---
 
-**Congratulations, you've just run your first swarm!**
+
 
 Feel free to inspect the configuration files for both demos to get a better understanding of how they work.
 

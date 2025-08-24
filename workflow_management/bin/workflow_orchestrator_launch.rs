@@ -71,7 +71,7 @@ async fn main() -> anyhow::Result<()> {
 
     // Dynamically defined tools via MCP
     let mcp_agent = McpToolRunner::initialize_mcp_agent(args.mcp_config_path).await?;
-    let mcp_tool_runner = McpToolRunner::new(mcp_agent.expect("No MCP Defined"), "general_api".to_string());
+    let mcp_tool_runner = McpToolRunner::new(mcp_agent.expect("No MCP Defined"), "general_mcp_server".to_string());
     tool_registry.register(Arc::new(mcp_tool_runner));
 
     let tool_registry = Arc::new(tool_registry);

@@ -38,12 +38,21 @@ impl ToolRunner for McpToolRunner {
     }
 
     async fn run(&self, params: &Value) -> Result<String, Box<dyn Error + Send + Sync>> {
+
+        let tool_name_value = params.get("tool_to_use")
+            .ok_or_else(|| Box::<dyn Error + Send + Sync>::from("Missing 'tool_name' in parameters for McpToolRunner".to_string()))?;
+
+        let tool_name = tool_name_value.as_str()
+            .ok_or_else(|| Box::<dyn Error + Send + Sync>::from("'tool_name' must be a string".to_string()))?
+            .to_string();
+
         let arguments_map = from_value(params.clone())?;
-        
+
         let call_tool_request_param = CallToolRequestParam {
-            name: self.tool_name.clone().into(),
+            name: tool_name.into(),
             arguments: Some(arguments_map),
         };
+
 
         let tool_result = self.mcp_agent.mcp_client.call_tool(call_tool_request_param).await?;
         

@@ -2,6 +2,10 @@ use async_trait::async_trait;
 use serde_json::Value;
 use std::error::Error;
 
+use std::sync::Arc;
+use super::tool_registry::ToolRegistryV2;
+use super::tool_invoker::ToolInvoker;
+
 /// A trait for any tool that can be executed directly by the PlanExecutor.
 /// Tools are intended to be stateless, atomic operations.
 #[async_trait]
@@ -17,4 +21,33 @@ pub trait ToolRunner: Send + Sync {
     /// # Returns
     /// A `Result` containing the string output of the tool or an error.
     async fn run(&self, params: &Value) -> Result<String, Box<dyn Error + Send + Sync>>;
+}
+
+// V2 implementation, more flexible
+
+pub struct ToolRunnerV2 {
+    tool_registry: Arc<ToolRegistryV2>, // To get metadata
+    tool_invoker: Arc<dyn ToolInvoker>, // To perform actual invocation
+}
+
+impl ToolRunnerV2 {
+    // Constructor using dependency injection
+    pub fn new(tool_registry: Arc<ToolRegistryV2>, tool_invoker: Arc<dyn ToolInvoker>) -> Self {
+        ToolRunnerV2 { tool_registry, tool_invoker }
+    }
+
+    /// Executes a tool identified by its ID.
+    pub async fn run(&self, tool_id: String, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
+        // Optional: Fetch metadata for logging or validation before invoking
+        if let Some(tool_def) = self.tool_registry.get_tool_definition(&tool_id) {
+            // You now have easy access to tool_def.description here
+            println!("Preparing to run tool: {} - {}", tool_def.name, tool_def.description);
+            // Potential input validation against tool_def.input_schema
+        } else {
+            return anyhow::bail!(format!("Tool '{}' not found in registry.", tool_id));
+        }
+
+        // Delegate the actual, protocol-specific invocation to the injected invoker
+        self.tool_invoker.invoke(tool_id, &params).await
+    }
 }

@@ -1,6 +1,12 @@
 use async_trait::async_trait;
 use crate::graph::graph_definition::Activity;
 
+use std::sync::Arc;
+use super::agent_registry::AgentRegistryV2;
+use super::agent_invoker::AgentInvoker;
+
+
+
 #[async_trait]
 pub trait AgentRunner: Send + Sync {
     /// A unique name for the runner, used for registration.
@@ -17,4 +23,32 @@ pub trait AgentRunner: Send + Sync {
         &self,
         activity: &Activity,
     ) -> Result<String, Box<dyn std::error::Error + Send + Sync>>;
+}
+
+// V2 implementation, more flexible
+
+pub struct AgentRunnerV2 {
+    agent_registry: Arc<AgentRegistryV2>, // To get metadata
+    agent_invoker: Arc<dyn AgentInvoker>, // To perform actual interaction
+}
+
+impl AgentRunnerV2 {
+    // Constructor using dependency injection
+    pub fn new(agent_registry: Arc<AgentRegistryV2>, agent_invoker: Arc<dyn AgentInvoker>) -> Self {
+        AgentRunnerV2 { agent_registry, agent_invoker }
+    }
+
+    /// Interacts with an agent identified by its ID.
+    pub async fn interact(&self, agent_id: String, message: serde_json::Value) -> Result<serde_json::Value, String> {
+        // Optional: Fetch metadata for logging or task routing
+        if let Some(agent_def) = self.agent_registry.get_agent_definition(&agent_id) {
+            // You now have easy access to agent_def.skills here
+            println!("Interacting with agent: {} (Skills: {:?})", agent_def.name, agent_def.skills);
+        } else {
+            return Err(format!("Agent '{}' not found in registry.", agent_id));
+        }
+
+        // Delegate the actual, protocol-specific interaction to the injected invoker
+        self.agent_invoker.interact(agent_id, message).await
+    }
 }

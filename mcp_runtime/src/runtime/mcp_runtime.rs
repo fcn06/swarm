@@ -98,6 +98,10 @@ pub async fn initialize_mcp_client_v2(agent_mcp_config: AgentMcpConfig)
     Ok(Self{agent_mcp_config,client})
 }
 
+pub  fn get_client(&self,) -> anyhow::Result<&McpClient> {
+    Ok(&self.client)
+}
+
 pub async fn get_tools_list_v2(
     &self,
 ) -> anyhow::Result<Vec<Tool>> {

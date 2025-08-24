@@ -31,3 +31,24 @@ impl Default for ToolRegistry {
         Self::new()
     }
 }
+
+// V2 implementation, more flexible
+
+pub struct ToolDefinition {
+    pub id: String,         // Unique identifier for the tool (e.g., "web_scraper", "math_solver")
+    pub name: String,       // Human-readable name
+    pub description: String, // (New) Detailed description of the tool's functionality
+    pub input_schema: serde_json::Value, // JSON schema for expected input
+    pub output_schema: serde_json::Value, // JSON schema for expected output
+}
+
+
+pub struct ToolRegistryV2 {
+    definitions: HashMap<String, ToolDefinition>,
+}
+
+impl ToolRegistryV2 {
+    pub fn new() -> Self { Self{definitions : HashMap::new() } }
+    pub fn register_tool(&mut self, definition: ToolDefinition) { self.definitions.insert(definition.id.clone(), definition); }
+    pub fn get_tool_definition(&self, tool_id: &str) -> Option<&ToolDefinition> {self.definitions.get(tool_id)}
+}

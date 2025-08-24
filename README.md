@@ -191,6 +191,7 @@ The Swarm project is composed of several specialized sub-crates, each serving a 
 *   `mcp_runtime`: A runtime to connect to a ModelContextProtocol Server. Designed to be embedded into an agent
 *   `llm_api`: Offers a convenient interface for interacting with various Large Language Models via an OpenAI-compatible API.
 *   `workflow_management`: Work In Progress to define Graph of Agents or Tasks , that can be loaded and executed. Will enable to fulfill more complex use cases.
+*   `agent_workflow`: Work In Progress to embed workflow processing into agents.
 *   `documentation`: Contains a series of example of toml config file for all sort of agents ( weather forecast, customer domain, web scraper, joke telling,...).
 *   `examples`: Contains multiple illustrative examples to help you interact with Swarm:
     *   `mcp_agent_endpoint`: A testing utility for an MCP runtime to receive and process requests through an MCP server.

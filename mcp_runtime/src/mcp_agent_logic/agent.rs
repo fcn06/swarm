@@ -10,9 +10,8 @@ use std::env;
 use serde_json::json;
 use std::sync::Arc;
 
-use rmcp::RoleClient;
-use rmcp::model::InitializeRequestParam;
-use rmcp::service::RunningService;
+
+use crate::mcp_client::mcp_client::McpClient;
 
 use llm_api::chat::{ChatLlmInteraction, ChatCompletionRequest, ChatCompletionResponse, Choice, ToolChoice};
 
@@ -28,11 +27,13 @@ use crate::mcp_client::mcp_client::initialize_mcp_client_v2;
 use crate::mcp_tools::tools::define_all_tools;
 
 
+
 /// Holds the state and logic for the MCP Agent.
 #[derive(Clone)]
 pub struct McpAgent {
     llm_interaction: ChatLlmInteraction,
-    pub mcp_client: Arc<RunningService<RoleClient, InitializeRequestParam>>,
+    //pub mcp_client: Arc<RunningService<RoleClient, InitializeRequestParam>>,
+    pub mcp_client: Arc<McpClient>,
     messages: Vec<Message>,
     llm_all_tool: Vec<Tool>,
     agent_mcp_config: AgentMcpConfig,

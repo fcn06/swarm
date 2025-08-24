@@ -28,7 +28,13 @@ use configuration::AgentMcpConfig;
 
 pub type McpClient = RunningService<RoleClient, InitializeRequestParam>;
 
+pub struct McpRuntime {
+    agent_mcp_config: AgentMcpConfig,
+    client: McpClient,
+}
 
+impl McpRuntime {
+    
 
 pub async fn start_with_default_headers(
         uri: impl Into<Arc<str>>,
@@ -66,17 +72,17 @@ pub async fn start_with_default_headers(
 /// Initializes the MCP client and connects to the server.
 /// Initializes logging (potentially repeated if called multiple times).
 pub async fn initialize_mcp_client_v2(agent_mcp_config: AgentMcpConfig)
-    -> anyhow::Result<McpClient> {
+    -> anyhow::Result<Self> {
     
     let mcp_server_url_string = agent_mcp_config
-        .agent_mcp_server_url
+        .agent_mcp_server_url.clone()
         .expect("Missing mcp server Url");
     let mcp_server_url = mcp_server_url_string.as_str();
 
     // Need to create and pass a static String to inject a default header
     let api_key=agent_mcp_config.agent_mcp_server_api_key.clone();
     
-    let transport = start_with_default_headers(mcp_server_url,api_key).await?;
+    let transport = Self::start_with_default_headers(mcp_server_url,api_key).await?;
 
     let client_info = ClientInfo {
         protocol_version: Default::default(),
@@ -89,18 +95,18 @@ pub async fn initialize_mcp_client_v2(agent_mcp_config: AgentMcpConfig)
 
     let client = client_info.serve(transport).await?;
 
-    Ok(client)
+    Ok(Self{agent_mcp_config,client})
 }
 
 pub async fn get_tools_list_v2(
-    client: Arc<McpClient>,
+    &self,
 ) -> anyhow::Result<Vec<Tool>> {
-    let list_tools: ListToolsResult = client.list_tools(Default::default()).await?;
+    let list_tools: ListToolsResult = self.client.list_tools(Default::default()).await?;
     Ok(list_tools.tools)
 }
 
 pub async fn execute_tool_call_v2(
-    client: Arc<McpClient>,
+    &self,
     tool_call: ToolCall,
 ) -> anyhow::Result<CallToolResult> {
     let args: Result<serde_json::Value, _> = serde_json::from_str(&tool_call.function.arguments);
@@ -108,7 +114,7 @@ pub async fn execute_tool_call_v2(
     // todo : Make it more resilient
     let tool_result = match args {
         Ok(parsed_args) => {
-            client
+            self.client
                 .call_tool(CallToolRequestParam {
                     name: Cow::Owned(tool_call.function.name.clone()), // Use Cow::Owned for 'static lifetime
                     arguments: parsed_args.as_object().cloned(),       // Use parsed arguments
@@ -139,3 +145,4 @@ pub async fn execute_tool_call_v2(
     Ok(tool_result)
 }
 
+}

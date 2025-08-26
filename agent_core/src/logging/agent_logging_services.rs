@@ -16,6 +16,7 @@ pub struct AgentLogging {
     memory_service: Option<Arc<dyn MemoryService>>,
 }
 
+#[allow(dead_code)]
 impl AgentLogging  {
 
     pub fn new(evaluation_service: Option<Arc<dyn EvaluationService>>, memory_service: Option<Arc<dyn MemoryService>>) -> Self {

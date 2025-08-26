@@ -63,7 +63,7 @@
     {
       "activity_type": "delegation_agent",
       "id": "send_notification",
-      "description": "Send notification by email of the message : {{compose_personalized_message}}",
+      "description": "Sends the personalized message to the customer.",
       "type": "send_email",
       "agent": {
         "skill_to_use": null,

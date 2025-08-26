@@ -1,10 +1,8 @@
-use async_trait::async_trait;
-use serde_json::Value;
-use std::error::Error;
-
 use std::sync::Arc;
-use super::tool_registry::ToolRegistryV2;
+use super::tool_registry::ToolRegistry;
 use super::tool_invoker::ToolInvoker;
+
+/* 
 
 /// A trait for any tool that can be executed directly by the PlanExecutor.
 /// Tools are intended to be stateless, atomic operations.
@@ -23,20 +21,23 @@ pub trait ToolRunner: Send + Sync {
     async fn run(&self, params: &Value) -> Result<String, Box<dyn Error + Send + Sync>>;
 }
 
+*/
+
 // V2 implementation, more flexible
 
-pub struct ToolRunnerV2 {
-    tool_registry: Arc<ToolRegistryV2>, // To get metadata
+pub struct ToolRunner {
+    tool_registry: Arc<ToolRegistry>, // To get metadata
     tool_invoker: Arc<dyn ToolInvoker>, // To perform actual invocation
 }
 
-impl ToolRunnerV2 {
+impl ToolRunner {
     // Constructor using dependency injection
-    pub fn new(tool_registry: Arc<ToolRegistryV2>, tool_invoker: Arc<dyn ToolInvoker>) -> Self {
-        ToolRunnerV2 { tool_registry, tool_invoker }
+    pub fn new(tool_registry: Arc<ToolRegistry>, tool_invoker: Arc<dyn ToolInvoker>) -> Self {
+        ToolRunner { tool_registry, tool_invoker }
     }
 
     /// Executes a tool identified by its ID.
+    #[allow(unreachable_code)]
     pub async fn run(&self, tool_id: String, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
         // Optional: Fetch metadata for logging or validation before invoking
         if let Some(tool_def) = self.tool_registry.get_tool_definition(&tool_id) {

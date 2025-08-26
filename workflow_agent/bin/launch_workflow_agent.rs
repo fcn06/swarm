@@ -2,34 +2,47 @@ mod tasks;
 mod tools;
 mod agents;
 
-use std::sync::Arc;
-use tokio;
 use clap::Parser;
-use tracing::{  info, warn};
-
-use agent_core::business_logic::agent::Agent;
-use agent_core::server::agent_server::AgentServer;
-use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService,WorkflowServiceApi};
-
-use crate::tasks::example_tasks::{FarewellTask, GreetTask};
-use crate::tools::example_tools::WeatherApiTool;
-use crate::tools::mcp_tool_runner::McpToolRunner;
-use crate::agents::a2a_agent_runner::A2AAgentRunner;
+use std::sync::Arc;
+use tracing::{ info, warn};
 
 use configuration::{setup_logging, AgentReference,AgentConfig};
+
+use serde_json::json;
+
+use crate::tasks::tasks_invoker::{GreetTask};
+use crate::tools::mcp_runtime_tool_invoker::McpRuntimeToolInvoker;
+use crate::agents::a2a_agent_invoker::A2AAgentInvoker;
+
+
+use workflow_management::agent_communication::agent_runner::AgentRunner;
+use workflow_management::agent_communication::agent_registry::AgentDefinition;
+use workflow_management::tasks::task_runner::TaskRunner;
+use workflow_management::tasks::task_registry::TaskDefinition;
+use workflow_management::tools::tool_runner::ToolRunner;
+use workflow_management::tools::tool_registry::ToolDefinition;
+
+use workflow_management::agent_communication::{agent_registry::AgentRegistry,};
+use workflow_management::tasks::task_registry::TaskRegistry;
+use workflow_management::tools::tool_registry::ToolRegistry;
+
 
 use agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient;
 use agent_evaluation_service::evaluation_service_client::agent_evaluation_client::AgentEvaluationServiceClient;
 use agent_memory_service::memory_service_client::agent_memory_client::AgentMemoryServiceClient;
 
-use workflow_management::agent_communication::{agent_registry::AgentRegistry};
-use workflow_management::tasks::task_registry::TaskRegistry;
-use workflow_management::tools::tool_registry::ToolRegistry;
+
+use agent_core::business_logic::agent::Agent;
+use agent_core::server::agent_server::AgentServer;
+use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService,WorkflowServiceApi};
+
 
 use workflow_agent::business_logic::workflow_agent::WorkFlowAgent;
-use workflow_agent::business_logic::workflow_registries::WorkFlowRegistries;
+use workflow_agent::business_logic::workflow_runners::WorkFlowRunners;
+
 use workflow_agent::business_logic::service_adapters::{AgentEvaluationServiceAdapter, AgentMemoryServiceAdapter};
 use workflow_agent::business_logic::service_adapters::AgentDiscoveryServiceAdapter;
+
 
 
 /// Command-line arguments
@@ -50,47 +63,7 @@ struct Args {
     mcp_config_path: String,
 }
 
-async fn setup_task_registry() -> Arc<TaskRegistry> {
-    let mut task_registry = TaskRegistry::new();
-    task_registry.register(Arc::new(GreetTask));
-    task_registry.register(Arc::new(FarewellTask));
-    Arc::new(task_registry)
-}
 
-async fn setup_tool_registry(mcp_config_path: String) -> Result<Arc<ToolRegistry>, Box<dyn std::error::Error>> {
-    let mut tool_registry = ToolRegistry::new();
-    // Injected tool
-    tool_registry.register(Arc::new(WeatherApiTool));
-
-    // Dynamically defined tools via MCP
-    let mcp_agent = McpToolRunner::initialize_mcp_agent(mcp_config_path).await?;
-    let mcp_tool_runner = McpToolRunner::new(mcp_agent.expect("No MCP Defined"), "general_mcp_server".to_string());
-    tool_registry.register(Arc::new(mcp_tool_runner));
-
-    Ok(Arc::new(tool_registry))
-}
-
-async fn setup_agent_registry(discovery_url: String) -> Result<Arc<AgentRegistry>, Box<dyn std::error::Error>> {
-    let mut agent_registry = AgentRegistry::new();
-     
-    // Register a runner for "Basic_Agent"
-    // can be extended to orchestration agent as well
-    let discovery_client = Arc::new(AgentDiscoveryServiceClient::new(discovery_url.clone()));
-    let basic_agent_runner = A2AAgentRunner::new(
-        vec![AgentReference {
-            name: "Basic_Agent".to_string(),
-            url: "http://127.0.0.1:8080".to_string(),
-            is_default: Some(true),
-        }],
-        None,
-        None,
-        discovery_client.clone(),
-    )
-    .await?;
-    agent_registry.register_with_name("Basic_Agent".to_string(), Arc::new(basic_agent_runner));
-    
-    Ok(Arc::new(agent_registry))
-}
 
 async fn setup_evaluation_service(workflow_agent_config: &AgentConfig) -> Option<Arc<dyn EvaluationService>> {
     if let Some(url) = workflow_agent_config.agent_evaluation_service_url() {
@@ -123,6 +96,64 @@ async fn setup_discovery_service(discovery_url: String) -> Option<Arc<dyn Discov
     Some(Arc::new(adapter))
 }
 
+async fn setup_task_runner() -> anyhow::Result<Arc<TaskRunner>> {
+    let greet_task_invoker = GreetTask::new()?;
+    let greet_task_invoker = Arc::new(greet_task_invoker);
+
+    let mut task_registry = TaskRegistry::new();
+    task_registry.register_task(TaskDefinition {
+        id: "greeting".to_string(),
+        name: "Say Hello".to_string(),
+        description: "Say hello to somebody".to_string(),
+        input_schema: json!({}),
+        output_schema: json!({}),
+    });
+    let task_registry = Arc::new(task_registry);
+
+    Ok(Arc::new(TaskRunner::new(task_registry, greet_task_invoker)))
+}
+
+async fn setup_tool_runner(mcp_config_path: String) -> anyhow::Result<Arc<ToolRunner>> {
+    let mcp_tool_runner_invoker = McpRuntimeToolInvoker::new(mcp_config_path).await?;
+    let mcp_tool_runner_invoker = Arc::new(mcp_tool_runner_invoker);
+
+    let mut tool_registry = ToolRegistry::new();
+    tool_registry.register_tool(ToolDefinition {
+        id: "get_current_weather".to_string(),
+        name: "Retrieve Weather in a Location".to_string(),
+        description: "Retrieves weather in a specific location".to_string(),
+        input_schema: json!({}),
+        output_schema: json!({}),
+    });
+    let tool_registry = Arc::new(tool_registry);
+
+    Ok(Arc::new(ToolRunner::new(tool_registry, mcp_tool_runner_invoker)))
+}
+
+async fn setup_agent_runner(workflow_agent_config: &AgentConfig) -> anyhow::Result<Arc<AgentRunner>> {
+    let discovery_client = Arc::new(AgentDiscoveryServiceClient::new(
+        workflow_agent_config.agent_discovery_url.clone().expect("Discovery URL not configured")
+    ));
+    let a2a_agent_invoker = A2AAgentInvoker::new(vec![AgentReference {
+        name: "Basic_Agent".to_string(),
+        url: "http://127.0.0.1:8080".to_string(),
+        is_default: Some(true),
+    }], None, None, discovery_client.clone()).await?;
+    let a2a_agent_invoker = Arc::new(a2a_agent_invoker);
+
+    let mut agent_registry = AgentRegistry::new();
+    agent_registry.register_agent(AgentDefinition {
+        id: "Basic_Agent".to_string(),
+        name: "Basic Agent for weather requests, customer requests and other general topics".to_string(),
+        description: "Retrieve Weather in a Location, Get customer details and other General Requests".to_string(),
+        skills: Vec::new(),
+    });
+    let agent_registry = Arc::new(agent_registry);
+
+    Ok(Arc::new(AgentRunner::new(agent_registry, a2a_agent_invoker)))
+}
+
+
 #[tokio::main]
 async fn main()-> Result<(), Box<dyn std::error::Error>>{
 
@@ -136,25 +167,6 @@ async fn main()-> Result<(), Box<dyn std::error::Error>>{
     // load a2a config file and initialize appropriateruntime
     let workflow_agent_config = AgentConfig::load_agent_config(&args.config_file).expect("Incorrect WorkFlow Agent config file");
 
-    /************************************************/
-    /* Set Up Registries                            */
-    /************************************************/ 
-    let task_registry = setup_task_registry().await;
-    let tool_registry = setup_tool_registry(args.mcp_config_path).await?;
-    let agent_registry = setup_agent_registry(workflow_agent_config.agent_discovery_url.clone().expect("Discovery URL not configured")).await?;
-
-
-    /************************************************/
-    /* Get a Workflow Registries Instance           */
-    /************************************************/ 
-    let workflow_registries = WorkFlowRegistries::init(
-        task_registry.clone(),
-        agent_registry.clone(),
-        tool_registry.clone(),
-    ).await?;
-
-    let workflow_registries: Option<Arc<dyn WorkflowServiceApi>> = Some(Arc::new(workflow_registries));
-
 
     /************************************************/
     /* Instantiate Memory, Evaluation and Discovery Services  */
@@ -163,10 +175,30 @@ async fn main()-> Result<(), Box<dyn std::error::Error>>{
     let memory_service = setup_memory_service(&workflow_agent_config).await;
     let discovery_service = setup_discovery_service(workflow_agent_config.agent_discovery_url.clone().expect("Discovery URL not configured")).await;
 
+
+    /************************************************/
+    /* Set Up Runners                               */
+    /************************************************/ 
+    let task_runner = setup_task_runner().await?;
+    let tool_runner = setup_tool_runner(args.mcp_config_path).await?;
+    let agent_runner = setup_agent_runner(&workflow_agent_config).await?;
+
+    /************************************************/
+    /* Get a Workflow Registries Instance           */
+    /************************************************/ 
+    let workflow_runners = WorkFlowRunners::init(
+        task_runner.clone(),
+        agent_runner.clone(),
+        tool_runner.clone(),
+    ).await?;
+
+    let workflow_runners: Option<Arc<dyn WorkflowServiceApi>> = Some(Arc::new(workflow_runners));
+
+
     /************************************************/
     /* Launch Workflow Agent                        */
     /************************************************/ 
-     let agent = WorkFlowAgent::new(workflow_agent_config.clone(), evaluation_service, memory_service, discovery_service.clone(), workflow_registries).await?;
+     let agent = WorkFlowAgent::new(workflow_agent_config.clone(), evaluation_service, memory_service, discovery_service.clone(), workflow_runners).await?;
 
     /************************************************/
     /* Launch Workflow Agent Server                 */

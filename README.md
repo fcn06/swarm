@@ -67,7 +67,7 @@ To run this demo, just execute the following command from the project's root dir
 
 ```bash
 # This command must be run from the root of the swarm project
-./documentation/demo_combined_agents/run_all_commands.sh
+sh ./documentation/demo_combined_agents/run_all_commands.sh
 ```
 
 **Congratulations, you've just run your first swarm!**
@@ -87,7 +87,7 @@ To run this demo, use the following command from the root of the project:
 
 ```bash
 # This command must be run from the root of the swarm project
-./documentation/demo_workflow_management/run_all_commands.sh
+sh ./documentation/demo_workflow_management/run_all_commands.sh
 ```
 ---
 

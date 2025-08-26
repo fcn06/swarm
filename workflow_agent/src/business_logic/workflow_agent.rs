@@ -6,7 +6,7 @@ use std::env;
 
 use llm_api::chat::{ChatLlmInteraction};
 
-use crate::business_logic::workflow_registries::WorkFlowRegistries;
+use crate::business_logic::workflow_runners::WorkFlowRunners;
 
 use configuration::AgentConfig;
 use agent_core::business_logic::services::EvaluationService;
@@ -28,7 +28,7 @@ use agent_core::business_logic::agent::Agent;
 #[derive(Clone)]
 pub struct WorkFlowAgent {
     agent_config: Arc<AgentConfig>,
-    workflow_registries: Arc<WorkFlowRegistries>,
+    workflow_runners: Arc<WorkFlowRunners>,
     discovery_service: Arc<dyn DiscoveryService>,
 }
 
@@ -48,16 +48,16 @@ impl Agent for WorkFlowAgent {
             llm_full_api_key,
         );
 
-        let workflow_registries = workflow_service
-            .and_then(|ws| ws.as_any().downcast_ref::<WorkFlowRegistries>().map(|wr| Arc::new(wr.clone())))
-            .ok_or_else(|| anyhow::anyhow!("WorkFlowRegistries not provided or invalid type"))?;
+        let workflow_runners = workflow_service
+            .and_then(|ws| ws.as_any().downcast_ref::<WorkFlowRunners>().map(|wr| Arc::new(wr.clone())))
+            .ok_or_else(|| anyhow::anyhow!("WorkFlowRunnerss not provided or invalid type"))?;
 
         let discovery_service = discovery_service
             .ok_or_else(|| anyhow::anyhow!("DiscoveryService not provided"))?;
 
         Ok(Self {
             agent_config: Arc::new(agent_config),
-            workflow_registries,
+            workflow_runners,
             discovery_service,
         })
     }
@@ -83,9 +83,9 @@ impl Agent for WorkFlowAgent {
                 let mut executor =
                     PlanExecutor::new(
                         graph,
-                        self.workflow_registries.task_registry.clone(),
-                        self.workflow_registries.agent_registry.clone(),
-                        self.workflow_registries.tool_registry.clone(),
+                        self.workflow_runners.task_runner.clone(),
+                        self.workflow_runners.agent_runner.clone(),
+                        self.workflow_runners.tool_runner.clone(),
                         user_query.clone(), // Pass user_query here
                     );
                 

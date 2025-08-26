@@ -3,6 +3,8 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use tracing::{debug, warn,info};
+use serde_json::Value;
+use anyhow::anyhow;
 
 use agent_core::agent_interaction_protocol::agent_interaction::AgentInteraction;
 use agent_core::business_logic::services::{EvaluationService, MemoryService};
@@ -10,12 +12,12 @@ use agent_discovery_service::discovery_service_client::agent_discovery_client::A
 use configuration::AgentReference;
 
 use super::a2a_agent_interaction::A2AAgentInteraction;
-use workflow_management::agent_communication::agent_runner::AgentRunner;
-use workflow_management::graph::graph_definition::Activity;
+use workflow_management::agent_communication::agent_invoker::AgentInvoker;
+//use workflow_management::graph::graph_definition::Activity;
 
 /// An AgentRunner that communicates using the A2A protocol over HTTP.
 #[allow(dead_code)]
-pub struct A2AAgentRunner {
+pub struct A2AAgentInvoker {
     agents_references: Vec<AgentReference>,
     client_agents: HashMap<String, A2AAgentInteraction>,
     evaluation_service: Option<Arc<dyn EvaluationService>>,
@@ -24,33 +26,25 @@ pub struct A2AAgentRunner {
 }
 
 #[async_trait]
-impl AgentRunner for A2AAgentRunner {
-    fn name(&self) -> String {
-        "a2a_http_runner".to_string()
-    }
+impl AgentInvoker for A2AAgentInvoker {
 
     /// This function is called by the workflow_runtime when an activity is delegated to an agent in order to execute an activity.
-    async fn invoke(
-        &self,
-        activity: &Activity,
-    ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
-        let preferred_agent_id = activity
-            .assigned_agent_id_preference
-            .as_ref()
-            .ok_or("Missing agent ID preference in activity definition")?;
-
+    #[allow(unused_variables)]
+    async fn interact(&self, agent_id: String, message:  String, skill_to_use: String ) -> anyhow::Result<Value> {
+       
         let agent_client = self
             .client_agents
-            .get(preferred_agent_id)
-            .ok_or(format!("Agent '{}' not found", preferred_agent_id))?;
+            .get(&agent_id)
+            .ok_or(anyhow!("Agent '{}' not found", agent_id))?;
 
-            /******************************************************/
+        /******************************************************/
         // execute the task by remote agent
-        let outcome=agent_client.execute_task(&activity.description, &activity.skill_to_use.clone().unwrap_or_else(|| "default_skill".to_string())).await?;
+        let outcome=agent_client.execute_task(&message, "default_skill").await?;
         
-        debug!("A2AAgentRunner : {}",outcome);
+        debug!("A2AAgentInvoker : {}",outcome);
 
-        Ok(outcome)
+        //Ok(outcome)
+        Ok(serde_json::Value::String(outcome))
 
         // MOCK IMPLEMENTATION: Return a valid JSON object.
         // Ok("\"Mock_Agent_Runner_Default_Response\"".to_string())
@@ -58,7 +52,7 @@ impl AgentRunner for A2AAgentRunner {
     }
 }
 
-impl A2AAgentRunner {
+impl A2AAgentInvoker {
     /// This function instantiate an AgentRunner 
     pub async fn new(
         agents_references: Vec<AgentReference>,

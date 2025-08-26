@@ -1,30 +1,28 @@
-use workflow_management::tools::tool_runner::ToolRunner;
 use async_trait::async_trait;
 
-use mcp_runtime::mcp_agent_logic::agent::McpAgent;
 use configuration::AgentMcpConfig;
 use rmcp::model::{CallToolRequestParam};
 
 use serde_json::{Value, from_value};
-use std::error::Error;
 use anyhow::{Context};
 
 
-use mcp_runtime::runtime::mcp_runtime::{McpClient,McpRuntime};
+use mcp_runtime::runtime::mcp_runtime::{McpRuntime};
 use workflow_management::tools::tool_invoker::ToolInvoker;
-use std::collections::HashMap;
 use std::sync::Arc;
 
 
 
 pub struct  McpRuntimeToolInvoker  {
     mcp_runtime: Arc<McpRuntime>, // Your client for communicating with the MCP runtime
-    list_tools: Vec<String>, // assuming it is same name than MCP server we are using
+    //list_tools:Vec<String >,
 }
 
 impl McpRuntimeToolInvoker  {
-    pub fn new(mcp_runtime: McpRuntime, list_tools: Vec<String>) -> Self {
-        Self { mcp_runtime : Arc::new(mcp_runtime), list_tools }
+    pub async fn new(mcp_config_path: String) -> anyhow::Result<Self> {
+        let mcp_runtime = Arc::new(Self::initialize_mcp_agent(mcp_config_path).await?);
+        // todo : instantiate list of tools
+        Ok(Self { mcp_runtime  })
     }
 
 
@@ -44,20 +42,10 @@ impl ToolInvoker for McpRuntimeToolInvoker  {
 
     async fn invoke(&self, tool_id:String,params: &Value) -> anyhow::Result<serde_json::Value>  {
 
-        let tool_name_value = match self.list_tools.contains(&tool_id) {
-            true => tool_id,
-            false => return anyhow::bail!(format!("Tool ID '{}' not mapped to an MCP runtime tool.", tool_id)),
-        };
-
-        let tool_name = match  tool_name_value.as_str() {
-            tool_name => tool_name.to_string(),
-            _ => return anyhow::bail!(format!("tool_name' must be a string.")),
-        };
-
         let arguments_map = from_value(params.clone())?;
 
         let call_tool_request_param = CallToolRequestParam {
-            name: tool_name.into(),
+            name: tool_id.into(),
             arguments: Some(arguments_map),
         };
 

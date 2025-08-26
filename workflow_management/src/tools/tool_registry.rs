@@ -1,7 +1,6 @@
-use super::tool_runner::ToolRunner;
 use std::collections::HashMap;
-use std::sync::Arc;
 
+/* 
 /// A registry for `ToolRunner` instances.
 pub struct ToolRegistry {
     runners: HashMap<String, Arc<dyn ToolRunner>>,
@@ -32,6 +31,8 @@ impl Default for ToolRegistry {
     }
 }
 
+*/
+
 // V2 implementation, more flexible
 
 pub struct ToolDefinition {
@@ -43,12 +44,18 @@ pub struct ToolDefinition {
 }
 
 
-pub struct ToolRegistryV2 {
+pub struct ToolRegistry {
     definitions: HashMap<String, ToolDefinition>,
 }
 
-impl ToolRegistryV2 {
+impl ToolRegistry {
     pub fn new() -> Self { Self{definitions : HashMap::new() } }
     pub fn register_tool(&mut self, definition: ToolDefinition) { self.definitions.insert(definition.id.clone(), definition); }
     pub fn get_tool_definition(&self, tool_id: &str) -> Option<&ToolDefinition> {self.definitions.get(tool_id)}
+}
+
+impl Default for ToolRegistry {
+    fn default() -> Self {
+        Self::new()
+    }
 }

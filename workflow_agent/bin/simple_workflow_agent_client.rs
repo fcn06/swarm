@@ -93,12 +93,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Send a task message
     println!("This is a task that needs to be sent to two different agents to be adressed...\n");
-    println!("Sending message to agents to process tasks ...");
+    println!("Sending message to agents to process tasks ...\n");
 
     let task_3 = client
         .send_task_message(&task_id_3, &message_3, None, Some(50))
         .await?;
-    println!("Got response with status: {:?}", task_3.status.state);
+    println!("\nGot response with status: {:?}", task_3.status.state);
 
     if let Some(response_message_3) = task_3.status.message {
         println!("\nAgent response:");

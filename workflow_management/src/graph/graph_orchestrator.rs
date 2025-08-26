@@ -1,8 +1,8 @@
 use super::graph_definition::{Activity, ActivityType, Graph, NodeType, PlanContext, PlanState};
-use crate::agent_communication::agent_registry::AgentRegistry;
+use crate::agent_communication::agent_runner::AgentRunner;
 use crate::tasks::condition_evaluator::evaluate_condition;
-use crate::tasks::task_registry::TaskRegistry;
-use crate::tools::tool_registry::ToolRegistry;
+use crate::tasks::task_runner::TaskRunner; // Changed from task_registry
+use crate::tools::tool_runner::ToolRunner; // Changed from tool_registry
 use regex::Regex;
 use serde_json::Value;
 use std::collections::{HashMap, VecDeque};
@@ -35,9 +35,9 @@ pub enum PlanExecutorError {
 
 pub struct PlanExecutor {
     context: PlanContext,
-    task_registry: Arc<TaskRegistry>,
-    agent_registry: Arc<AgentRegistry>,
-    tool_registry: Arc<ToolRegistry>,
+    task_runner: Arc<TaskRunner>, // Changed from task_registry
+    agent_runner: Arc<AgentRunner>,
+    tool_runner: Arc<ToolRunner>, // Changed from tool_registry
     execution_queue: VecDeque<String>,
     dependency_tracker: HashMap<String, usize>,
 }
@@ -45,16 +45,16 @@ pub struct PlanExecutor {
 impl PlanExecutor {
     pub fn new(
         graph: Graph,
-        task_registry: Arc<TaskRegistry>,
-        agent_registry: Arc<AgentRegistry>,
-        tool_registry: Arc<ToolRegistry>,
-        user_query: String, // Add user_query here
+        task_runner: Arc<TaskRunner>, // Changed from task_registry
+        agent_runner: Arc<AgentRunner>,
+        tool_runner: Arc<ToolRunner>, // Changed from tool_registry
+        user_query: String,
     ) -> Self {
         Self {
-            context: PlanContext::new(graph, user_query), // Pass user_query to PlanContext::new
-            task_registry,
-            agent_registry,
-            tool_registry,
+            context: PlanContext::new(graph, user_query),
+            task_runner, // Changed from task_registry
+            agent_runner,
+            tool_runner, // Changed from tool_registry
             execution_queue: VecDeque::new(),
             dependency_tracker: HashMap::new(),
         }
@@ -118,11 +118,9 @@ impl PlanExecutor {
             self.context.current_step_id = Some(node_id);
             self.context.plan_state = PlanState::ExecutingStep;
         } else {
-            // If the queue is empty, check if all nodes have been processed.
             if self.context.results.len() == self.context.graph.nodes.len() {
                 self.context.plan_state = PlanState::Completed;
             } else {
-                // If queue is empty but not all nodes are processed, it's a failure (e.g., deadlock or unmet condition)
                 self.context.plan_state = PlanState::Failed("No executable tasks left and plan not completed.".to_string());
             }
         }
@@ -156,50 +154,53 @@ impl PlanExecutor {
                         PlanExecutorError::AgentRunnerNotFound(
                             "No agent preference specified".to_string(),
                         )
-                    })?;
-                let runner = self
-                    .agent_registry
-                    .get(agent_id)
-                    .ok_or_else(|| PlanExecutorError::AgentRunnerNotFound(agent_id.clone()))?;
-                runner
-                    .invoke(&activity)
+                    })?
+                    .clone();
+
+                let message = activity.description.clone();
+                let skill = activity.skill_to_use.clone().unwrap_or_default();
+
+                self.agent_runner
+                    .interact(agent_id, message, skill)
                     .await
                     .map_err(|e| PlanExecutorError::ExecutionFailed(e.to_string()))?
+                    .to_string()
             }
             ActivityType::DirectToolUse => {
-                let tool_name = activity
+                let tool_id = activity
                     .tool_to_use
                     .as_ref()
-                    .ok_or_else(|| PlanExecutorError::MissingTool(activity.id.clone()))?;
-                let runner = self
-                    .tool_registry
-                    .get(tool_name)
-                    .ok_or_else(|| PlanExecutorError::ToolRunnerNotFound(tool_name.clone()))?;
-                let params = activity.tool_parameters.as_ref().unwrap_or(&Value::Null);
-                runner
-                    .run(params)
+                    .ok_or_else(|| PlanExecutorError::MissingTool(activity.id.clone()))?
+                    .clone();
+                let params = activity.tool_parameters.unwrap_or_else(|| Value::Null);
+
+                self.tool_runner
+                    .run(tool_id, params)
                     .await
                     .map_err(|e| PlanExecutorError::ExecutionFailed(e.to_string()))?
+                    .to_string()
             }
             ActivityType::DirectTaskExecution => {
-                let skill = activity
+                let task_id = activity
                     .skill_to_use
                     .as_ref()
-                    .ok_or_else(|| PlanExecutorError::MissingSkill(activity.id.clone()))?;
-                let runner = self
-                    .task_registry
-                    .get(skill)
-                    .ok_or_else(|| PlanExecutorError::TaskRunnerNotFound(skill.clone()))?;
-                let dependencies = self.get_activity_dependencies(&activity);
-                runner
-                    .execute(&activity, &dependencies)
+                    .ok_or_else(|| PlanExecutorError::MissingSkill(activity.id.clone()))?
+                    .clone();
+
+                //let params = Value::Object(activity.tasks_parameters.into()); // FIX: Convert HashMap to serde_json::Map
+                let params = Value::Object(activity.tasks_parameters.clone().into_iter().collect());
+
+
+                self.task_runner
+                    .run(task_id, params)
                     .await
                     .map_err(|e| PlanExecutorError::ExecutionFailed(e.to_string()))?
+                    .to_string()
             }
         };
 
         self.context.results.insert(node_id.clone(), result.clone());
-        println!("Executed node '{}', result: '{}'", node_id, result);
+        println!("Executed node '{}', result: '{}' \n", node_id, result);
         self.update_downstream_dependencies(&node_id, &result)?;
         self.context.plan_state = PlanState::DecidingNextStep;
 
@@ -236,12 +237,10 @@ impl PlanExecutor {
     }
 
     fn handle_completion_state(&mut self) -> Result<(), PlanExecutorError> {
-
-
         // todo:logs memory and evaluation
 
         println!(
-            "Plan executed successfully. Final results: {:?}",
+            "\nPlan executed successfully. Final results: {:?}",
             self.context.results
         );
         Ok(())
@@ -252,22 +251,6 @@ impl PlanExecutor {
         Err(PlanExecutorError::ExecutionFailed(reason))
     }
 
-    fn get_activity_dependencies(&self, activity: &Activity) -> HashMap<String, Value> {
-        activity
-            .dependencies
-            .iter()
-            .filter_map(|dep| {
-                self.context
-                    .results
-                    .get(&dep.source)
-                    .map(|res_str| {
-                        let parsed_value = serde_json::from_str(res_str)
-                            .unwrap_or_else(|_| Value::String(res_str.to_string()));
-                        (dep.source.clone(), parsed_value)
-                    })
-            })
-            .collect()
-    }
 
     fn interpolate_parameters(
         &self,
@@ -375,6 +358,49 @@ impl PlanExecutor {
 
         for (key, value) in tasks_replacements {
             hydrated_activity.tasks_parameters.insert(key, value);
+        }
+
+        // NEW: Interpolate activity description (message for DelegationAgent)
+        // The description field is a String, so we don't need to check for Option<String>
+        // like for tool_parameters. Instead, we can directly access and modify it.
+        let description_to_interpolate = hydrated_activity.description.clone();
+        if let Some(cap) = re.captures(&description_to_interpolate) {
+            let path = &cap[1];
+            let parts: Vec<&str> = path.splitn(2, '.').collect();
+            if parts.is_empty() {
+                return Err(PlanExecutorError::InterpolationFailed(
+                    "Invalid interpolation path in description".to_string(),
+                ));
+            }
+
+            let source_id = parts[0];
+            let result_str =
+                self.context.results.get(source_id).ok_or_else(|| {
+                    PlanExecutorError::InterpolationFailed(format!(
+                        "Dependency result for '{}' not found in description",
+                        source_id
+                    ))
+                })?;
+
+            let value_to_insert = match serde_json::from_str(result_str) {
+                Ok(result_json) => {
+                    if parts.len() > 1 {
+                        let path_keys = parts[1].split('.');
+                        let mut current_value: &Value = &result_json;
+                        for key in path_keys {
+                            current_value = current_value.get(key).unwrap_or(&Value::Null);
+                        }
+                        current_value.as_str().unwrap_or("").to_string() // Extract as string
+                    } else {
+                        result_json.as_str().unwrap_or("").to_string() // Extract as string
+                    }
+                },
+                Err(_) => {
+                    // If not valid JSON, treat as plain text
+                    result_str.to_string()
+                }
+            };
+            hydrated_activity.description = value_to_insert;
         }
 
         Ok(hydrated_activity)

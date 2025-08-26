@@ -28,6 +28,7 @@ use configuration::AgentMcpConfig;
 
 pub type McpClient = RunningService<RoleClient, InitializeRequestParam>;
 
+#[allow(dead_code)]
 pub struct McpRuntime {
     agent_mcp_config: AgentMcpConfig,
     client: McpClient,

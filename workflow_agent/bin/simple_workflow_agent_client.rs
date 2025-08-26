@@ -90,6 +90,38 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let user_text="What is the current weather in Boston and What are details of Customer_id 1234 ?".to_string();
     println!("\nUser_Query : {}",user_text);
     let message_3 = Message::user_text(user_text, message_id_3);
+    
+    // todo : use possibility to send metadata, and other type of content
+    /*
+            /// let message = Message::builder()
+            ///     .role(Role::User)
+            ///     .parts(vec![Part::Text {
+            ///         text: "Hello, agent!".to_string(),
+            ///         metadata: None,
+            ///     }])
+            ///     .message_id("msg-123".to_string())
+            ///     .build();
+            /// ```
+            #[derive(Debug, Clone, Serialize, Deserialize, Builder)]
+            pub struct Message {
+                pub role: Role,
+                #[builder(default = Vec::new())]
+                pub parts: Vec<Part>,
+                #[serde(skip_serializing_if = "Option::is_none")]
+                pub metadata: Option<Map<String, Value>>, // THIS IS THE PART WE SHOULD USE TO UPLOAD A WORKFLOW
+                #[serde(skip_serializing_if = "Option::is_none", rename = "referenceTaskIds")]
+                pub reference_task_ids: Option<Vec<String>>,
+                #[serde(rename = "messageId")]
+                pub message_id: String,
+                #[serde(skip_serializing_if = "Option::is_none", rename = "taskId")]
+                pub task_id: Option<String>,
+                #[serde(skip_serializing_if = "Option::is_none", rename = "contextId")]
+                pub context_id: Option<String>,
+                #[builder(default = "message".to_string())]
+                pub kind: String, // Always "message"
+            }
+     */
+  
 
     // Send a task message
     println!("This is a task that needs to be sent to two different agents to be adressed...\n");

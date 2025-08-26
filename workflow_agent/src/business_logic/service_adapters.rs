@@ -10,8 +10,6 @@ use agent_discovery_service::discovery_service_client::agent_discovery_client::A
 use agent_core::business_logic::services::DiscoveryService;
 use a2a_rs::domain::AgentCard;
 
-// Added for AgentInvoker implementation
-use workflow_management::agent_communication::agent_invoker::AgentInvoker;
 
 /********************************************/
 /* Service Adapter for Evaluation Service   */
@@ -92,31 +90,4 @@ impl DiscoveryService for AgentDiscoveryServiceAdapter {
     }
 }
 
-/********************************************/
-/* Placeholder for AgentInvoker Adapter     */
-/********************************************/
 
-// This adapter is added as a placeholder to demonstrate awareness
-// of the new AgentInvoker trait signature.
-// In the current architecture, WorkflowAgent consumes an AgentRegistry
-// (from the workflow_management crate) which is expected to handle agent invocation.
-// If WorkflowAgent itself were to act as an AgentInvoker (e.g., for local agents
-// or in a test environment), this would be an appropriate place for its implementation.
-pub struct LocalAgentInvoker;
-
-#[async_trait]
-impl AgentInvoker for LocalAgentInvoker {
-    async fn interact(&self, agent_id: String, message: String, skill: String) -> anyhow::Result<serde_json::Value> {
-        // This is a placeholder implementation.
-        // In a real scenario, this would contain logic to communicate with other agents.
-        println!("LocalAgentInvoker: Interacting with agent {} with message '{}' and skill '{}'", agent_id, message, skill);
-        // For demonstration, return a dummy JSON value
-        Ok(serde_json::json!({
-            "status": "simulated_success",
-            "agent_id": agent_id,
-            "message_received": message,
-            "skill_requested": skill,
-            "response": "This is a simulated response from LocalAgentInvoker."
-        }))
-    }
-}

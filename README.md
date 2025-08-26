@@ -204,8 +204,8 @@ Swarm is currently a project for discovery and exploration! While not production
 
 We're continuously working on improvements, including:
 
+*   **Workflow Management Runtime:** Currently WIP : Defining and Executing a Pipeline of both tasks and Agents. ( Could be launched as a standalone or embedded into an agent). There is a beta version working but final version needs to be more flexible
 *   **Dynamic Discovery:** Enable agents to understand dynamically what relevant skills are available to define an execution plan.
-*   **Workflow Management Runtime:** WIP : Defining and Executing a Pipeline of both tasks and Agents. ( Could be launched as a standalone or embedded into an agent)
 *   **Context Enrichment:** Enrich the request with relevant context, to make a plan more accurate.
 *   **Identity Management:** Use Self Sovereign Identity concept to enable agent to have its own proven identity.
 *   **Code Refactoring:** Continuously improving code clarity and maintainability.

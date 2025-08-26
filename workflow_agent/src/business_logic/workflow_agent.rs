@@ -41,11 +41,12 @@ impl Agent for WorkFlowAgent {
         discovery_service: Option<Arc<dyn DiscoveryService>>,
         workflow_service: Option<Arc<dyn WorkflowServiceApi>>,
     ) -> anyhow::Result<Self> {
-        let llm_full_api_key = env::var("LLM_WORKFLOW_API_KEY").expect("LLM_WORKFLOW_API_KEY must be set");
+
+        let llm_workflow_api_key = env::var("LLM_WORKFLOW_API_KEY").expect("LLM_WORKFLOW_API_KEY must be set");
         let _llm_interaction = ChatLlmInteraction::new(
             agent_config.agent_llm_url(),
             agent_config.agent_model_id(),
-            llm_full_api_key,
+            llm_workflow_api_key,
         );
 
         let workflow_runners = workflow_service
@@ -62,13 +63,14 @@ impl Agent for WorkFlowAgent {
         })
     }
 
+    // todo:use metadata to potentially handle workflow execution request
+    // add possibility to dynamically create a workflow based on user query.. or even step by step
     async fn handle_request(&self, request: LlmMessage) -> anyhow::Result<ExecutionResult> {
         let request_id = Uuid::new_v4().to_string();
         let conversation_id = Uuid::new_v4().to_string();
         let user_query = request.content.clone().unwrap_or_default();
 
         info!("---WorkflowAgent: Starting to handle user request -- Query: \'{}\'---", user_query);
-
         let graph_file="./workflow_management/example_workflow/multi_agent_workflow.json";
         
         // LOAD AND EXECUTE

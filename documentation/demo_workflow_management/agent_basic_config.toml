@@ -19,6 +19,16 @@ agent_ws_port="8081"
 #################################################################
 agent_discovery_url="http://127.0.0.1:4000"
 
+#################################################################
+# Agent Evaluation Service
+#################################################################
+agent_evaluation_service_url="http://127.0.0.1:7000"
+
+#################################################################
+# Agent Memory Service
+#################################################################
+agent_memory_service_url="http://127.0.0.1:5000"
+
 
 #################################################################
 # Purpose and high level skills
@@ -52,3 +62,4 @@ agent_llm_url="https://api.groq.com/openai/v1/chat/completions"
 # you just define the configuration file to use
 #################################################################
 agent_mcp_config_path="documentation/demo_workflow_management/mcp_runtime_config.toml"
+

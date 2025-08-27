@@ -56,7 +56,7 @@ impl ToolRegistry {
        
         if self.definitions.is_empty() {return "No Tool Registered".to_string();}
         let mut details = "Tools registered in the system: \n".to_string();
-        for (id, tool_def) in self.definitions.iter() {details.push_str(&format!("* tool_id : {} -- descripotion : {} -- arguments : {}\n", id, tool_def.description,tool_def.input_schema));}
+        for (id, tool_def) in self.definitions.iter() {details.push_str(&format!("* tool_id : {} -- description : {} -- arguments : {}\n", id, tool_def.description,tool_def.input_schema));}
         details.trim_end().to_string()
     }
 }

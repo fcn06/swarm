@@ -4,7 +4,7 @@ mod agents;
 
 use clap::Parser;
 use std::sync::Arc;
-use tracing::{ info, warn};
+use tracing::{ info, debug,warn};
 
 use configuration::{setup_logging, AgentReference,AgentConfig};
 
@@ -119,22 +119,21 @@ async fn setup_tool_runner(mcp_config_path: String) -> anyhow::Result<Arc<ToolRu
     let mcp_tool_runner_invoker = McpRuntimeToolInvoker::new(mcp_config_path).await?;
     let mcp_tool_runner_invoker = Arc::new(mcp_tool_runner_invoker);
 
-    let mut tool_registry = ToolRegistry::new();
-    tool_registry.register_tool(ToolDefinition {
-        id: "get_current_weather".to_string(),
-        name: "Retrieve Weather in a Location".to_string(),
-        description: "Retrieves weather in a specific location".to_string(),
-        input_schema: json!({"location": {"type": "string", "description": "City name"}}), //json!({}),
-        output_schema: json!({}),
-    });
-    tool_registry.register_tool(ToolDefinition {
-        id: "get_customer_details".to_string(),
-        name: "Retrieve Customer Details".to_string(),
-        description: "Retrieves details of a customer for a specific id".to_string(),
-        input_schema: json!({"customer_id": {"type": "string", "description": "Id of a customer"}}), //json!({}),
-        output_schema: json!({}),
-    });
-    let tool_registry = Arc::new(tool_registry);
+    // Register tools
+        let mut tool_registry = ToolRegistry::new();
+        let list_tools= mcp_tool_runner_invoker.get_tools_list_v2().await?;
+        for tool in list_tools {
+            let tool_definition=ToolDefinition {
+                id:tool.function.name.clone(),
+                name: tool.function.name.clone(),
+                description: tool.function.description.clone(),
+                input_schema: serde_json::Value::String(serde_json::to_string(&tool.function.parameters).unwrap_or_else(|_| "{}".to_string())),
+                output_schema: json!({}),
+        };    
+        tool_registry.register_tool(tool_definition);
+        }
+        let tool_registry = Arc::new(tool_registry);
+    // End tools Registration
 
     Ok(Arc::new(ToolRunner::new(tool_registry, mcp_tool_runner_invoker)))
 }

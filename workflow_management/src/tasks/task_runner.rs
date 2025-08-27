@@ -28,7 +28,7 @@ pub trait TaskRunner: Send + Sync {
 // V2 implementation, more flexible
 
 pub struct TaskRunner {
-    task_registry: Arc<TaskRegistry>, // To get metadata
+    pub task_registry: Arc<TaskRegistry>, // To get metadata
     task_invoker: Arc<dyn TaskInvoker>, // To perform actual invocation
 }
 

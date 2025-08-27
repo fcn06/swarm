@@ -185,6 +185,14 @@ async fn main()-> Result<(), Box<dyn std::error::Error>>{
     let tool_runner = setup_tool_runner(args.mcp_config_path).await?;
     let agent_runner = setup_agent_runner(&workflow_agent_config).await?;
 
+
+    let list_tools_details = tool_runner.tool_registry.get_tool_details().unwrap_or_else(|| "No tools registered".to_string());
+    let list_tasks_details = task_runner.task_registry.get_tasks_details().unwrap_or_else(|| "No tasks registered".to_string());
+    let list_agents_details = agent_runner.agent_registry.get_agent_details().unwrap_or_else(|| "No agents registered".to_string());
+    println!("\nList of Tools: {:?}", list_tools_details);
+    println!("\nList of Tasks: {:?}", list_tasks_details);
+    println!("\nList of Agents: {:?}\n", list_agents_details);
+
     /************************************************/
     /* Get a Workflow Registries Instance           */
     /************************************************/ 

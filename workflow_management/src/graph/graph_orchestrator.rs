@@ -157,7 +157,9 @@ impl PlanExecutor {
                     })?
                     .clone();
 
+                // todo : Maybe improve that part to always refer to user_query...
                 let message = activity.description.clone();
+
                 let skill = activity.skill_to_use.clone().unwrap_or_default();
 
                 self.agent_runner

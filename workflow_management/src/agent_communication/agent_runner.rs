@@ -29,7 +29,7 @@ pub trait AgentRunner: Send + Sync {
 // V2 implementation, more flexible
 
 pub struct AgentRunner {
-    agent_registry: Arc<AgentRegistry>, // To get metadata
+    pub agent_registry: Arc<AgentRegistry>, // To get metadata
     agent_invoker: Arc<dyn AgentInvoker>, // To perform actual interaction
 }
 

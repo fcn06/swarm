@@ -26,7 +26,7 @@ pub trait ToolRunner: Send + Sync {
 // V2 implementation, more flexible
 
 pub struct ToolRunner {
-    tool_registry: Arc<ToolRegistry>, // To get metadata
+    pub tool_registry: Arc<ToolRegistry>, // To get metadata
     tool_invoker: Arc<dyn ToolInvoker>, // To perform actual invocation
 }
 

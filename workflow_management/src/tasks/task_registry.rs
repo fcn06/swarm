@@ -47,6 +47,12 @@ impl TaskRegistry {
     pub fn new() -> Self { Self{definitions : HashMap::new() } }
     pub fn register_task(&mut self, definition: TaskDefinition) { self.definitions.insert(definition.id.clone(), definition); }
     pub fn get_task_definition(&self, tool_id: &str) -> Option<&TaskDefinition> {self.definitions.get(tool_id)}
+    pub fn get_tasks_details(&self) -> Option<String> {
+        if self.definitions.is_empty() {return None;}
+        let mut details = String::new();
+        for (id, task_def) in self.definitions.iter() {details.push_str(&format!("* {} -- {}\n", id, task_def.description));}
+        Some(details.trim_end().to_string())
+    }
 }
 
 impl Default for TaskRegistry {

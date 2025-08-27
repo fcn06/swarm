@@ -3,38 +3,41 @@
   "activities": [
     {
       "activity_type": "direct_tool_use",
-      "id": "fetch_customer_data",
-      "description": "Fetches customer 12345 data using their ID.",
-      "type": "customer_data_access",
+      "id": "fetch_weather_forecast",
+      "description": "Fetches weather forecast for Boston",
+      "type": "weather_data_access",
       "tools": [
         {
-          "tool_to_use": "get_customer_details",
+          "tool_to_use": "get_current_weather",
           "tool_parameters": {
-            "customer_id": "12345"
+            "_location": "Boston"
           }
         }
       ],
+      "agent":{},
       "tasks_parameters": {},
       "dependencies": [],
-      "expected_outcome": "Customer data (e.g., name, address, email)."
+      "expected_outcome": "Weather forecast for the specified location."
     },
     {
       "activity_type": "delegation_agent",
-      "id": "fetch_weather_forecast",
-      "description": "Fetches the weather forecast for the customer's location.",
-      "type": "weather_information_retrieval",
+      "id": "fetch_customer_data",
+      "description": "Retrieves customer data for customer_id 12345",
+      "type": "customer_retrieval_information",
       "agent": {
         "skill_to_use": null,
         "assigned_agent_id_preference": "Basic_Agent"
       },
       "tools": [],
-      "tasks_parameters": {},
+      "tasks_parameters": {
+        "customer_id": "12345"
+      },
       "dependencies": [
         {
-          "source": "fetch_customer_data"
+          "source": "fetch_weather_forecast"
         }
       ],
-      "expected_outcome": "Weather forecast for the specified location."
+      "expected_outcome": "Customer data (e.g., name, address, email)."
     },
     {
       "activity_type": "delegation_agent",
@@ -60,21 +63,13 @@
     {
       "activity_type": "delegation_agent",
       "id": "send_notification",
-      "description": "Sends the personalized message to the customer.",
+      "description": "Send notification by email of the message : {{compose_personalized_message}}",
       "type": "send_email",
       "agent": {
         "skill_to_use": null,
         "assigned_agent_id_preference": "Basic_Agent"
       },
-      "tools": [
-        {
-          "tool_to_use": "email_sender",
-          "tool_parameters": {
-            "email_address": "{{fetch_customer_data.result.email}}",
-            "message": "{{compose_personalized_message.result.message}}"
-          }
-        }
-      ],
+      "tools": [],
       "tasks_parameters": {},
       "dependencies": [
         {

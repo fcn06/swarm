@@ -9,6 +9,9 @@ use crate::business_logic::services::EvaluationService;
 use crate::business_logic::services::DiscoveryService;
 use crate::business_logic::services::WorkflowServiceApi;
 
+use serde_json::Map;
+use serde_json::Value;
+
 #[async_trait]
 pub trait Agent: Send + Sync  + Clone + 'static {
     async fn new( 
@@ -18,6 +21,10 @@ pub trait Agent: Send + Sync  + Clone + 'static {
         discovery_service: Option<Arc<dyn DiscoveryService>>,
         workflow_service: Option<Arc<dyn WorkflowServiceApi>>
     ) -> anyhow::Result<Self>;
-    async fn handle_request(&self, request: LlmMessage) -> anyhow::Result<ExecutionResult>;
+    //async fn handle_request(&self, request: LlmMessage) -> anyhow::Result<ExecutionResult>;
+    async fn handle_request(&self, request: LlmMessage, metadata:Option<Map<String, Value>>) -> anyhow::Result<ExecutionResult>;
     
 }
+
+
+// Option<Map<String, Value>>

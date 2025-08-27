@@ -1,8 +1,11 @@
 use std::sync::Arc;
 use async_trait::async_trait;
-use tracing::{info, error,warn};
+use tracing::{info, debug, error,warn};
 use uuid::Uuid;
 use std::env;
+
+use serde_json::Map;
+use serde_json::Value;
 
 use llm_api::chat::{ChatLlmInteraction};
 
@@ -22,6 +25,7 @@ use agent_core::planning::plan_definition::ExecutionResult;
 use llm_api::chat::Message as LlmMessage;
 use agent_core::business_logic::agent::Agent;
 
+static DEFAULT_WORKFLOW_FILE: &str = "./workflow_management/example_workflow/multi_agent_workflow.json";
 
 /// Agent that executes predefined workflows.
 #[allow(dead_code)]
@@ -65,17 +69,21 @@ impl Agent for WorkFlowAgent {
 
     // todo:use metadata to potentially handle workflow execution request
     // add possibility to dynamically create a workflow based on user query.. or even step by step
-    async fn handle_request(&self, request: LlmMessage) -> anyhow::Result<ExecutionResult> {
+    async fn handle_request(&self, request: LlmMessage,metadata:Option<Map<String, Value>>) -> anyhow::Result<ExecutionResult> {
+
         let request_id = Uuid::new_v4().to_string();
         let conversation_id = Uuid::new_v4().to_string();
         let user_query = request.content.clone().unwrap_or_default();
 
-        info!("---WorkflowAgent: Starting to handle user request -- Query: \'{}\'---", user_query);
-        let graph_file="./workflow_management/example_workflow/multi_agent_workflow.json";
-        
+        // check that we use the file from metadata and not the fallback
+        let graph_file = self.extract_workflow_filename(metadata.clone()).unwrap_or(DEFAULT_WORKFLOW_FILE.to_string());
+
+        debug!("---WorkflowAgent: Starting to handle user request -- Query: \'{}\'---", user_query);
+        debug!("\nWorkflowAgent: WorkFlow File : \'{}\' \n", graph_file);
+
         // LOAD AND EXECUTE
         // 4. Load workflow and execute
-        let workflow_file = graph_file;
+        let workflow_file = &graph_file;
         info!("Loading workflow from: {}", workflow_file);
 
         match load_graph_from_file(workflow_file) {
@@ -114,5 +122,18 @@ impl Agent for WorkFlowAgent {
                 Err(anyhow::anyhow!("Failed to load workflow: {}", e))
             }
         }
+    }
+}
+
+impl WorkFlowAgent {
+    fn extract_workflow_filename(&self, metadata: Option<Map<String, Value>>) -> Option<String> {
+        if let Some(map) = metadata {
+            if let Some(value) = map.get("workflow_url") {
+                if let Some(filename) = value.as_str() {
+                    return Some(filename.to_string());
+                }
+            }
+        }
+        None
     }
 }

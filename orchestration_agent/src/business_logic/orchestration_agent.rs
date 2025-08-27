@@ -7,6 +7,8 @@ use std::sync::Arc;
 use std::fs; // Add this line for file system operations
 //use std::io::prelude::*; // Add this line for read_to_string
 
+use serde_json::Map;
+use serde_json::Value;
 
 // Assuming llm_api crate is available and has these
 use llm_api::chat::{ChatLlmInteraction};
@@ -101,7 +103,7 @@ impl Agent for OrchestrationAgent {
 
     }
 
-    async fn handle_request(&self, request: LlmMessage) ->anyhow::Result<ExecutionResult> { 
+    async fn handle_request(&self, request: LlmMessage,_metadata:Option<Map<String, Value>>) ->anyhow::Result<ExecutionResult> { 
     
         let request_id = Uuid::new_v4().to_string();
         let conversation_id = Uuid::new_v4().to_string();
@@ -570,7 +572,7 @@ impl OrchestrationAgent {
                 tool_calls:None
             };
 
-            let execution_result = self.handle_request(llm_message_user_request).await;
+            let execution_result = self.handle_request(llm_message_user_request,None).await;
             execution_result
         }
      

@@ -143,9 +143,8 @@ impl<T: Agent> AsyncMessageHandler for AgentHandler<T> {
         // Place her user query handler
         let agent = self.agent.lock().await;
 
-        // Handle user request and get execution result
-        // todo:use Metadata to potentially handle workflow execution request
-        let execution_result:ExecutionResult = agent.handle_request(llm_msg.clone()).await.expect("No Return from LLM");
+        // Handle user request and metadata from original message and get execution result
+        let execution_result:ExecutionResult = agent.handle_request(llm_msg.clone(),message.metadata.clone()).await.expect("No Return from LLM");
            
         // Convert the message Back to A2A Message
         let llm_response = LlmMessage {

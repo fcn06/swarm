@@ -82,7 +82,7 @@ echo "F) Launch Workflow Management Agent listening on port 8180, connected to o
 echo $'\n'
 echo "Workflow Agent"
 echo $'\n'
-./target/release/launch_agent_workflow --config-file "documentation/demo_workflow_management/agent_workflow_config.toml" --graph-file "documentation/demo_workflow_management/mix_agent_tools_workflow.json" --log-level "warn"  &
+./target/release/launch_agent_workflow --config-file "documentation/demo_workflow_management/agent_workflow_config.toml"  --log-level "warn"  &
 sleep 5
 echo $'\n'
 
@@ -98,7 +98,7 @@ echo $'\n'
 
 echo "Ask the questions to the orchestrator : He should answer to the whole set of questions by send queries to appropriate agent"
 echo $'\n'
-./target/release/simple_workflow_agent_client --port 8180  --log-level "warn"
+./target/release/simple_workflow_agent_client --port 8180 --graph-file "documentation/demo_workflow_management/mix_agent_tools_workflow.json" --log-level "warn"
 echo $'\n'
 
 echo "When it is finished..." 

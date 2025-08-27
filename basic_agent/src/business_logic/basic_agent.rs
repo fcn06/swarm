@@ -5,6 +5,8 @@ use llm_api::chat::{ChatLlmInteraction};
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
+use serde_json::Map;
+use serde_json::Value;
 
 // todo : change the prompt of mcp runtime , so that he tries to use internal knowledge if possible
 // todo: see if the method of delegation to mcp_runtime is optimal
@@ -71,7 +73,7 @@ impl Agent for BasicAgent {
     }
 
     /// business logic for handling user request
-    async fn handle_request(&self, request: LlmMessage) ->anyhow::Result<ExecutionResult> {
+    async fn handle_request(&self, request: LlmMessage,_metadata:Option<Map<String, Value>>) ->anyhow::Result<ExecutionResult> {
        
        let request_id=uuid::Uuid::new_v4().to_string();
        let conversation_id = Uuid::new_v4().to_string();

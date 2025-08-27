@@ -52,11 +52,12 @@ impl ToolRegistry {
     pub fn new() -> Self { Self{definitions : HashMap::new() } }
     pub fn register_tool(&mut self, definition: ToolDefinition) { self.definitions.insert(definition.id.clone(), definition); }
     pub fn get_tool_definition(&self, tool_id: &str) -> Option<&ToolDefinition> {self.definitions.get(tool_id)}
-    pub fn get_tool_details(&self) -> Option<String> {
-        if self.definitions.is_empty() {return None;}
-        let mut details = String::new();
-        for (id, tool_def) in self.definitions.iter() {details.push_str(&format!("* {} -- {}\n", id, tool_def.description));}
-        Some(details.trim_end().to_string())
+    pub fn get_tool_details(&self) -> String {
+       
+        if self.definitions.is_empty() {return "No Tool Registered".to_string();}
+        let mut details = "Tools registered in the system: \n".to_string();
+        for (id, tool_def) in self.definitions.iter() {details.push_str(&format!("* tool_id : {} -- descripotion : {} -- arguments : {}\n", id, tool_def.description,tool_def.input_schema));}
+        details.trim_end().to_string()
     }
 }
 

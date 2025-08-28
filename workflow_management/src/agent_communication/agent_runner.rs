@@ -40,14 +40,13 @@ impl AgentRunner {
     }
 
     /// Interacts with an agent identified by its ID.
-    #[allow(unreachable_code)]
     pub async fn interact(&self, agent_id: String, message: String,skill:String) -> anyhow::Result<serde_json::Value> {
         // Optional: Fetch metadata for logging or task routing
         if let Some(agent_def) = self.agent_registry.get_agent_definition(&agent_id) {
             // You now have easy access to agent_def.skills here
             println!("Interacting with agent: {} (Skills: {:?})", agent_def.name, agent_def.skills);
         } else {
-            return anyhow::bail!(format!("Agent '{}' not found in registry.", agent_id));
+            anyhow::bail!(format!("Agent '{}' not found in registry.", agent_id));
         }
 
         // Delegate the actual, protocol-specific interaction to the injected invoker

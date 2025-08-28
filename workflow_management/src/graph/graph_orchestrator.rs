@@ -186,8 +186,8 @@ impl PlanExecutor {
                 let task_id = activity
                     .skill_to_use
                     .as_ref()
-                    .ok_or_else(|| PlanExecutorError::MissingSkill(activity.id.clone()))?
-                    .clone();
+                    .cloned()
+                    .unwrap_or_else(|| "".to_string()); // Default to empty string if no skill_to_use
 
                 //let params = Value::Object(activity.tasks_parameters.into()); // FIX: Convert HashMap to serde_json::Map
                 let params = Value::Object(activity.tasks_parameters.clone().into_iter().collect());

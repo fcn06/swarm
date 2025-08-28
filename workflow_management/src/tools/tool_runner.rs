@@ -37,7 +37,6 @@ impl ToolRunner {
     }
 
     /// Executes a tool identified by its ID.
-    #[allow(unreachable_code)]
     pub async fn run(&self, tool_id: String, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
         // Optional: Fetch metadata for logging or validation before invoking
         if let Some(tool_def) = self.tool_registry.get_tool_definition(&tool_id) {
@@ -45,7 +44,7 @@ impl ToolRunner {
             println!("Preparing to run tool: {} - {}", tool_def.name, tool_def.description);
             // Potential input validation against tool_def.input_schema
         } else {
-            return anyhow::bail!(format!("Tool '{}' not found in registry.", tool_id));
+            anyhow::bail!(format!("Tool '{}' not found in registry.", tool_id));
         }
 
         // Delegate the actual, protocol-specific invocation to the injected invoker

@@ -67,6 +67,7 @@ pub struct Activity {
     #[serde(default)]
     pub dependencies: Vec<Dependency>,
     pub expected_outcome: Option<String>,
+    //todo:add task_id
     #[serde(default)]
     pub tasks_parameters: HashMap<String, serde_json::Value>, // MODIFIED: Changed from String to serde_json::Value
     #[serde(skip_serializing_if = "Option::is_none")]

@@ -5,5 +5,5 @@ use serde_json::Value;
 pub trait TaskInvoker: Send + Sync {
     /// Invokes a tool with the given ID and input.
     /// The concrete implementation knows how to translate this into a protocol-specific call.
-    async fn invoke(&self, tool_id: String, params: &Value) -> anyhow::Result<Value>;
+    async fn invoke(&self, task_id: String, params: &Value) -> anyhow::Result<Value>;
 }

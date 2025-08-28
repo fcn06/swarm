@@ -204,7 +204,6 @@ async fn main()-> Result<(), Box<dyn std::error::Error>>{
 
     let workflow_runners: Option<Arc<dyn WorkflowServiceApi>> = Some(Arc::new(workflow_runners));
 
-
     /************************************************/
     /* Launch Workflow Agent                        */
     /************************************************/ 

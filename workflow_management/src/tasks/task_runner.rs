@@ -39,7 +39,6 @@ impl TaskRunner {
     }
 
     /// Executes a tool identified by its ID.
-    #[allow(unreachable_code)]
     pub async fn run(&self, task_id: String, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
         // Optional: Fetch metadata for logging or validation before invoking
         if let Some(task_def) = self.task_registry.get_task_definition(&task_id) {
@@ -47,7 +46,7 @@ impl TaskRunner {
             println!("Preparing to run task: {} - {}", task_def.name, task_def.description);
             // Potential input validation against tool_def.input_schema
         } else {
-            return anyhow::bail!(format!("Task '{}' not found in registry.", task_id));
+            anyhow::bail!(format!("Task '{}' not found in registry.", task_id));
         }
 
         // Delegate the actual, protocol-specific invocation to the injected invoker

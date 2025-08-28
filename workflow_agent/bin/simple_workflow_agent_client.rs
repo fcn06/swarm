@@ -93,6 +93,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("\nUser_Query : {}",user_text);
     
 
+    /*
+    // for dynamic plan generation 
+    let message_3=Message::builder()
+        .role(a2a_rs::domain::Role::User)
+        .parts(vec![Part::Text {
+            text: user_text,
+            metadata: None,
+        }])
+        .message_id(message_id_3)
+        .build();
+    */
+     
     let message_3=Message::builder()
         .role(a2a_rs::domain::Role::User)
         .parts(vec![Part::Text {

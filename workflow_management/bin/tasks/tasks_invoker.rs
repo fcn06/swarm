@@ -10,10 +10,9 @@ pub struct GreetTask;
 #[async_trait]
 impl TaskInvoker for GreetTask {
 
-    #[allow(unused_variables)]
     async fn invoke(
         &self,
-        tool_id: String, 
+        _task_id: String,
         params: &Value
     ) ->anyhow::Result<Value> {
 

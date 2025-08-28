@@ -55,77 +55,85 @@ struct Args {
     user_query: String,
 }
 
-#[tokio::main]
-async fn main() -> anyhow::Result<()> {
-    let args = Args::parse();
-    setup_logging(&args.log_level);
 
-    // TASKS
+
+async fn setup_task_runner() -> anyhow::Result<Arc<TaskRunner>> {
     let greet_task_invoker = GreetTask::new()?;
-    let greet_task_invoker=Arc::new(greet_task_invoker);
+    let greet_task_invoker = Arc::new(greet_task_invoker);
 
     let mut task_registry = TaskRegistry::new();
-
     task_registry.register_task(TaskDefinition {
         id: "greeting".to_string(),
         name: "Say Hello".to_string(),
         description: "Say hello to somebody".to_string(),
         input_schema: json!({}),
-        output_schema:json!({}),
+        output_schema: json!({}),
     });
     let task_registry = Arc::new(task_registry);
 
-    let task_runner=Arc::new(TaskRunner::new(task_registry,greet_task_invoker));
+    Ok(Arc::new(TaskRunner::new(task_registry, greet_task_invoker)))
+}
 
+async fn setup_tool_runner(mcp_config_path: String) -> anyhow::Result<Arc<ToolRunner>> {
+    let mcp_tool_runner_invoker = McpRuntimeToolInvoker::new(mcp_config_path).await?;
+    let mcp_tool_runner_invoker = Arc::new(mcp_tool_runner_invoker);
 
-    // TOOLS   
-    // invoker
-    let mcp_tool_runner_invoker = McpRuntimeToolInvoker::new(args.mcp_config_path).await?;
-    let mcp_tool_runner_invoker=Arc::new(mcp_tool_runner_invoker);
+    // Register tools
+        let mut tool_registry = ToolRegistry::new();
+        let list_tools= mcp_tool_runner_invoker.get_tools_list_v2().await?;
+        for tool in list_tools {
+            let tool_definition=ToolDefinition {
+                id:tool.function.name.clone(),
+                name: tool.function.name.clone(),
+                description: tool.function.description.clone(),
+                input_schema: serde_json::Value::String(serde_json::to_string(&tool.function.parameters).unwrap_or_else(|_| "{}".to_string())),
+                output_schema: json!({}),
+        };    
+        tool_registry.register_tool(tool_definition);
+        }
+        let tool_registry = Arc::new(tool_registry);
+    // End tools Registration
 
-    // registry
-    let mut tool_registry = ToolRegistry::new();
-    tool_registry.register_tool(ToolDefinition {
-        id: "get_current_weather".to_string(),
-        name: "Retrieve Weather in a Location".to_string(),
-        description: "Retrieves weather in a specific location".to_string(),
-        input_schema: json!({}),
-        output_schema:json!({}),
-    });
-    let tool_registry = Arc::new(tool_registry);
-    // runner
-    let tool_runner=Arc::new(ToolRunner::new(tool_registry,mcp_tool_runner_invoker));
-    
+    Ok(Arc::new(ToolRunner::new(tool_registry, mcp_tool_runner_invoker)))
+}
 
-    // AGENTS
-    // invoker
-    // additional services ( discovery, evaluation, memory)
-    let discovery_client = Arc::new(AgentDiscoveryServiceClient::new(args.discovery_url));
+async fn setup_agent_runner(discovery_url:String) -> anyhow::Result<Arc<AgentRunner>> {
+    let discovery_client = Arc::new(AgentDiscoveryServiceClient::new(discovery_url));
 
     let a2a_agent_invoker = A2AAgentInvoker::new(vec![AgentReference {
         name: "Basic_Agent".to_string(),
         url: "http://127.0.0.1:8080".to_string(),
         is_default: Some(true),
     }], None, None, discovery_client.clone()).await?;
-    let a2a_agent_invoker=Arc::new(a2a_agent_invoker);
+    let a2a_agent_invoker = Arc::new(a2a_agent_invoker);
 
-    // registry
     let mut agent_registry = AgentRegistry::new();
-
     agent_registry.register_agent(AgentDefinition {
         id: "Basic_Agent".to_string(),
         name: "Basic Agent for weather requests, customer requests and other general topics".to_string(),
         description: "Retrieve Weather in a Location, Get customer details and other General Requests".to_string(),
-        skills:Vec::new(),
+        skills: Vec::new(),
     });
-    let agent_registry=Arc::new(agent_registry);
+    let agent_registry = Arc::new(agent_registry);
 
-    // runner
-    let agent_runner= Arc::new(AgentRunner::new(agent_registry,a2a_agent_invoker));
-    // todo : make it recursive to point execution of a workflow
-
+    Ok(Arc::new(AgentRunner::new(agent_registry, a2a_agent_invoker)))
+}
 
 
+#[tokio::main]
+async fn main()-> Result<(), Box<dyn std::error::Error>>{
+
+    let args = Args::parse();
+    setup_logging(&args.log_level);
+
+
+
+    /************************************************/
+    /* Set Up Runners                               */
+    /************************************************/ 
+    let task_runner = setup_task_runner().await?;
+    let tool_runner = setup_tool_runner(args.mcp_config_path).await?;
+    let agent_runner = setup_agent_runner(args.discovery_url.to_string()).await?;
 
     // LOAD AND EXECUTE
     // 4. Load workflow and execute

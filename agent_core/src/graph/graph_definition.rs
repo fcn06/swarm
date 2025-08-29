@@ -32,16 +32,26 @@ pub struct ToolConfigInput {
     pub tool_parameters: serde_json::Value, // Changed to Value to allow any object
 }
 
+// New struct for Task configuration
+#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
+pub struct TaskConfigInput {
+    pub task_to_use: Option<String>,
+    #[serde(default)]
+    pub task_parameters: serde_json::Value,
+}
+
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
 pub struct ActivityInput {
     pub activity_type: ActivityType,
     pub id: String,
     pub description: String,
     pub r#type: String, // 'type' is required in the schema
-    pub agent: AgentConfigInput,
-    pub tools: Vec<ToolConfigInput>,
     #[serde(default)]
-    pub tasks_parameters: HashMap<String, String>,
+    pub agent: Option<AgentConfigInput>, // Made optional
+    #[serde(default)]
+    pub tools: Option<Vec<ToolConfigInput>>, // Made optional
+    #[serde(default)]
+    pub tasks: Option<Vec<TaskConfigInput>>, // Replaced tasks_parameters and made optional
     #[serde(default)]
     pub dependencies: Vec<Dependency>,
     pub expected_outcome: String, // 'expected_outcome' is required in the schema
@@ -65,10 +75,10 @@ pub struct Activity {
     pub tool_to_use: Option<String>,
     pub tool_parameters: Option<serde_json::Value>,
     #[serde(default)]
+    pub tasks: Option<Vec<TaskConfigInput>>,
+    #[serde(default)]
     pub dependencies: Vec<Dependency>,
     pub expected_outcome: Option<String>,
-    #[serde(default)]
-    pub tasks_parameters: HashMap<String, String>, // Added tasks_parameters
     #[serde(skip_serializing_if = "Option::is_none")]
     pub activity_output: Option<String>,
 }
@@ -149,13 +159,13 @@ impl From<WorkflowPlanInput> for Graph {
                 id: activity_input.id.clone(),
                 description: activity_input.description,
                 r#type: Some(activity_input.r#type),
-                skill_to_use: activity_input.agent.skill_to_use,
-                assigned_agent_id_preference: activity_input.agent.assigned_agent_id_preference,
-                tool_to_use: activity_input.tools.get(0).and_then(|t| t.tool_to_use.clone()),
-                tool_parameters: activity_input.tools.get(0).map(|t| t.tool_parameters.clone()),
+                skill_to_use: activity_input.agent.as_ref().and_then(|a| a.skill_to_use.clone()),
+                assigned_agent_id_preference: activity_input.agent.as_ref().and_then(|a| a.assigned_agent_id_preference.clone()),
+                tool_to_use: activity_input.tools.as_ref().and_then(|t_vec| t_vec.get(0)).and_then(|t| t.tool_to_use.clone()),
+                tool_parameters: activity_input.tools.as_ref().and_then(|t_vec| t_vec.get(0)).map(|t| t.tool_parameters.clone()),
+                tasks: activity_input.tasks.clone(),
                 dependencies: activity_input.dependencies.clone(),
                 expected_outcome: Some(activity_input.expected_outcome),
-                tasks_parameters: activity_input.tasks_parameters,
                 activity_output: None, // This will be populated during execution
             };
 

@@ -102,7 +102,7 @@ impl Agent for WorkFlowAgent {
                 })?
         };
         debug!("Graph Generated: {:#?}", graph);
-        
+  
         let mut executor =
             PlanExecutor::new(
                 graph,
@@ -160,8 +160,10 @@ impl WorkFlowAgent {
                 .context("Failed to read workflow_agent_prompt.txt")?;
 
         let prompt = prompt_template
-            .replacen("{}", &capabilities, 1)
-            .replacen("{}",&user_query, 1);
+            .replacen("{}",&user_query, 1)
+            .replacen("{}", &capabilities, 1);
+
+        println!("Prompt for Plan creation : {}", prompt);
 
         // 3. Call the LLM API
         // This api returns raw text from llm
@@ -184,8 +186,12 @@ impl WorkFlowAgent {
             response_content.trim().to_string()
         };
 
+        println!("WorkFlow Generated: {}", json_string);
+
         // 5. Parse the LLM's JSON response into the Workflow struct
         let workflow: WorkflowPlanInput = serde_json::from_str(&json_string)?;
+
+        
         Ok(workflow.into())
     }
 }

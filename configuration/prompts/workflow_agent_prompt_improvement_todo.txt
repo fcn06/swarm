@@ -1,0 +1,2 @@
+todo:
+Introduce context in agent node, to get elements of previous activity, and be injected in description

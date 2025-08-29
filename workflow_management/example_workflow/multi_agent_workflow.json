@@ -15,7 +15,7 @@
         }
       ],
       "agent":{},
-      "tasks_parameters": {},
+      "tasks": [],
       "dependencies": [],
       "expected_outcome": "Weather forecast for the specified location."
     },
@@ -29,9 +29,7 @@
         "assigned_agent_id_preference": "Basic_Agent"
       },
       "tools": [],
-      "tasks_parameters": {
-        "customer_id": "12345"
-      },
+      "tasks": [],
       "dependencies": [
         {
           "source": "fetch_weather_forecast"
@@ -49,7 +47,7 @@
         "assigned_agent_id_preference": "Basic_Agent"
       },
       "tools": [],
-      "tasks_parameters": {},
+      "tasks": [],
       "dependencies": [
         {
           "source": "fetch_customer_data"
@@ -70,7 +68,7 @@
         "assigned_agent_id_preference": "Basic_Agent"
       },
       "tools": [],
-      "tasks_parameters": {},
+      "tasks": [],
       "dependencies": [
         {
           "source": "compose_personalized_message"

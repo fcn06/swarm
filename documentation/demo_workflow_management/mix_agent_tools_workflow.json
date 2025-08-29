@@ -3,23 +3,6 @@
   "activities": [
     {
       "activity_type": "direct_tool_use",
-      "id": "fetch_customer_data",
-      "description": "Fetches customer data for customer 12345",
-      "type": "customer_data_access",
-      "tools": [
-        {
-          "tool_to_use": "get_customer_details",
-          "tool_parameters": {
-            "_customer_id": "12345"
-          }
-        }
-      ],
-      "agent":{},
-      "tasks_parameters": {},
-      "dependencies": [],
-      "expected_outcome": "Weather forecast for the specified location."
-    },{
-      "activity_type": "direct_tool_use",
       "id": "fetch_weather_forecast",
       "description": "Fetches weather forecast for Boston",
       "type": "weather_data_access",
@@ -32,9 +15,27 @@
         }
       ],
       "agent":{},
-      "tasks_parameters": {},
+      "tasks": [],
       "dependencies": [],
       "expected_outcome": "Weather forecast for the specified location."
+    },
+    {
+      "activity_type": "delegation_agent",
+      "id": "fetch_customer_data",
+      "description": "Retrieves customer data for customer_id 12345",
+      "type": "customer_retrieval_information",
+      "agent": {
+        "skill_to_use": null,
+        "assigned_agent_id_preference": "Basic_Agent"
+      },
+      "tools": [],
+      "tasks": [],
+      "dependencies": [
+        {
+          "source": "fetch_weather_forecast"
+        }
+      ],
+      "expected_outcome": "Customer data (e.g., name, address, email)."
     },
     {
       "activity_type": "delegation_agent",
@@ -46,7 +47,7 @@
         "assigned_agent_id_preference": "Basic_Agent"
       },
       "tools": [],
-      "tasks_parameters": {},
+      "tasks": [],
       "dependencies": [
         {
           "source": "fetch_customer_data"
@@ -67,7 +68,7 @@
         "assigned_agent_id_preference": "Basic_Agent"
       },
       "tools": [],
-      "tasks_parameters": {},
+      "tasks": [],
       "dependencies": [
         {
           "source": "compose_personalized_message"

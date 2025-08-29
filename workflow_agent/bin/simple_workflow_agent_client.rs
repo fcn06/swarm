@@ -89,11 +89,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Create a message
     let message_id_3 = uuid::Uuid::new_v4().to_string();
-    let user_text="What is the current weather in Boston and What are details of Customer_id 1234 ?".to_string();
+    //let user_text="What is the current weather in Boston and What are details of Customer_id 1234 ?".to_string();
+    let user_text="Prepare a nice welcome message for the company with customer_id 12345 , where you mention the weather from their location.".to_string();
     println!("\nUser_Query : {}",user_text);
     
 
-    /*
+    /* 
     // for dynamic plan generation 
     let message_3=Message::builder()
         .role(a2a_rs::domain::Role::User)
@@ -103,8 +104,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }])
         .message_id(message_id_3)
         .build();
-    */
-     
+    */ 
+    
     let message_3=Message::builder()
         .role(a2a_rs::domain::Role::User)
         .parts(vec![Part::Text {
@@ -124,7 +125,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     )
         .message_id(message_id_3)
         .build();
-      
+    
 
     // Send a task message
     println!("This is a task that needs to be sent to two different agents to be adressed...\n");

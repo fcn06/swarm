@@ -19,7 +19,14 @@ Each activity object must have the following fields:
 - 'agent': An object containing 'skill_to_use' (Optional) and 'assigned_agent_id_preference' (Mandatory).
 - 'tools': An array of tool objects, where each tool object has 'tool_to_use' (Mandatory) and 'tool_parameters' (Optional, a JSON object).
 - 'tasks': An array of tasks objects, where each task object has 'task_to_use' (Mandatory) and 'task_parameters' (Optional, a JSON object).
-- 'dependencies': (Optional) An array of dependency objects, where each object has 'source' (the ID of a preceding activity) and 'condition' (Optional, a string condition).
+- 'dependencies': **(MANDATORY if the activity relies on the output of a preceding activity)** An array of dependency objects, where each object has 'source' (the ID of a preceding activity) and 'condition' (Optional, a string condition). **ALWAYS include dependencies when an activity needs output from a previous step.** For example:
+  ```json
+  "dependencies": [
+    {
+      "source": "activity_1"
+    }
+  ]
+  ```
 - 'expected_outcome': A brief description of the expected result of the activity.
 
 **Important Guidelines for Activity Types:**

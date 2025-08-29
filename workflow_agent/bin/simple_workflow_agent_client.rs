@@ -29,8 +29,10 @@ struct Args {
     port: String,
     #[clap(long, default_value = "warn")]
     log_level: String,
-    #[clap(long, default_value = "./workflow_management/example_workflow/multi_agent_workflow.json")]
+    #[clap(long, default_value = "./documentation/demo_workflow_management/mix_agent_tools_workflow.json")]
     graph_file: String,
+    #[arg(long, default_value_t = false)]
+    dynamic_generation: bool,
 }
 
 #[tokio::main]
@@ -94,37 +96,40 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("\nUser_Query : {}",user_text);
     
 
-    /* 
-    // for dynamic plan generation 
-    let message_3=Message::builder()
-        .role(a2a_rs::domain::Role::User)
-        .parts(vec![Part::Text {
-            text: user_text,
-            metadata: None,
-        }])
-        .message_id(message_id_3)
-        .build();
-    */ 
-    
-    let message_3=Message::builder()
-        .role(a2a_rs::domain::Role::User)
-        .parts(vec![Part::Text {
-            text: user_text,
-            metadata: None,
-        }])
-        .metadata(
-            
-                Map::from_iter(
-                    [
-                        (
-                            "workflow_url".to_string(), 
-                            serde_json::json!(args.graph_file)
+    let message_3=match args.dynamic_generation {
+        // workflow created dynamically from user_request and resources
+        true => {
+            Message::builder()
+                .role(a2a_rs::domain::Role::User)
+                .parts(vec![Part::Text {
+                    text: user_text,
+                    metadata: None,
+                }])
+                .message_id(message_id_3)
+                .build()
+        },
+        // based on a workflow file
+        false => {
+            Message::builder()
+            .role(a2a_rs::domain::Role::User)
+            .parts(vec![Part::Text {
+                text: user_text,
+                metadata: None,
+            }])
+            .metadata(
+                    Map::from_iter(
+                        [
+                            (
+                                "workflow_url".to_string(), 
+                                serde_json::json!(args.graph_file)
+                                )
+                                ]
                             )
-                            ]
                         )
-                    )
-        .message_id(message_id_3)
-        .build();
+            .message_id(message_id_3)
+            .build()
+        }
+    };
     
 
     // Send a task message

@@ -98,8 +98,13 @@ echo $'\n'
 
 echo "Ask the questions to the orchestrator : He should answer to the whole set of questions by send queries to appropriate agent"
 echo $'\n'
-#./target/release/simple_workflow_agent_client --port 8180 --graph-file "documentation/demo_workflow_management/mix_agent_tools_workflow.json" --log-level "warn"
+
+# for dynamic generation of a workflow based on user_query and available resources
+#./target/release/simple_workflow_agent_client --port 8180 --log-level "warn" --dynamic-generation
+
+# execution based on a pre defined workflow. good for automation
 ./target/release/simple_workflow_agent_client --port 8180 --log-level "warn"
+
 echo $'\n'
 
 echo "When it is finished..." 

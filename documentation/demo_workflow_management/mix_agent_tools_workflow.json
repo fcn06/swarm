@@ -61,7 +61,7 @@
     {
       "activity_type": "delegation_agent",
       "id": "send_notification",
-      "description": "Send notification by email of the message : {{compose_personalized_message}}",
+      "description": "Send notification by email of the previously generated message : {{compose_personalized_message}}",
       "type": "send_email",
       "agent": {
         "skill_to_use": null,

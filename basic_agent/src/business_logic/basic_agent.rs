@@ -96,7 +96,6 @@ impl Agent for BasicAgent {
             conversation_id,
             success: true, // Mark as not fully successful if summarization fails
             output: response.expect("No Return from LLM").content.expect("Empty result from Llm"),
-            plan_details: None,
         })
 
     }

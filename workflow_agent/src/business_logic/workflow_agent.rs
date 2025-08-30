@@ -123,7 +123,6 @@ impl Agent for WorkFlowAgent {
                     conversation_id: conversation_id.clone(), 
                     success: true, 
                     output: format!("Workflow executed successfully. Outcome: {:?}", execution_outcome), 
-                    plan_details: None 
                 })
             },
             Err(e) => {

@@ -3,7 +3,7 @@ use agent_memory_service::models::Role;
 use crate::business_logic::services::{EvaluationService, MemoryService};
 
 use crate::planning::plan_definition::{
-    ExecutionResult, Plan, 
+    ExecutionResult,  
 };
 use tracing::warn;
 use anyhow::Result;
@@ -58,17 +58,15 @@ impl AgentLogging  {
         }
     }
 
-    async fn log_memory_data(&self,agent_name: &str, conversation_id: &str, user_query: &str, plan: &Plan, execution_result: &Result<ExecutionResult>) {
+    async fn log_memory_data(&self,agent_name: &str, conversation_id: &str, user_query: &str, execution_result: &Result<ExecutionResult>) {
         if let Some(service) = self.memory_service.clone() {
            
             let user_query_clone = user_query.to_string();
             let conversation_id_clone = conversation_id.to_string();
-            // Should replace by Value
-            let plan_clone = plan.clone(); // Clone the Plan to own it
             let agent_name = agent_name.to_string();
 
             // Extract and clone the output string before spawning the task
-            let mut agent_response = match execution_result {
+            let agent_response = match execution_result {
                 Ok(result) => result.output.clone(),
                 Err(e) => format!("Error during execution: {}", e),
             };
@@ -79,10 +77,6 @@ impl AgentLogging  {
                     warn!("Failed to log user query to memory: {}", e);
                 }
 
-                if let Ok(plan_json) = serde_json::to_string(&plan_clone) {
-                    agent_response.push_str("\\n\\n");
-                    agent_response.push_str(&plan_json);
-                }
 
                 if let Err(e) = service.log(conversation_id_clone.clone(), Role::Agent, agent_response, Some(agent_name)).await {
                     warn!("Failed to log agent response to memory: {}", e);

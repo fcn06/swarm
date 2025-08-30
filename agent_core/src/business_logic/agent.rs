@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use crate::planning::plan_definition::{ExecutionResult};
+use crate::execution::execution_result::{ExecutionResult};
 use llm_api::chat::Message as LlmMessage;
 use configuration::AgentConfig;
 

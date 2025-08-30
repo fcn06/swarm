@@ -24,7 +24,7 @@ use workflow_management::graph::config::load_graph_from_file;
 use workflow_management::graph::{ graph_orchestrator::PlanExecutor};
 
 
-use agent_core::planning::plan_definition::ExecutionResult;
+use agent_core::execution::execution_result::ExecutionResult;
 
 use std::fs;
 

@@ -2,9 +2,7 @@ use agent_evaluation_service::evaluation_server::judge_agent::AgentLogData;
 use agent_memory_service::models::Role;
 use crate::business_logic::services::{EvaluationService, MemoryService};
 
-use crate::planning::plan_definition::{
-    ExecutionResult,  
-};
+use crate::execution::execution_result::{ExecutionResult};
 use tracing::warn;
 use anyhow::Result;
 use std::sync::Arc;

@@ -23,6 +23,8 @@ pub enum ActivityType {
 pub struct AgentConfigInput {
     pub skill_to_use: Option<String>,
     pub assigned_agent_id_preference: Option<String>,
+    #[serde(default)]
+    pub agent_context: Option<serde_json::Value>, // Added agent_context
 }
 
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
@@ -72,6 +74,8 @@ pub struct Activity {
     pub r#type: Option<String>, // Renamed from 'type' to 'r#type' to avoid keyword conflict
     pub skill_to_use: Option<String>,
     pub assigned_agent_id_preference: Option<String>,
+    #[serde(default)]
+    pub agent_context: Option<serde_json::Value>, // Added agent_context here
     pub tool_to_use: Option<String>,
     pub tool_parameters: Option<serde_json::Value>,
     #[serde(default)]
@@ -133,15 +137,17 @@ pub struct PlanContext {
     pub graph: Graph,
     pub current_step_id: Option<String>,
     pub results: HashMap<String, String>,
+    pub user_query: String, // Add this field
 }
 
 impl PlanContext {
-    pub fn new(graph: Graph) -> Self {
+    pub fn new(graph: Graph, user_query: String) -> Self { // Modify signature
         Self {
             plan_state: PlanState::Idle,
             graph,
             current_step_id: None,
             results: HashMap::new(),
+            user_query, // Initialize user_query
         }
     }
 }
@@ -161,6 +167,7 @@ impl From<WorkflowPlanInput> for Graph {
                 r#type: Some(activity_input.r#type),
                 skill_to_use: activity_input.agent.as_ref().and_then(|a| a.skill_to_use.clone()),
                 assigned_agent_id_preference: activity_input.agent.as_ref().and_then(|a| a.assigned_agent_id_preference.clone()),
+                agent_context: activity_input.agent.as_ref().and_then(|a| a.agent_context.clone()), // Mapped agent_context
                 tool_to_use: activity_input.tools.as_ref().and_then(|t_vec| t_vec.get(0)).and_then(|t| t.tool_to_use.clone()),
                 tool_parameters: activity_input.tools.as_ref().and_then(|t_vec| t_vec.get(0)).map(|t| t.tool_parameters.clone()),
                 tasks: activity_input.tasks.clone(),

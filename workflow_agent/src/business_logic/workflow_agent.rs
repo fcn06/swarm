@@ -29,7 +29,9 @@ use agent_core::planning::plan_definition::ExecutionResult;
 use std::fs;
 
 
-use workflow_management::graph::graph_definition::{WorkflowPlanInput,Graph};
+//use workflow_management::graph::graph_definition::{WorkflowPlanInput,Graph};
+use agent_core::graph::graph_definition::{WorkflowPlanInput,Graph};
+
 use agent_core::business_logic::agent::Agent;
 
 static DEFAULT_PROMPT_TEMPLATE: &str = "./configuration/prompts/workflow_agent_prompt.txt";

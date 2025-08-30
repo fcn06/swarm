@@ -100,7 +100,7 @@ echo "Ask the questions to the orchestrator : He should answer to the whole set 
 echo $'\n'
 
 # for dynamic generation of a workflow based on user_query and available resources
-#./target/release/simple_workflow_agent_client --port 8180 --log-level "warn" --dynamic-generation
+# ./target/release/simple_workflow_agent_client --port 8180 --log-level "warn" --dynamic-generation
 
 # execution based on a pre defined workflow. good for automation
 ./target/release/simple_workflow_agent_client --port 8180 --log-level "warn"

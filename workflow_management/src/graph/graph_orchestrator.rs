@@ -1,4 +1,5 @@
-use super::graph_definition::{Activity, ActivityType, Graph, NodeType, PlanContext, PlanState};
+use agent_core::graph::graph_definition::{Activity, ActivityType, Graph, NodeType, PlanContext, PlanState};
+
 use crate::agent_communication::agent_runner::AgentRunner;
 use crate::tasks::condition_evaluator::evaluate_condition;
 use crate::tasks::task_runner::TaskRunner; // Changed from task_registry
@@ -159,8 +160,11 @@ impl PlanExecutor {
                     })?
                     .clone();
 
-                // todo : Maybe improve that part to always refer to user_query...
-                let message = activity.description.clone();
+                let mut message = String::new();
+                if let Some(context) = &activity.agent_context {
+                    message.push_str(&format!("Here are contextual information to take into account when processing user_query: {}\n", context.to_string()));
+                }
+                message.push_str(&activity.description.clone());
 
                 let skill = activity.skill_to_use.clone().unwrap_or_default();
 
@@ -285,8 +289,14 @@ impl PlanExecutor {
                 Ok(current_value.to_string())
             } else {
                 // If path is just activity_id or activity_id.activity_output, use the whole result
-                Ok(result_str.to_string())
+                // Attempt to unquote string literals from DelegationAgent outputs
+                match serde_json::from_str::<Value>(result_str) {
+                    Ok(Value::String(s)) => Ok(s), // Successfully parsed as a JSON string, return inner string
+                    _ => Ok(result_str.to_string()), // Otherwise, return the raw string
+                }
             }
+    
+
         };
 
         // Interpolate tool_parameters

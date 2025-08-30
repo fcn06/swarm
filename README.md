@@ -50,19 +50,17 @@ The quickstart scenario uses both Gemini and Groq API by default. Export your AP
 ```bash
 # Replace <YOUR-GEMINI-API-KEY> and <YOUR-GROQ-API_KEY> with your actual key
 # The below are examples. Each script will tell you which one to use
-export LLM_A2A_API_KEY=<YOUR-GEMINI-API-KEY>
-export LLM_MCP_API_KEY=<YOUR-GEMINI-API-KEY>
-export LLM_FULL_API_KEY=<YOUR-GEMINI-API-KEY>
-export LLM_WORKFLOW_API_KEY=<YOUR-GEMINI-API-KEY>
+export LLM_A2A_API_KEY=<YOUR-GROQ-API-KEY>
+export LLM_MCP_API_KEY=<YOUR-GROQ-API-KEY>
+export LLM_WORKFLOW_API_KEY=<YOUR-GROQ-API-KEY>
 export LLM_JUDGE_API_KEY=<YOUR-GROQ-API_KEY>
 ```
 
-### Step 3: Choose Your Adventure: Dive In: Choose a Demo !
+### Step 3: Choose Your Adventure: Dive In a Demo !
 
-We've prepared two distinct demos to show you what this project can do. Pick the one that best suits your interests!
 
 --- 
-**_Option 1: The Workflow Demo_** 
+**_The Workflow Demo_** 
 
 If you're interested in structured, sequential tasks and the power of workflow management, this demo is for you. It focuses on executing a predefined workflow that manages a specific, multi-step process from start to finish. The demo runs a mix of direct tool calls and actions delegated to agents within a defined workflow. This is an excellent choice if you're looking to build agents for automated, step-by-step processes or want to understand how static workflows are executed.
 
@@ -73,32 +71,16 @@ To run this demo, use the following command from the root of the project:
 sh ./documentation/demo_workflow_management/run_all_commands.sh
 ```
 
----
-
-**_Option 2: The Agent Collaboration Demo_** 
-
-Ready to see multiple agents working together in a more dynamic, orchestrator-like fashion? This demo launches a scenario where a central agent directs three specialized agents. It's a great way to see how complex, collaborative tasks can be managed, showcasing the foundational concepts that evolved into the workflow agent's dynamic planning capabilities.
-
-The outcome is even evaluated by an LLM acting as a judge. All conversations and the execution plan are stored in a memory service, which can be super useful for training or fine-tuning an LLM model down the road.
-
-To run this demo, just execute the following command from the project's root directory:
-
-```bash
-# This command must be run from the root of the swarm project
-sh ./documentation/demo_combined_agents/run_all_commands.sh
-```
-
 **Congratulations, you've just run your first swarm!**
 
 You'll see logs from all agents as the agent processes three sample requests.
 
-For sample logs without running the project, you can go [here](./documentation/demo_combined_agents/sample_logs/logs_orchestrator_call).
 For a deeper look, you can access explanations of the expected logs and inspect the configuration files `documentation/demo_combined_agents directory`.
 
 ---
 
 
-Feel free to inspect the configuration files for both demos to get a better understanding of how they work.
+Feel free to inspect the configuration files for the demo to get a better understanding of how they work.
 
 
 ## **💡 Core Components of Swarm**
@@ -122,7 +104,6 @@ The `configuration` directory is your go-to for customizing agent and workflow b
 | `agent_workflow_config.toml`| Configures the Workflow Agent, defining its LLM, skills, and optional embedded MCP runtime, along with its ability to execute static or dynamic workflows. |
 | `mcp_runtime_config.toml`  | Configures the MCP runtime settings, used by agents that integrate external tools.     |
 | `agent_judge_config.toml`| Configures the judge agent that will be used for evaluation services.                 |
-| `agent_orchestration_config.toml` | *Deprecated: Use `agent_workflow_config.toml` for workflow-driven orchestration.* |
 
 **LLM Models:** Each agent can connect to its own LLM. URLs are parameterized in the config files, while API keys need to be injected at runtime as environment variables.
 
@@ -165,7 +146,7 @@ Getting your Swarm agents and workflows up and running is straightforward. For m
 
     ```bash
     # Run compiled binary.
-    # LLM_FULL_API_KEY: API Key for the Workflow Agent's LLM.
+    # LLM_WORKFLOW_API_KEY: API Key for the Workflow Agent's LLM.
     # LLM_MCP_API_KEY: Optional API Key for the embedded MCP Runtime's LLM (can be the same LLM as Workflow Agent).
     # Both API keys must be compatible with llm_url defined in the config file.
     # You can define log level (default is "warn").
@@ -208,7 +189,6 @@ The Swarm project is composed of several specialized sub-crates, each serving a 
 *   `configuration`: Contains default locations of Swarm configuration files and prompts, making it easy to customize agent and workflow behavior.
 *   `agent_core`: Contains foundational elements to launch an agent, interact with an agent, and enable request processing capabilities for all agent types.
 *   `basic_agent`: Provides business logic to launch a basic, specialist agent.
-*   `orchestration_agent`: *Deprecated: Functionality absorbed by `workflow_agent` for a more flexible workflow-driven approach.*
 *   `workflow_agent`: Provides the business logic to launch a Workflow Agent, enabling it to execute static or dynamically generated workflows.
 *   `workflow_management`: The core runtime for defining, parsing, and executing graphs of agents and tasks. This crate allows for loading static workflows from files or being leveraged by a `Workflow Agent` to dynamically construct execution plans.
 *   `mcp_runtime`: A runtime to connect to a ModelContextProtocol Server, designed to be embedded into an agent for interacting with external services and tools.

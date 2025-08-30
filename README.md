@@ -1,22 +1,25 @@
-# 🚀 Build, Connect, and Orchestrate Intelligent Agents in Rust 🦀
+# 🚀 Build, Connect, and Manage Intelligent Agents with Flexible Workflows in Rust 🦀
 
 ## **Why Swarm?**
 
-**Building complex, multi-agent systems is hard.** You need to handle communication, orchestrate tasks, and manage external tools. **Swarm makes it easy.**
+**Building complex, multi-agent systems and dynamic workflows is hard.** You need to handle communication, manage sequences of tasks, and integrate external tools. **Swarm makes it easy.**
 
-Swarm is a Rust-based framework that allows you to build, connect, and orchestrate a network of specialized, intelligent agents. Think of it as a central nervous system for your digital workforce. Whether you need a customer service bot that can consult a shipping expert, or a data analyst that can delegate web scraping tasks, Swarm provides the backbone for them to collaborate seamlessly.
+Swarm is a Rust-based framework that allows you to build, connect, and manage a network of specialized, intelligent agents through flexible workflows. Think of it as a central nervous system for your digital workforce, capable of executing predefined task sequences or generating dynamic plans on the fly. Whether you need a customer service bot that orchestrates multiple tasks and agents, or a data analyst that can delegate complex data processing workflows, Swarm provides the backbone for them to collaborate seamlessly and efficiently.
 
 ## **🌐 How It Works**
 
-**Domain Agents are at the heart of our model. They are single purpose domain specific agents.** \
-They can access to their own LLM and their own set of tools. ( For example they can be customer care agents, customer ordering agent, weather agent, ...)
+**Swarm empowers you to define and execute powerful workflows involving multiple specialized agents and tools.** At its core, Swarm now focuses on **Workflow-Driven Agents** that can either execute predefined, static workflows loaded from a file, or dynamically generate new workflows based on the user's request and available resources.
 
-**Orchestrator agents are connected to a set of domain agents.** \
-They also have their own llm, and their own set of tools. In order to fulfill a user request, orchestrator will scan the skills and tools available , set up a plan , delegate tasks to appropriate agents and monitor execution until user query is fulfilled.
+*   **Domain Agents (Specialists):** These are single-purpose, domain-specific agents, each with access to their own LLM and a dedicated set of tools (e.g., customer care, weather forecasting, data retrieval).
+*   **Workflow Agent (The Conductor):** This advanced agent leverages the `workflow_management` capabilities to process user requests. It can:
+    *   **Execute Static Workflows:** Load and run predefined workflows from JSON files, ensuring consistent execution of multi-step processes.
+    *   **Generate Dynamic Workflows:** Analyze user requests and available agent skills and tools to create a tailored execution plan on the fly, delegating tasks and monitoring their completion.
+*   **Workflow Management Runtime:** This core component provides the infrastructure for defining, parsing, and executing complex graphs of tasks and agent interactions, whether they are static or dynamically generated.
 
 <p align="center" width="60%">
     <img width="60%" src="./documentation/illustrations/Simple_Representation_Architecture.png">
 </p>
+*(Note: While the illustration above still depicts the Orchestration Agent, imagine the Workflow Agent in its place, capable of both orchestrating and executing structured workflows.)*
 
 For a detailed description of Swarm's core components, refer to the "Core Components of Swarm" section below.
 
@@ -42,13 +45,15 @@ cargo build --release
 
 ### Step 2: Set Your API Keys
 
-The quickstart scenario uses the Gemini API by default. Export your API key as an environment variable:
+The quickstart scenario uses both Gemini and Groq API by default. Export your API key as an environment variable:
 
 ```bash
 # Replace <YOUR-GEMINI-API-KEY> and <YOUR-GROQ-API_KEY> with your actual key
+# The below are examples. Each script will tell you which one to use
 export LLM_A2A_API_KEY=<YOUR-GEMINI-API-KEY>
 export LLM_MCP_API_KEY=<YOUR-GEMINI-API-KEY>
-export LLM_FULL_API_KEY=<YOUR-GEMINI-API_KEY>
+export LLM_FULL_API_KEY=<YOUR-GEMINI-API-KEY>
+export LLM_WORKFLOW_API_KEY=<YOUR-GEMINI-API-KEY>
 export LLM_JUDGE_API_KEY=<YOUR-GROQ-API_KEY>
 ```
 
@@ -57,9 +62,22 @@ export LLM_JUDGE_API_KEY=<YOUR-GROQ-API_KEY>
 We've prepared two distinct demos to show you what this project can do. Pick the one that best suits your interests!
 
 --- 
-**_Option 1: The Orchestration Demo_** 
+**_Option 1: The Workflow Demo_** 
 
-Ready to see multiple agents working together? This demo launches a full orchestration scenario where a central orchestrator directs three specialized agents. It's the perfect way to see how complex, collaborative tasks can be managed.
+If you're interested in structured, sequential tasks and the power of workflow management, this demo is for you. It focuses on executing a predefined workflow that manages a specific, multi-step process from start to finish. The demo runs a mix of direct tool calls and actions delegated to agents within a defined workflow. This is an excellent choice if you're looking to build agents for automated, step-by-step processes or want to understand how static workflows are executed.
+
+To run this demo, use the following command from the root of the project:
+
+```bash
+# This command must be run from the root of the swarm project
+sh ./documentation/demo_workflow_management/run_all_commands.sh
+```
+
+---
+
+**_Option 2: The Agent Collaboration Demo_** 
+
+Ready to see multiple agents working together in a more dynamic, orchestrator-like fashion? This demo launches a scenario where a central agent directs three specialized agents. It's a great way to see how complex, collaborative tasks can be managed, showcasing the foundational concepts that evolved into the workflow agent's dynamic planning capabilities.
 
 The outcome is even evaluated by an LLM acting as a judge. All conversations and the execution plan are stored in a memory service, which can be super useful for training or fine-tuning an LLM model down the road.
 
@@ -72,25 +90,12 @@ sh ./documentation/demo_combined_agents/run_all_commands.sh
 
 **Congratulations, you've just run your first swarm!**
 
-You'll see logs from all agents as the orchestrator processes three sample requests.
+You'll see logs from all agents as the agent processes three sample requests.
 
 For sample logs without running the project, you can go [here](./documentation/demo_combined_agents/sample_logs/logs_orchestrator_call).
 For a deeper look, you can access explanations of the expected logs and inspect the configuration files `documentation/demo_combined_agents directory`.
 
 ---
-
-**_Option 2: The Workflow Demo_** 
-
-If you're more interested in structured, sequential tasks, this demo is for you. It focuses on a single workflow that manages a specific, predefined workflow from start to finish.The demo runs a mix of direct tool calls and actions delegated to agents. This is an excellent choice if you're looking to build agents for automated, step-by-step processes.
-
-To run this demo, use the following command from the root of the project:
-
-```bash
-# This command must be run from the root of the swarm project
-sh ./documentation/demo_workflow_management/run_all_commands.sh
-```
----
-
 
 
 Feel free to inspect the configuration files for both demos to get a better understanding of how they work.
@@ -98,24 +103,26 @@ Feel free to inspect the configuration files for both demos to get a better unde
 
 ## **💡 Core Components of Swarm**
 
-Swarm is built around three key intelligent agent components, and one component acting as a Judge to evaluate their results:
+Swarm is built around several key intelligent agent and workflow components, including a component acting as a Judge to evaluate their results:
 
 *   **Basic Domain Agent (The Specialist):** 🗣️ This is your workhorse. An agent designed to be an expert in a single domain, like "weather forecasting" or "database queries."
-*   **Orchestration Agent (The Manager):** 🧠 This agent acts as a team lead. It takes a complex user request, breaks it down into smaller tasks, and delegates them to the appropriate Specialist agents. Because the Orchestrator Agent is also an A2A agent, this allows for the creation of complex, hierarchical agent swarms where agents can be a part of multiple orchestration layers.
+*   **Workflow Agent (The Conductor):** 🧠 This agent is at the heart of orchestrating complex operations. It can either execute predefined workflows loaded from JSON files or dynamically generate a sequence of tasks and agent interactions based on a user's request and available resources. It leverages the `workflow_management` runtime to ensure seamless execution.
+*   **Workflow Management Runtime:** 🔗 A powerful, flexible engine for defining, parsing, and executing complex workflows. It enables the creation of directed acyclic graphs (DAGs) that can integrate multiple agents, external tools, and conditional logic. This runtime can operate independently or be embedded within a `Workflow Agent` for dynamic plan generation and execution.
 *   **MCP Runtime (Model Context Protocol):** 🛠️ A powerful runtime that enables agents to interact with external services and data sources. Imagine your agents querying a weather API or accessing a database!
-*   **LLM as a Judge:** 🛠️ A LLM that will evaluate outcome of orchestrator agents. We advise that you use a different LLM/Model thjan the one you use for agents and MCP. You can try it yourself through the demo we presented above. The evaluation data can be an interesting input for training / fine tuning LLM to improve accuracy of their answer, or the relevance of the tools you use.
+*   **LLM as a Judge:** 🛠️ An LLM that will evaluate the outcome of agent and workflow executions. We advise that you use a different LLM/Model than the one you use for agents and MCP. You can try it yourself through the demos we presented above. The evaluation data can be an interesting input for training/fine-tuning LLMs to improve the accuracy of their answers or the relevance of the tools they use.
 
 
 ## **⚙️ Configuration Details**
 
-The `configuration` directory is your go-to for customizing agent behavior. Here's a quick overview:
+The `configuration` directory is your go-to for customizing agent and workflow behavior. Here's a quick overview:
 
 | File Name                | Purpose                                                                                |
 | :----------------------- | :------------------------------------------------------------------------------------- |
-| `agent_basic_config.toml`| Configures simple domain agents, including optional embedded MCP agents                |
-| `agent_mcp_config.toml`  | Configures the MCP runtime settings.                                                   |
-| `agent_orchestration_config.toml` | Configures the Orchestrator Agent, including capabilities of using tools and skills                                                                                                              |
-| `agent_judge_config.toml`| FUTURE USE :Configures for the judge agent that will be used for evaluation service   |
+| `agent_basic_config.toml`| Configures simple domain agents, including optional embedded MCP agents.                |
+| `agent_workflow_config.toml`| Configures the Workflow Agent, defining its LLM, skills, and optional embedded MCP runtime, along with its ability to execute static or dynamic workflows. |
+| `mcp_runtime_config.toml`  | Configures the MCP runtime settings, used by agents that integrate external tools.     |
+| `agent_judge_config.toml`| Configures the judge agent that will be used for evaluation services.                 |
+| `agent_orchestration_config.toml` | *Deprecated: Use `agent_workflow_config.toml` for workflow-driven orchestration.* |
 
 **LLM Models:** Each agent can connect to its own LLM. URLs are parameterized in the config files, while API keys need to be injected at runtime as environment variables.
 
@@ -123,7 +130,7 @@ The `configuration` directory is your go-to for customizing agent behavior. Here
 
 ## **🚀 Launching Your Agents Manually or Programmatically**
 
-Getting your Swarm agents up and running is straightforward. For maximum flexibility and programmatic control, you can launch individual agents directly. Remember to set the required API key environment variables (e.g., `LLM_A2A_API_KEY`, `LLM_FULL_API_KEY`, `LLM_MCP_API_KEY`) *before* running these commands.
+Getting your Swarm agents and workflows up and running is straightforward. For maximum flexibility and programmatic control, you can launch individual agents or the standalone workflow orchestrator directly. Remember to set the required API key environment variables (e.g., `LLM_A2A_API_KEY`, `LLM_FULL_API_KEY`, `LLM_MCP_API_KEY`) *before* running these commands.
 
 *   **Basic Domain Agent:** Your individual intelligent assistant specialized in a single domain
 
@@ -152,67 +159,78 @@ Getting your Swarm agents up and running is straightforward. For maximum flexibi
     ```
 
 
-*   **Orchestrator Agent:**  This agent can connect to other agents and MCP tools to achieve its goals.
+*   **Workflow Agent:** This agent can execute predefined or dynamically generated workflows, connecting to other agents and MCP tools to achieve its goals.
 
     Via Script :
 
     ```bash
     # Run compiled binary.
-    # LLM_FULL_API_KEY: API Key for the Full Agent's LLM.
-    # LLM_MCP_API_KEY: Optional API Key for the embedded MCP Runtime's LLM (can be the same LLM as Full Agent).
+    # LLM_FULL_API_KEY: API Key for the Workflow Agent's LLM.
+    # LLM_MCP_API_KEY: Optional API Key for the embedded MCP Runtime's LLM (can be the same LLM as Workflow Agent).
     # Both API keys must be compatible with llm_url defined in the config file.
     # You can define log level (default is "warn").
-    ./target/release/orchestration_agent_launch --config-file "configuration/agent_orchestration_config.toml" --log-level "warn"
+    ./target/release/launch_agent_workflow --config-file "configuration/agent_workflow_config.toml" --log-level "warn"
     ```
     Or programmatically, in just a few lines of code :
 
     ```rust
     // load config file
-    let basic_agent_config = AgentConfig::load_agent_config(&args.config_file);
+    let workflow_agent_config = AgentConfig::load_agent_config(&args.config_file);
 
-      // Create the modern server, and pass the runtime elements
-    let server = AgentServer::<OrchestrationAgent>::new(orchestration_agent_config.expect("Incorrect Orchestration Agent config file")).await?;
+    // Set up an agent
+     let agent = WorkFlowAgent::new(workflow_agent_config.clone(), evaluation_service, memory_service, discovery_service.clone(), workflow_runners).await?;
 
+    // Set up an agent server
+    let server = AgentServer::<WorkFlowAgent>::new(workflow_agent_config, agent, discovery_service).await?;
+   
     println!("🌐 Starting HTTP server only...");
     server.start_http().await?;
     ```
+
+*   **Workflow Orchestrator (Standalone):** A dedicated service for managing and executing complex workflows independently of a specific agent.
+
+    Via Script :
+
+    ```bash
+    # Run compiled binary.
+    # You can define log level (default is "warn").
+    ./target/release/workflow_management --log-level "warn"
+    ```
+ 
 
 ## **🔬 Under the Hood: Swarm.rs Crate Breakdown**
 
 The Swarm project is composed of several specialized sub-crates, each serving a distinct purpose:
 
-*   `agent_discovery_service`: An HTTP service where agents can register themselves. It exposes an endpoint to list all available agents, facilitating dynamic discovery.
-*   `agent_memory_service`: A capability for all agents to share their interactions and ensure better coordination.
-*   `agent_evaluation_service`: A capability for all agents to have their performance evaluated ( Llm as a Judge Model).
-*   `configuration`: Contains Default Location of Swarm configuration files, and default prompts, making it easy to customize agent behavior.
-*   `agent_core`: Contains foundational elements to launch an agent, interact with an agent and enable request processing capabilities of an agent.
-*   `basic_agent`: Provides Business logic to launch a basic agent.
-*   `orchestration_agent`: Provides Business logic to launch an orchestration agent.
-*   `mcp_runtime`: A runtime to connect to a ModelContextProtocol Server. Designed to be embedded into an agent
+*   `agent_discovery_service`: An HTTP service where agents can register themselves, enabling dynamic discovery of available agents and their capabilities for workflow planning.
+*   `agent_memory_service`: A capability for all agents to share their interactions and ensure better coordination within workflows.
+*   `agent_evaluation_service`: A capability for all agents to have their performance evaluated (LLM as a Judge Model), which can be integrated into workflow feedback loops.
+*   `configuration`: Contains default locations of Swarm configuration files and prompts, making it easy to customize agent and workflow behavior.
+*   `agent_core`: Contains foundational elements to launch an agent, interact with an agent, and enable request processing capabilities for all agent types.
+*   `basic_agent`: Provides business logic to launch a basic, specialist agent.
+*   `orchestration_agent`: *Deprecated: Functionality absorbed by `workflow_agent` for a more flexible workflow-driven approach.*
+*   `workflow_agent`: Provides the business logic to launch a Workflow Agent, enabling it to execute static or dynamically generated workflows.
+*   `workflow_management`: The core runtime for defining, parsing, and executing graphs of agents and tasks. This crate allows for loading static workflows from files or being leveraged by a `Workflow Agent` to dynamically construct execution plans.
+*   `mcp_runtime`: A runtime to connect to a ModelContextProtocol Server, designed to be embedded into an agent for interacting with external services and tools.
 *   `llm_api`: Offers a convenient interface for interacting with various Large Language Models via an OpenAI-compatible API.
-*   `workflow_management`: Work In Progress to define Graph of Agents or Tasks , that can be loaded and executed. Will enable to fulfill more complex use cases.
-*   `agent_workflow`: Work In Progress to embed workflow processing into agents.
-*   `documentation`: Contains a series of example of toml config file for all sort of agents ( weather forecast, customer domain, web scraper, joke telling,...).
-*   `examples`: Contains multiple illustrative examples to help you interact with Swarm:
-    *   `mcp_agent_endpoint`: A testing utility for an MCP runtime to receive and process requests through an MCP server.
-    *   `a2a_agent_endpoint`: A testing utility to interact directly with an A2A agent via a REST API. Also includes a simple UI for testing your configuration.
-    *   `mcp_server`: A basic MCP server exposing three tools, primarily for testing purposes. You can start separately one instance on one port with one of these three tools ( weather, customer, url scraping), or the three tools together.
+*   `documentation`: Contains a series of example configuration files and guides for various agent and workflow setups.
+*   `examples`: Contains multiple illustrative examples to help you interact with Swarm, including demonstrations of static and dynamic workflow execution.
 
 ## **🗺️ Road Ahead & How You Can Contribute**
 
-Swarm is currently a project for discovery and exploration! While not production-ready, it's a fantastic playground for understanding how these protocols can be combined to build powerful agentic systems. We are actively enhancing its capabilities and robustness.
+Swarm is currently a project for discovery and exploration! While not production-ready, it's a fantastic playground for understanding how these protocols and workflow management can be combined to build powerful agentic systems. We are actively enhancing its capabilities and robustness.
 
 We're continuously working on improvements, including:
 
-*   **Workflow Management Runtime:** Currently WIP : Defining and Executing a Pipeline of both tasks and Agents. ( Could be launched as a standalone or embedded into an agent). There is a beta version working but final version needs to be more flexible
-*   **Dynamic Discovery:** Enable agents to understand dynamically what relevant skills are available to define an execution plan.
-*   **Context Enrichment:** Enrich the request with relevant context, to make a plan more accurate.
-*   **Identity Management:** Use Self Sovereign Identity concept to enable agent to have its own proven identity.
-*   **Code Refactoring:** Continuously improving code clarity and maintainability.
-*   **Unit Tests:** Enhancing robustness and reliability across the codebase.
-*   **Scalable & Asynchronous Communication** Work on improved scalability.
-*   **Improved UI** Improve the UI to interact with any kind of agent.
-*   **Test with Llama.cpp Server** Test with llama.cpp server so that we can connect all kind of fine tuned models for single domain agents.
+*   **Enhanced Workflow Features:** Continuously improving the flexibility and power of the Workflow Management Runtime, including more advanced conditional logic, error handling, and parallel execution.
+*   **Advanced Dynamic Discovery:** Further enhancing agents' ability to dynamically discover and integrate relevant skills and tools for workflow generation.
+*   **Context Enrichment:** Enriching requests with relevant context to make workflow plans more accurate and robust.
+*   **Identity Management:** Implementing Self-Sovereign Identity concepts to enable agents to have their own verifiable identities within the swarm.
+*   **Improved Observability:** Enhancing logging, tracing, and monitoring capabilities for better insight into workflow execution.
+*   **Scalable & Asynchronous Communication:** Improving the underlying communication mechanisms for higher throughput and responsiveness.
+*   **Improved UI:** Developing a more intuitive user interface for defining, visualizing, and managing workflows.
+*   **Broader LLM Integration:** Expanding compatibility and testing with a wider range of LLMs and fine-tuned models for specialist agents.
+*   **Code Refactoring & Unit Tests:** Ongoing efforts to improve code clarity, maintainability, and test coverage across the codebase.
 
 ## **🤝 How to Contribute**
 

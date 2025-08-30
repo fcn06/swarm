@@ -9,6 +9,7 @@ use serde_json::Value;
 use std::collections::{HashMap, VecDeque};
 use std::sync::Arc;
 use thiserror::Error;
+use tracing::debug;
 
 #[derive(Error, Debug, PartialEq)]
 pub enum PlanExecutorError {
@@ -161,10 +162,13 @@ impl PlanExecutor {
                     .clone();
 
                 let mut message = String::new();
-                if let Some(context) = &activity.agent_context {
-                    message.push_str(&format!("Here are contextual information to take into account when processing user_query: {}\n", context.to_string()));
-                }
+                message.push_str(&format!("Here is the user_query :"));
                 message.push_str(&activity.description.clone());
+                if let Some(context) = &activity.agent_context {
+                    message.push_str(&format!("\nHere are contextual information to take into account when processing user_query: {}\n", context.to_string()));
+                }
+
+                debug!("Executing activity '{}', message: '{}' \n", &activity.id, message);
 
                 let skill = activity.skill_to_use.clone().unwrap_or_default();
 
@@ -350,6 +354,34 @@ impl PlanExecutor {
                             }).to_string();
                             map.insert(key.clone(), Value::String(interpolated_s));
                         }
+                    }
+                }
+            }
+        }
+
+        // NEW: Interpolate agent_context parameters
+        if let Some(agent_context) = &mut hydrated_activity.agent_context {
+            if let Value::Object(map) = agent_context {
+                let mut keys_to_replace = Vec::new();
+                for (key, value) in map.iter() {
+                    if let Value::String(s) = value {
+                        if s.contains("{{") && s.contains("}}") {
+                            keys_to_replace.push(key.clone());
+                        }
+                    }
+                }
+
+                for key in keys_to_replace {
+                    if let Some(Value::String(s)) = map.get(&key) {
+                        let interpolated_s = re.replace_all(s, |caps: &regex::Captures| {
+                            let path = &caps[1];
+                            // For agent_context, we are interpolating general values, not tool/task specific.
+                            match get_interpolated_value(path, &activity.id, &key, false, None) {
+                                Ok(val) => val,
+                                Err(e) => format!("ERROR: {}", e),
+                            }
+                        }).to_string();
+                        map.insert(key.clone(), Value::String(interpolated_s));
                     }
                 }
             }

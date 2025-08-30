@@ -42,9 +42,9 @@ impl WorkflowServiceApi for WorkFlowRunners {
 impl WorkFlowRunners {
 
     pub  fn list_available_resources(&self) -> String {
+    let list_agents_details = self.agent_runner.agent_registry.get_agent_details();
     let list_tools_details = self.tool_runner.tool_registry.get_tool_details();
     let list_tasks_details = self.task_runner.task_registry.get_tasks_details();
-    let list_agents_details = self.agent_runner.agent_registry.get_agent_details();
 
     let available_resources=format!("{}\n{}\n{}\n", list_tools_details, list_tasks_details, list_agents_details);
     available_resources

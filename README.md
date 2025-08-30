@@ -19,7 +19,7 @@ Swarm is a Rust-based framework that allows you to build, connect, and manage a 
 <p align="center" width="60%">
     <img width="60%" src="./documentation/illustrations/Simple_Representation_Architecture.png">
 </p>
-*(Note: While the illustration above still depicts the Orchestration Agent, imagine the Workflow Agent in its place, capable of both orchestrating and executing structured workflows.)*
+*(Note: Workflow Agent, capable of both orchestrating and executing structured workflows is at the core of the project)*
 
 For a detailed description of Swarm's core components, refer to the "Core Components of Swarm" section below.
 

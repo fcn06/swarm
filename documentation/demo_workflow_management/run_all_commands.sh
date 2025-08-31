@@ -99,11 +99,13 @@ echo $'\n'
 echo "Ask the questions to the orchestrator : He should answer to the whole set of questions by send queries to appropriate agent"
 echo $'\n'
 
-# for dynamic generation of a workflow based on user_query and available resources
-# ./target/release/simple_workflow_agent_client --port 8180 --log-level "warn" --dynamic-generation
-
-# execution based on a pre defined workflow. good for automation
-./target/release/simple_workflow_agent_client --port 8180 --log-level "warn"
+# Check for the --dynamic-generation flag
+if [[ "$1" == "--dynamic-generation" ]]; then
+    ./target/release/simple_workflow_agent_client --port 8180 --log-level "warn" --dynamic-generation
+else
+    # execution based on a pre defined workflow. good for automation
+    ./target/release/simple_workflow_agent_client --port 8180 --log-level "warn"
+fi
 
 echo $'\n'
 

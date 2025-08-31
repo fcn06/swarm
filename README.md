@@ -53,7 +53,7 @@ The quickstart scenario uses both Gemini and Groq API by default. Export your AP
 export LLM_A2A_API_KEY=<YOUR-GROQ-API-KEY>
 export LLM_MCP_API_KEY=<YOUR-GROQ-API-KEY>
 export LLM_WORKFLOW_API_KEY=<YOUR-GROQ-API-KEY>
-export LLM_JUDGE_API_KEY=<YOUR-GROQ-API_KEY>
+export LLM_JUDGE_API_KEY=<YOUR-GROQ-API-KEY>
 ```
 
 ### Step 3: Choose Your Adventure: Dive In a Demo !
@@ -62,14 +62,36 @@ export LLM_JUDGE_API_KEY=<YOUR-GROQ-API_KEY>
 --- 
 **_The Workflow Demo_** 
 
-If you're interested in structured, sequential tasks and the power of workflow management, this demo is for you. It focuses on executing a predefined workflow that manages a specific, multi-step process from start to finish. The demo runs a mix of direct tool calls and actions delegated to agents within a defined workflow. This is an excellent choice if you're looking to build agents for automated, step-by-step processes or want to understand how static workflows are executed.
+If you're interested in structured, sequential tasks and the power of workflow management, this demo is for you. It focuses on executing a workflow that manages a specific, multi-step process from start to finish. The demo runs a mix of direct tool calls and actions delegated to agents.
 
-To run this demo, use the following command from the root of the project:
+There are two variations for running this demo:
+
+*   **Static Workflow (Default):** This executes a predefined workflow.
+
+    ```bash
+    # This command must be run from the root of the swarm project
+    sh ./documentation/demo_workflow_management/run_all_commands.sh
+    ```
+
+*   **Dynamic Workflow Generation:** This dynamically generates a plan based on user queries and available resources. Use the `--dynamic-generation` flag.
+
+    ```bash
+    # This command must be run from the root of the swarm project
+    sh ./documentation/demo_workflow_management/run_all_commands.sh --dynamic-generation
+    ```
+
+This is an excellent choice if you're looking to build agents for automated, step-by-step processes or want to understand how workflows are executed.
+
+**Cleaning Up After the Demo:**
+After running the demo, you can stop all the launched services using the provided termination script:
 
 ```bash
 # This command must be run from the root of the swarm project
-sh ./documentation/demo_workflow_management/run_all_commands.sh
+sh ./documentation/demo_workflow_management/terminate_all_agents_process.sh
 ```
+
+---
+
 
 **Congratulations, you've just run your first swarm!**
 
@@ -98,12 +120,12 @@ Swarm is built around several key intelligent agent and workflow components, inc
 
 The `configuration` directory is your go-to for customizing agent and workflow behavior. Here's a quick overview:
 
-| File Name                | Purpose                                                                                |
+| File Name | Purpose |
 | :----------------------- | :------------------------------------------------------------------------------------- |
-| `agent_basic_config.toml`| Configures simple domain agents, including optional embedded MCP agents.                |
+| `agent_basic_config.toml`| Configures simple domain agents, including optional embedded MCP agents. |
 | `agent_workflow_config.toml`| Configures the Workflow Agent, defining its LLM, skills, and optional embedded MCP runtime, along with its ability to execute static or dynamic workflows. |
-| `mcp_runtime_config.toml`  | Configures the MCP runtime settings, used by agents that integrate external tools.     |
-| `agent_judge_config.toml`| Configures the judge agent that will be used for evaluation services.                 |
+| `mcp_runtime_config.toml` | Configures the MCP runtime settings, used by agents that integrate external tools. |
+| `agent_judge_config.toml`| Configures the judge agent that will be used for evaluation services. |
 
 **LLM Models:** Each agent can connect to its own LLM. URLs are parameterized in the config files, while API keys need to be injected at runtime as environment variables.
 

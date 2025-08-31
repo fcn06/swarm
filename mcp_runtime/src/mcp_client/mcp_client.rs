@@ -127,7 +127,7 @@ pub async fn execute_tool_call_v2(
             // For example: return Err(anyhow::anyhow!("Argument parsing failed: {}", e));
             // Returning a dummy ListToolsResult for now, adjust as needed
             CallToolResult {
-                content: Some(vec![]),
+                content: vec![],
                 structured_content:None,
                 is_error: Some(true),
             } // Fixed: Provide bool directly

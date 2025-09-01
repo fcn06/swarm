@@ -3,6 +3,10 @@ name = "workflow_management"
 version = "0.1.0"
 edition = "2021"
 
+
+[lib]
+crate-type = ["rlib"]
+
 [dependencies]
 agent_core = { workspace = true }
 configuration = { workspace = true }
@@ -34,6 +38,7 @@ uuid = { workspace = true }
 
 regex="1"
 
-[[bin]]
-name = "workflow_management"
-path = "bin/workflow_orchestrator_launch.rs"
+
+#[[bin]]
+#name = "workflow_management"
+#path = "bin/workflow_orchestrator_launch.rs"

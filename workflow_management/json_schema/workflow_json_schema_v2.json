@@ -60,11 +60,17 @@
                     "type": "null"
                   }
                 ]
+              },
+              "agent_context": {
+                "description": "Additional context or instructions for the agent.",
+                "type": "object",
+                "additionalProperties": true
               }
             },
             "required": [
               "skill_to_use",
-              "assigned_agent_id_preference"
+              "assigned_agent_id_preference",
+              "agent_context"
             ]
           },
           "tools": {

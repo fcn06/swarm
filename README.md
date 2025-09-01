@@ -190,15 +190,6 @@ Getting your Swarm agents and workflows up and running is straightforward. For m
     server.start_http().await?;
     ```
 
-*   **Workflow Orchestrator (Standalone):** A dedicated service for managing and executing complex workflows independently of a specific agent.
-
-    Via Script :
-
-    ```bash
-    # Run compiled binary.
-    # You can define log level (default is "warn").
-    ./target/release/workflow_management --log-level "warn"
-    ```
  
 
 ## **🔬 Under the Hood: Swarm.rs Crate Breakdown**

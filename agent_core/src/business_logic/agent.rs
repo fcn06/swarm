@@ -26,5 +26,3 @@ pub trait Agent: Send + Sync  + Clone + 'static {
     
 }
 
-
-// Option<Map<String, Value>>

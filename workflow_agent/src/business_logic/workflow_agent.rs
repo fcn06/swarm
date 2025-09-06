@@ -29,12 +29,14 @@ use agent_core::execution::execution_result::ExecutionResult;
 use std::fs;
 
 
-//use workflow_management::graph::graph_definition::{WorkflowPlanInput,Graph};
 use agent_core::graph::graph_definition::{WorkflowPlanInput,Graph};
 
 use agent_core::business_logic::agent::Agent;
 
-static DEFAULT_PROMPT_TEMPLATE: &str = "./configuration/prompts/workflow_agent_prompt.txt";
+static DEFAULT_WORKFLOW_PROMPT_TEMPLATE: &str = "./configuration/prompts/workflow_agent_prompt.txt";
+
+// future use
+static DEFAULT_HIGH_LEVEL_PLAN_PROMPT_TEMPLATE: &str = "./configuration/prompts/high_level_plan_agent_prompt.txt";
 
 /// Agent that executes predefined workflows.
 #[allow(dead_code)]
@@ -80,6 +82,7 @@ impl Agent for WorkFlowAgent {
     }
 
 
+    // Use metadata to choose between workflow, high level plan, workflow
     async fn handle_request(&self, request: LlmMessage,metadata:Option<Map<String, Value>>) -> anyhow::Result<ExecutionResult> {
 
         let request_id = Uuid::new_v4().to_string();
@@ -96,7 +99,7 @@ impl Agent for WorkFlowAgent {
                     anyhow::anyhow!("Failed to load workflow from file: {}", e)
                 })?
         } else {
-            info!("No workflow file specified in metadata, creating plan dynamically.");
+            info!("No workflow file specified in metadata, creating workflow dynamically.");
             self.create_plan(user_query.clone()).await
                 .map_err(|e| {
                     error!("Error creating dynamic plan: {}", e);
@@ -132,20 +135,10 @@ impl Agent for WorkFlowAgent {
         }
     }
 
-
-
 }
 
 
 impl WorkFlowAgent {
-
-/*
-    /************************************************/
-    /* Create Plan                        */
-    /************************************************/ 
-    let workflow=agent.create_plan("What are the details of customer_id 12345 ?".to_string()).await?;
-    println!("Workflow: {:?}",workflow);
-*/
 
     pub async fn create_plan(
         &self,
@@ -157,7 +150,7 @@ impl WorkFlowAgent {
 
         // 2. Format the prompt with dynamic data
         // Read the prompt template from the file
-        let prompt_template = fs::read_to_string(DEFAULT_PROMPT_TEMPLATE)
+        let prompt_template = fs::read_to_string(DEFAULT_WORKFLOW_PROMPT_TEMPLATE)
                 .context("Failed to read workflow_agent_prompt.txt")?;
 
         let prompt = prompt_template
@@ -210,3 +203,35 @@ impl WorkFlowAgent {
         None
     }
 }
+
+
+impl WorkFlowAgent {
+    
+        pub async fn create_high_level_plan(
+            &self,
+            user_query: String,
+        ) -> anyhow::Result<String>  {
+    
+            // 1. Get capabilities string from workflow_runners
+            let capabilities = self.workflow_runners.list_available_resources();
+    
+            // 2. Format the prompt with dynamic data
+            // Read the prompt template from the file
+            let prompt_template = fs::read_to_string(DEFAULT_HIGH_LEVEL_PLAN_PROMPT_TEMPLATE)
+                    .context("Failed to read high_level_plan_agent_prompt.txt")?;
+    
+            let prompt = prompt_template
+                .replacen("{}",&user_query, 1)
+                .replacen("{}", &capabilities, 1);
+    
+            debug!("Prompt for Plan creation : {}", prompt);
+    
+            // 3. Call the LLM API
+            // This api returns raw text from llm
+            let response_content = self.llm_interaction.call_api_simple_v2("user".to_string(),prompt.to_string()).await?;
+            let response_content=response_content.expect("No plan created from LLM");
+            info!("WorkflowAgent: LLM responded with high level plan content:{:?}", response_content);
+            
+            Ok(response_content)
+        }
+    }

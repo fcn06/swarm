@@ -12,7 +12,6 @@ agent_core = { workspace = true }
 configuration = { workspace = true }
 agent_discovery_service = { workspace = true }
 mcp_runtime = { workspace = true }
-hierarchical_planner = { workspace = true }
 llm_api = { workspace = true }
 
 a2a-rs= { workspace = true }

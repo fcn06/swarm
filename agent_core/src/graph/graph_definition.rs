@@ -65,6 +65,7 @@ pub struct WorkflowPlanInput {
     pub activities: Vec<ActivityInput>,
 }
 
+
 // Existing Activity struct, adapted to flatten information from ActivityInput
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
 pub struct Activity {

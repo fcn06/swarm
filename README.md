@@ -80,6 +80,14 @@ There are two variations for running this demo:
     sh ./documentation/demo_workflow_management/run_all_commands.sh --dynamic-generation
     ```
 
+*   **Experiment by just Creating a high level plan:** This dynamically generates a high level plan based on user queries and available resources. Useful for evaluation of capabilities of your LLM. Use the `--high-level-plan` flag.
+
+    ```bash
+    # This command must be run from the root of the swarm project
+    sh ./documentation/demo_workflow_management/run_all_commands.sh --high-level-plan
+    ```
+
+
 This is an excellent choice if you're looking to build agents for automated, step-by-step processes or want to understand how workflows are executed.
 
 **Cleaning Up After the Demo:**

@@ -35,7 +35,7 @@ Each object in the `activities` array represents a single step and MUST adhere t
 An activity MUST contain **only one** of the following fields, based on its `type`: `agent`, `tools`, or `tasks`.
 
 1.  `agent`: (Object) Used only when `type` is 'DelegationAgent'.
-    - `skill_to_use`: (String | null) The specific skill required.
+    - `skill_to_use`: (String | null) The specific skill optional.
     - `assigned_agent_id_preference`: (String) The ID of the agent to use.
     - `agent_context`: (Object) A key-value map for passing outputs from previous activities. Use the `{{activity_id.activity_output}}` syntax to pass the entire raw output.
 

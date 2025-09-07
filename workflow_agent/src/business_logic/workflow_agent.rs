@@ -33,9 +33,6 @@ use agent_core::graph::graph_definition::{WorkflowPlanInput,Graph};
 
 use agent_core::business_logic::agent::Agent;
 
-//static DEFAULT_WORKFLOW_PROMPT_TEMPLATE: &str = "./configuration/prompts/workflow_agent_prompt.txt";
-
-// future use
 static DEFAULT_WORKFLOW_PROMPT_TEMPLATE: &str = "./configuration/prompts/detailed_workflow_agent_prompt.txt";
 static DEFAULT_HIGH_LEVEL_PLAN_PROMPT_TEMPLATE: &str = "./configuration/prompts/high_level_plan_agent_prompt.txt";
 

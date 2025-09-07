@@ -50,7 +50,7 @@ use workflow_agent::business_logic::service_adapters::AgentDiscoveryServiceAdapt
 #[clap(author, version, about, long_about = None)]
 struct Args {
     /// Configuration file path (TOML format)
-    #[clap(long, default_value = "configuration/agent_workflow_config_v2.toml")]
+    #[clap(long, default_value = "configuration/agent_workflow_config.toml")]
     config_file: String,
     /// Log level
     #[clap(long, default_value = "warn")]

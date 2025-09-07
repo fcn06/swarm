@@ -101,6 +101,8 @@ impl GeneralMcpService {
                 ("srsearch", &search_query),
                 ("format", "json"),
                 ("utf8", "1"),
+                ("srlimit", "5"), // Limit to 5 results
+                ("srlength", "200"), // Set snippet length to 200 characters
             ],
         ).unwrap();
 

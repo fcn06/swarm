@@ -92,6 +92,7 @@ async fn register_agent(
     (StatusCode::CREATED, "Agent registered successfully")
 }
 
+// todo: Should be improved. We should just send agent_id to de register
 /// Deregisters an agent and removes it from the skills index.
 async fn deregister_agent(
     State(state): State<AppState>,

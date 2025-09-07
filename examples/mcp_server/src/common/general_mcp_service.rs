@@ -4,7 +4,6 @@ use rmcp::{
     handler::server::{router::tool::ToolRouter,wrapper::Parameters},
 };
 
-//use rmcp::{handler::server::{tool::CallToolHandler},};
 
 use serde_json::json;
 
@@ -13,7 +12,7 @@ use serde_json::json;
 #[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
 pub struct StructRequestLocation {
     #[schemars(description = "Location for which you desire to know weather")]
-    pub _location: String,
+    pub location: String,
     #[schemars(description = "Temperature unit to use. You can specify Degree Celsius or Degree Farenheit")]
     pub unit: Option<String>,
 }
@@ -21,13 +20,19 @@ pub struct StructRequestLocation {
 #[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
 pub struct StructRequestCustomerDetails {
     #[schemars(description = "Give customer details from a given customer_id")]
-    pub _customer_id: String,
+    pub customer_id: String,
 }
 
 #[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
 pub struct StructRequestUrlToScrape {
     #[schemars(description = "The URL to scrape")]
     pub url_to_scrape: String,
+}
+
+#[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
+pub struct StructRequestSearch {
+    #[schemars(description = "The wikipedia search query")]
+    pub search_query: String,
 }
 
 
@@ -50,7 +55,8 @@ impl GeneralMcpService {
 
     #[tool(description = "Get the current weather in a given location")]
     async fn get_current_weather(
-        &self, Parameters(StructRequestLocation { _location, unit }): Parameters<StructRequestLocation>) -> Result<CallToolResult, McpError> {
+        &self, Parameters(StructRequestLocation { location, unit }): Parameters<StructRequestLocation>) -> Result<CallToolResult, McpError> {
+        let _location = location;  
         let unit = unit.unwrap_or("Degree Celsius".to_string());
         let begining_string=r#""{"Temperature": "24", "unit":""#;
         let end_string=r#"","description":"Sunny"}"#;
@@ -63,8 +69,9 @@ impl GeneralMcpService {
 
     #[tool(description = "Give customer details")]
     async fn get_customer_details(
-        &self,Parameters(StructRequestCustomerDetails { _customer_id }): Parameters<StructRequestCustomerDetails>) 
+        &self,Parameters(StructRequestCustomerDetails { customer_id }): Parameters<StructRequestCustomerDetails>) 
             -> Result<CallToolResult, McpError> {
+        let _customer_id = customer_id;
         Ok(CallToolResult::success(vec![Content::text(
             r#"{"Full Name": "Company A", "address": "Sunny Street BOSTON"}"#,
         )]))
@@ -81,6 +88,33 @@ impl GeneralMcpService {
         Ok(CallToolResult::success(vec![Content::text(body)]))
     }
 
+    #[tool(description = "Performs a simple search")]
+    async fn search(
+        &self, Parameters(StructRequestSearch { search_query }): Parameters<StructRequestSearch>
+    ) -> Result<CallToolResult, McpError> {
+
+        let wikipedia_search_url = reqwest::Url::parse_with_params(
+            "https://en.wikipedia.org/w/api.php",
+            &[
+                ("action", "query"),
+                ("list", "search"),
+                ("srsearch", &search_query),
+                ("format", "json"),
+                ("utf8", "1"),
+            ],
+        ).unwrap();
+
+        let client = reqwest::Client::new();
+        let response = client.get(wikipedia_search_url.clone())
+            .header("User-Agent", "MyRustApp/1.0 (contact@example.com)")
+            .send().await.map_err(|e| McpError::invalid_request(e.to_string(),Some(json!({"messages": wikipedia_search_url.to_string()}))))?;
+        let body = response.text().await.map_err(|e| McpError::invalid_request(e.to_string(),Some(json!({"messages": wikipedia_search_url.to_string()}))))?;
+
+        Ok(CallToolResult::success(vec![Content::text(
+            format!("{{\"result\": \"Search result for '{}' : '{}' \"}}", search_query, body),
+        )]))
+
+    }
 
 
 }
@@ -97,7 +131,7 @@ impl ServerHandler for GeneralMcpService {
                 .enable_tools()
                 .build(),
             server_info: Implementation::from_build_env(),
-            instructions: Some("This server provides  a function 'get_current_weather' to retrieve weather from a specific location,  'get_customer_details' to get info about a customer, and 'scrape_url' to scrape a given URL.".to_string()),
+            instructions: Some("This server provides  a function 'get_current_weather' to retrieve weather from a specific location,  'get_customer_details' to get info about a customer, 'scrape_url' to scrape a given URL, and 'search' to perform a simple search on wikipedia content.".to_string()),
         }
     }
 

@@ -91,8 +91,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Create a message
     let message_id_3 = uuid::Uuid::new_v4().to_string();
-    //let user_text="What is the current weather in Boston and What are details of Customer_id 1234 ?".to_string();
-    let user_text="Prepare a nice welcome message for the company with customer_id 12345 , where you mention the weather from their location.".to_string();
+    
+    let user_text="Prepare a small message to describe who is Carl Lewis.".to_string();
+   
     println!("\nUser_Query : {}",user_text);
     
     let generation_type = args.generation_type.as_str();
@@ -119,6 +120,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .message_id(message_id_3)
             .build()
     } else {
+        // the default injected workflow is specific to this request
+        let user_text="Prepare a nice welcome message for the company with customer_id 12345 , where you mention the weather from their location.".to_string();
         Message::builder()
             .role(a2a_rs::domain::Role::User)
             .parts(vec![Part::Text {

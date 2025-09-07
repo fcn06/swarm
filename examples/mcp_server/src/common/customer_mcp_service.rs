@@ -10,7 +10,7 @@ use rmcp::{
 #[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
 pub struct StructRequestCustomerDetails {
     #[schemars(description = "Give customer details from a given customer_id")]
-    pub _customer_id: String,
+    pub customer_id: String,
 }
 
 #[derive(Clone)]
@@ -29,8 +29,9 @@ impl CustomerMcpService {
 
     #[tool(description = "Give customer details")]
     async fn get_customer_details(
-        &self,Parameters(StructRequestCustomerDetails { _customer_id }): Parameters<StructRequestCustomerDetails>) 
+        &self,Parameters(StructRequestCustomerDetails { customer_id }): Parameters<StructRequestCustomerDetails>) 
             -> Result<CallToolResult, McpError> {
+        let _customer_id = customer_id;
         Ok(CallToolResult::success(vec![Content::text(
             r#"{"Full Name": "Company A", "address": "Sunny Street BOSTON"}"#,
         )]))

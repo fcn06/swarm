@@ -10,7 +10,7 @@
         {
           "tool_to_use": "get_current_weather",
           "tool_parameters": {
-            "_location": "Boston"
+            "location": "Boston"
           }
         }
       ],

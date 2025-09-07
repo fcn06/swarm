@@ -17,6 +17,7 @@ use common::customer_mcp_service::CustomerMcpService;
 use common::general_mcp_service::GeneralMcpService;
 use common::scrape_mcp_service::ScrapeMcpService;
 use common::weather_mcp_service::WeatherMcpService;
+use common::search_mcp_service::SearchMcpService;
 
 use clap::{Parser, Subcommand};
 
@@ -44,6 +45,8 @@ enum Commands {
     Customer,
     /// Launches the server with the scrape tool
     Scrape,
+    /// Launches the server with the search tool
+    Search,
     /// Launches the server with all tools
     All,
 }
@@ -104,6 +107,9 @@ async fn main() -> anyhow::Result<()> {
         Commands::Scrape => SseServer::serve(bind_address.parse()?)
             .await?
             .with_service(ScrapeMcpService::new),
+        Commands::Search => SseServer::serve(bind_address.parse()?)
+            .await?
+            .with_service(SearchMcpService::new),
         Commands::All => SseServer::serve(bind_address.parse()?)
             .await?
             .with_service(GeneralMcpService::new),

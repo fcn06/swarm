@@ -10,7 +10,7 @@ use rmcp::{
 #[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
 pub struct StructRequestLocation {
     #[schemars(description = "Location for which you desire to know weather")]
-    pub _location: String,
+    pub location: String,
     #[schemars(description = "Temperature unit to use. You can specify Degree Celsius or Degree Farenheit")]
     pub unit: Option<String>,
 }
@@ -31,7 +31,9 @@ impl WeatherMcpService {
 
     #[tool(description = "Get the current weather in a given location")]
     async fn get_current_weather(
-        &self, Parameters(StructRequestLocation { _location, unit }): Parameters<StructRequestLocation>) -> Result<CallToolResult, McpError> {
+        &self, Parameters(StructRequestLocation { location, unit }): Parameters<StructRequestLocation>) -> Result<CallToolResult, McpError> {
+
+        let _location = location;      
         let unit = unit.unwrap_or("Degree Celsius".to_string());
         let begining_string=r#""{"Temperature": "24", "unit":""#;
         let end_string=r#"","description":"Sunny"}"#;

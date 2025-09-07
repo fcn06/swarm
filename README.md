@@ -109,7 +109,7 @@ The Swarm project is composed of several specialized crates:
 *   `agent_evaluation_service`: A service that uses an "LLM as a Judge" to evaluate agent performance.
 *   `configuration`: Default configuration files and prompts.
 *   `documentation`: Example configuration files and guides.
-*   `examples`: Illustrative examples to help you interact with Swarm.
+*   `examples`: Illustrative examples to help you interact with Swarm. In particular, there is a test MCP server with capability to scrape a url and search against wikipedia.
 
 ## **🗺️ Roadmap & Contributing**
 

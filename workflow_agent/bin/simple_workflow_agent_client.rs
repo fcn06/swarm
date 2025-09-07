@@ -31,8 +31,8 @@ struct Args {
     log_level: String,
     #[clap(long, default_value = "./documentation/demo_workflow_management/mix_agent_tools_workflow.json")]
     graph_file: String,
-    #[arg(long, default_value_t = false)]
-    dynamic_generation: bool,
+    #[clap(long, default_value = "load_workflow")]
+    generation_type: String,
 }
 
 #[tokio::main]
@@ -95,40 +95,41 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let user_text="Prepare a nice welcome message for the company with customer_id 12345 , where you mention the weather from their location.".to_string();
     println!("\nUser_Query : {}",user_text);
     
+    let generation_type = args.generation_type.as_str();
 
-    let message_3=match args.dynamic_generation {
-        // workflow created dynamically from user_request and resources
-        true => {
-            Message::builder()
-                .role(a2a_rs::domain::Role::User)
-                .parts(vec![Part::Text {
-                    text: user_text,
-                    metadata: None,
-                }])
-                .message_id(message_id_3)
-                .build()
-        },
-        // based on a workflow file
-        false => {
-            Message::builder()
+    let message_3 = if generation_type == "dynamic_generation" {
+        Message::builder()
             .role(a2a_rs::domain::Role::User)
             .parts(vec![Part::Text {
                 text: user_text,
                 metadata: None,
             }])
-            .metadata(
-                    Map::from_iter(
-                        [
-                            (
-                                "workflow_url".to_string(), 
-                                serde_json::json!(args.graph_file)
-                                )
-                                ]
-                            )
-                        )
             .message_id(message_id_3)
             .build()
-        }
+    } else if generation_type == "high_level_plan" {
+        Message::builder()
+            .role(a2a_rs::domain::Role::User)
+            .parts(vec![Part::Text {
+                text: user_text,
+                metadata: None,
+            }])
+            .metadata(Map::from_iter([
+                ("high_level_plan".to_string(), serde_json::json!(true)),
+            ]))
+            .message_id(message_id_3)
+            .build()
+    } else {
+        Message::builder()
+            .role(a2a_rs::domain::Role::User)
+            .parts(vec![Part::Text {
+                text: user_text,
+                metadata: None,
+            }])
+            .metadata(Map::from_iter([
+                ("workflow_url".to_string(), serde_json::json!(args.graph_file)),
+            ]))
+            .message_id(message_id_3)
+            .build()
     };
     
 

@@ -99,9 +99,11 @@ echo $'\n'
 echo "Ask the questions to the orchestrator : He should answer to the whole set of questions by send queries to appropriate agent"
 echo $'\n'
 
-# Check for the --dynamic-generation flag
+# Check for the --dynamic-generation or --high-level-plan flag
 if [[ "$1" == "--dynamic-generation" ]]; then
-    ./target/release/simple_workflow_agent_client --port 8180 --log-level "warn" --dynamic-generation
+    ./target/release/simple_workflow_agent_client --port 8180 --log-level "warn" --generation-type "dynamic_generation"
+elif [[ "$1" == "--high-level-plan" ]]; then
+    ./target/release/simple_workflow_agent_client --port 8180 --log-level "warn" --generation-type "high_level_plan"
 else
     # execution based on a pre defined workflow. good for automation
     ./target/release/simple_workflow_agent_client --port 8180 --log-level "warn"

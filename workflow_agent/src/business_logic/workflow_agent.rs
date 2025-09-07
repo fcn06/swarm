@@ -34,7 +34,7 @@ use agent_core::graph::graph_definition::{WorkflowPlanInput,Graph};
 use agent_core::business_logic::agent::Agent;
 
 static DEFAULT_WORKFLOW_PROMPT_TEMPLATE: &str = "./configuration/prompts/detailed_workflow_agent_prompt.txt";
-static DEFAULT_HIGH_LEVEL_PLAN_PROMPT_TEMPLATE: &str = "./configuration/prompts/high_level_plan_agent_prompt.txt";
+static DEFAULT_HIGH_LEVEL_PLAN_PROMPT_TEMPLATE: &str = "./configuration/prompts/high_level_plan_workflow_agent_prompt.txt";
 
 /// Agent that executes predefined workflows.
 #[allow(dead_code)]
@@ -88,6 +88,19 @@ impl Agent for WorkFlowAgent {
         let user_query = request.content.clone().unwrap_or_default();
 
         debug!("---WorkflowAgent: Starting to handle user request -- Query: \'{}\'---", user_query);
+
+        if self.extract_high_level_plan_flag(metadata.clone()) {
+            info!("High level plan requested. Creating high level plan.");
+            let high_level_plan = self.create_high_level_plan(user_query).await?;
+            info!("High level plan: {}", high_level_plan);
+            // Directly return the high-level plan without further execution
+            return Ok(ExecutionResult {
+                request_id,
+                conversation_id,
+                success: true,
+                output: high_level_plan,
+            });
+        }
 
         let graph = if let Some(graph_file) = self.extract_workflow_filename(metadata.clone()) {
             info!("Loading workflow from file: {}", graph_file);
@@ -200,6 +213,15 @@ impl WorkFlowAgent {
             }
         }
         None
+    }
+
+    fn extract_high_level_plan_flag(&self, metadata: Option<Map<String, Value>>) -> bool {
+        if let Some(map) = metadata {
+            if let Some(value) = map.get("high_level_plan") {
+                return value.as_bool().unwrap_or(false);
+            }
+        }
+        false
     }
 }
 

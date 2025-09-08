@@ -4,9 +4,9 @@ use rmcp::{
     handler::server::{router::tool::ToolRouter,wrapper::Parameters},
 };
 
-//use rmcp::{handler::server::{tool::CallToolHandler},};
-
 use serde_json::json;
+
+static JINA_AI_URL: &str = "https://r.jina.ai";
 
 #[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
 pub struct StructRequestUrlToScrape {
@@ -32,7 +32,7 @@ impl ScrapeMcpService {
     async fn scrape_url(
         &self, Parameters(StructRequestUrlToScrape { url_to_scrape }): Parameters<StructRequestUrlToScrape>
     ) -> Result<CallToolResult, McpError> {
-        let jina_ai_url = format!("https://r.jina.ai/{}", url_to_scrape);
+        let jina_ai_url = format!("{}/{}",JINA_AI_URL, url_to_scrape);
         let client = reqwest::Client::new();
         let response = client.get(&jina_ai_url).send().await.map_err(|e| McpError::invalid_request(e.to_string(),Some(json!({"messages": url_to_scrape.to_string()}))))?;
         let body = response.text().await.map_err(|e| McpError::invalid_request(e.to_string(),Some(json!({"messages": url_to_scrape.to_string()}))))?;

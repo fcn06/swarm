@@ -7,6 +7,8 @@ use rmcp::{
 
 use serde_json::json;
 
+static WIKIPEDIA_SEARCH_URL: &str = "https://en.wikipedia.org/api/rest_v1/page/summary";
+static JINA_AI_URL: &str = "https://r.jina.ai";
 
 
 #[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
@@ -81,7 +83,7 @@ impl GeneralMcpService {
     async fn scrape_url(
         &self, Parameters(StructRequestUrlToScrape { url_to_scrape }): Parameters<StructRequestUrlToScrape>
     ) -> Result<CallToolResult, McpError> {
-        let jina_ai_url = format!("https://r.jina.ai/{}", url_to_scrape);
+        let jina_ai_url = format!("{}/{}",JINA_AI_URL, url_to_scrape);
         let client = reqwest::Client::new();
         let response = client.get(&jina_ai_url).send().await.map_err(|e| McpError::invalid_request(e.to_string(),Some(json!({"messages": url_to_scrape.to_string()}))))?;
         let body = response.text().await.map_err(|e| McpError::invalid_request(e.to_string(),Some(json!({"messages": url_to_scrape.to_string()}))))?;
@@ -93,26 +95,24 @@ impl GeneralMcpService {
         &self, Parameters(StructRequestSearch { search_query }): Parameters<StructRequestSearch>
     ) -> Result<CallToolResult, McpError> {
 
-        let wikipedia_search_url = reqwest::Url::parse_with_params(
-            "https://en.wikipedia.org/w/api.php",
-            &[
-                ("action", "query"),
-                ("list", "search"),
-                ("srsearch", &search_query),
-                ("format", "json"),
-                ("utf8", "1"),
-                ("srlimit", "5"), // Limit to 5 results
-            ],
-        ).unwrap();
+        let wikipedia_media_url = format!("{}/{}",WIKIPEDIA_SEARCH_URL,&search_query );
 
         let client = reqwest::Client::new();
-        let response = client.get(wikipedia_search_url.clone())
+
+        let response = client.get(wikipedia_media_url.clone())
             .header("User-Agent", "MyRustApp/1.0 (contact@example.com)")
-            .send().await.map_err(|e| McpError::invalid_request(e.to_string(),Some(json!({"messages": wikipedia_search_url.to_string()}))))?;
-        let body = response.text().await.map_err(|e| McpError::invalid_request(e.to_string(),Some(json!({"messages": wikipedia_search_url.to_string()}))))?;
+            .send().await.map_err(|e| McpError::invalid_request(e.to_string(),Some(json!({"messages": wikipedia_media_url.to_string()}))))?;
+
+        let parsed_json_response: serde_json::Value = response.json().await.map_err(|e| McpError::invalid_request(e.to_string(),Some(json!({"messages": wikipedia_media_url.to_string()}))))?;
+
+        let extract_from_response=    if let Some(extract_text) = parsed_json_response["extract"].as_str() {
+                extract_text
+            } else {
+                "'extract' field not found or not a string."
+            };
 
         Ok(CallToolResult::success(vec![Content::text(
-            format!("{{\"result\": \"Search result for '{}' : '{}' \"}}", search_query, body),
+            format!(r#"{{ "result": "Search result for '{}' : '{}' " }}"#, search_query, extract_from_response),
         )]))
 
     }

@@ -50,18 +50,18 @@ export LLM_JUDGE_API_KEY=<YOUR-GROQ-API-KEY>
 
 Our main demo showcases the power of workflow management, running a mix of direct tool calls and actions delegated to agents. You have three ways to run it:
 
-*   **Static Workflow (Default):** Executes a predefined workflow from a file. This is great for predictable, repeatable processes.
-
-    ```bash
-    # This command must be run from the root of the swarm project
-    sh ./documentation/demo_workflow_management/run_all_commands.sh
-    ```
-
 *   **Dynamic Workflow Generation:** Dynamically generates a plan based on your query and the available agents. This showcases Swarm's ability to adapt.
 
     ```bash
     # This command must be run from the root of the swarm project
     sh ./documentation/demo_workflow_management/run_all_commands.sh --dynamic-generation
+    ```
+
+*   **Static Workflow (Default):** Executes a predefined workflow from a file. This is great for predictable, repeatable processes.
+
+    ```bash
+    # This command must be run from the root of the swarm project
+    sh ./documentation/demo_workflow_management/run_all_commands.sh
     ```
 
 *   **High-Level Plan Generation:** Generates only a high-level plan, without executing it. This is useful for evaluating the planning capabilities of your LLM.

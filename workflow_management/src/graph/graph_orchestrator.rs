@@ -265,141 +265,80 @@ impl PlanExecutor {
         activity: &Activity,
     ) -> Result<Activity, PlanExecutorError> {
         let mut hydrated_activity = activity.clone();
+        // Regex to find placeholders like {{activity_id.activity_output}}
         let re = Regex::new(r"\{\{([^}]+)\}\}").unwrap();
-
-        let get_interpolated_value = |path: &str, activity_id: &str, param_name: &str, is_task_param: bool, task_index: Option<usize>| -> Result<String, PlanExecutorError> {
-            let parts: Vec<&str> = path.splitn(2, '.').collect();
-            if parts.is_empty() {
+    
+        // Simplified closure to get the replacement value.
+        let get_interpolated_value = |path: &str| -> Result<String, PlanExecutorError> {
+            // Extract the source activity ID, ignoring ".activity_output"
+            let source_id = path.split('.').next().unwrap_or("");
+            
+            if source_id.is_empty() {
                 return Err(PlanExecutorError::InterpolationFailed(
-                    "Invalid interpolation path".to_string(),
+                    "Invalid interpolation path: empty source ID".to_string(),
                 ));
             }
-
-            let source_id = parts[0];
-            let result_str =
-                self.context.results.get(source_id).ok_or_else(|| {
+    
+            // Retrieve the entire result string for the given source_id.
+            self.context.results.get(source_id)
+                .cloned()
+                .ok_or_else(|| {
                     PlanExecutorError::InterpolationFailed(format!(
-                        "Dependency result for '{}' not found for {} parameter '{}' in activity '{}'",
-                        source_id, if is_task_param { format!("task {} ", task_index.unwrap_or(0)) } else { "".to_string() }, param_name, activity_id
+                        "Dependency result for '{}' not found for activity '{}'",
+                        source_id, activity.id
                     ))
-                })?;
-
-            if parts.len() > 1 && parts[1] != "activity_output" {
-                let path_keys = parts[1].split('.');
-                let mut current_value: &Value = &serde_json::from_str(result_str).unwrap_or(Value::Null);
-                for key_part in path_keys {
-                    current_value = current_value.get(key_part).unwrap_or(&Value::Null);
-                }
-                Ok(current_value.to_string())
-            } else {
-                // If path is just activity_id or activity_id.activity_output, use the whole result
-                // Attempt to unquote string literals from DelegationAgent outputs
-                match serde_json::from_str::<Value>(result_str) {
-                    Ok(Value::String(s)) => Ok(s), // Successfully parsed as a JSON string, return inner string
-                    _ => Ok(result_str.to_string()), // Otherwise, return the raw string
+                })
+        };
+    
+        // Generic function to replace placeholders in any serde_json::Value
+        let interpolator = |json_value: &mut Value| {
+            if let Value::Object(map) = json_value {
+                for (_, value) in map.iter_mut() {
+                    if let Value::String(s) = value {
+                        if s.contains("{{") {
+                            if let Some(caps) = re.captures(s) {
+                                if let Some(path) = caps.get(1) {
+                                    match get_interpolated_value(path.as_str()) {
+                                        Ok(interpolated_val) => {
+                                            // The result might be a JSON object string, a number, or a simple string.
+                                            // Attempt to parse it as a generic JSON Value.
+                                            // If it fails, treat it as a plain string.
+                                            *value = serde_json::from_str(&interpolated_val).unwrap_or(Value::String(interpolated_val));
+                                        },
+                                        Err(e) => {
+                                            // If interpolation fails, replace with an error message.
+                                            *value = Value::String(format!("ERROR: {}", e));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
-    
-
         };
-
+    
         // Interpolate tool_parameters
         if let Some(tool_params) = &mut hydrated_activity.tool_parameters {
-            if let Value::Object(map) = tool_params {
-                let mut keys_to_replace = Vec::new();
-                for (key, value) in map.iter() {
-                    if let Value::String(s) = value {
-                        if s.contains("{{") && s.contains("}}") {
-                            keys_to_replace.push(key.clone());
-                        }
-                    }
-                }
-
-                for key in keys_to_replace {
-                    if let Some(Value::String(s)) = map.get(&key) {
-                        let interpolated_s = re.replace_all(s, |caps: &regex::Captures| {
-                            let path = &caps[1];
-                            match get_interpolated_value(path, &activity.id, &key, false, None) {
-                                Ok(val) => val,
-                                Err(e) => return format!("ERROR: {}", e), // Handle error within closure
-                            }
-                        }).to_string();
-                        map.insert(key.clone(), Value::String(interpolated_s));
-                    }
-                }
-            }
+            interpolator(tool_params);
         }
-
+    
         // Interpolate tasks parameters
         if let Some(tasks) = &mut hydrated_activity.tasks {
-            for (task_index, task_config) in tasks.iter_mut().enumerate() {
-                if let Some(map) = task_config.task_parameters.as_object_mut() {
-                    let mut keys_to_replace = Vec::new();
-                    for (key, value) in map.iter() {
-                        if let Value::String(s) = value {
-                            if s.contains("{{") && s.contains("}}") {
-                                keys_to_replace.push(key.clone());
-                            }
-                        }
-                    }
-
-                    for key in keys_to_replace {
-                        if let Some(Value::String(s)) = map.get(&key) {
-                            let interpolated_s = re.replace_all(s, |caps: &regex::Captures| {
-                                let path = &caps[1];
-                                match get_interpolated_value(path, &activity.id, &key, true, Some(task_index)) {
-                                    Ok(val) => val,
-                                    Err(e) => return format!("ERROR: {}", e), // Handle error within closure
-                                }
-                            }).to_string();
-                            map.insert(key.clone(), Value::String(interpolated_s));
-                        }
-                    }
-                }
+            for task_config in tasks.iter_mut() {
+                interpolator(&mut task_config.task_parameters);
             }
         }
-
-        // NEW: Interpolate agent_context parameters
+    
+        // Interpolate agent_context parameters
         if let Some(agent_context) = &mut hydrated_activity.agent_context {
-            if let Value::Object(map) = agent_context {
-                let mut keys_to_replace = Vec::new();
-                for (key, value) in map.iter() {
-                    if let Value::String(s) = value {
-                        if s.contains("{{") && s.contains("}}") {
-                            keys_to_replace.push(key.clone());
-                        }
-                    }
-                }
-
-                for key in keys_to_replace {
-                    if let Some(Value::String(s)) = map.get(&key) {
-                        let interpolated_s = re.replace_all(s, |caps: &regex::Captures| {
-                            let path = &caps[1];
-                            // For agent_context, we are interpolating general values, not tool/task specific.
-                            match get_interpolated_value(path, &activity.id, &key, false, None) {
-                                Ok(val) => val,
-                                Err(e) => format!("ERROR: {}", e),
-                            }
-                        }).to_string();
-                        map.insert(key.clone(), Value::String(interpolated_s));
-                    }
-                }
-            }
+            interpolator(agent_context);
         }
-
-        // Interpolate activity description (message for DelegationAgent)
-        let mut description_to_interpolate = hydrated_activity.description.clone();
-        if description_to_interpolate.contains("{{") && description_to_interpolate.contains("}}") {
-            description_to_interpolate = re.replace_all(&description_to_interpolate, |caps: &regex::Captures| {
-                let path = &caps[1];
-                match get_interpolated_value(path, &activity.id, "description", false, None) {
-                    Ok(val) => val,
-                    Err(e) => return format!("ERROR: {}", e), // Handle error within closure
-                }
-            }).to_string();
-        }
-        hydrated_activity.description = description_to_interpolate;
-
+    
+        debug!("Hydrated Activity: {:?}", hydrated_activity);
+        
         Ok(hydrated_activity)
     }
+    
+
 }

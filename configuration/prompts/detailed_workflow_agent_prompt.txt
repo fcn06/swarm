@@ -49,24 +49,29 @@ An activity MUST contain **only one** of the following fields, based on its `typ
         - `task_to_use`: (String) The name of the task to be executed.
         - `task_parameters`: (Object) A key-value map of parameters for the task.
 
+
 ---
 **CRITICAL WORKFLOW LOGIC AND DATA FLOW RULES:**
 
-**1. Mandatory Intermediate Extraction:**
-   - If an activity (`Activity B`) requires a specific value (e.g., a "location" string) that is nested inside a complex JSON object produced by a preceding activity (`Activity A`), you **MUST** create an intermediate `DelegationAgent` activity.
-   - This new activity's job is to:
-     a. Receive the entire complex JSON from `Activity A` in its `agent_context`.
-     b. Extract the single, required value.
-     c. Output **only the raw, unformatted, unquoted primitive value**. For example, if extracting a location, the output must be `Boston`, NOT `"Boston"` or `{"location": "Boston"}`.
+**1. Data Preparation is MANDATORY for Mismatched Data:**
+- This is the most important rule. If a downstream activity (e.g., a tool) needs a simple value (like a location string: `"Boston"`) but the preceding activity outputs a complex JSON object (`{"customer_id": "12345", "location": "Boston"}`), you **MUST** create an intermediate `DelegationAgent` activity.
 
-**2. Direct Interpolation for Primitives Only:**
-   - Only use the `{{activity_id.activity_output}}` syntax in `tool_parameters` or `task_parameters` when the source activity's output is *already* the raw primitive value required by the parameter.
-   - **DO NOT** use nested field access like `{{activity_id.activity_output.field}}`.
+**2. Rule for Data Preparation Agent's `description`:**
+- When you create an intermediate `DelegationAgent` for data preparation, its `description` field **MUST** be a precise instruction to that agent. This instruction is critical. It must explicitly state:
+    1.  Exactly which fields to extract from the `agent_context`.
+    2.  The exact JSON structure of its output, emphasizing that it should be **only the JSON object and nothing else**.
 
-**3. Data for Agents:**
-   - Always pass data to a `DelegationAgent` through the `agent.agent_context`. The agent is responsible for parsing the data it receives.
 
-**4. Resource Constraint:**
-   - You **MUST** exclusively use the tools, tasks, and agents provided in the "Available Resources" section. Do not invent or assume any other capabilities.
+**3. Direct Object Interpolation:**
+- Always pass data to a tool's `tool_parameters` or a task's `task_parameters` using the `{{activity_id.activity_output}}` syntax.
+- **DO NOT** use nested field access like `{{activity_id.activity_output.field}}`. Use the data preparation pattern from Rule #1 and #2 instead.
+
+**4. Data for Agents:**
+- Always pass data to a `DelegationAgent` through its `agent.agent_context` field. The agent is responsible for parsing the data it receives.
+
+**5. Resource Constraint:**
+- You **MUST** exclusively use the tools, tasks, and agents provided in the "Available Resources" section. Do not invent or assume any other capabilities.
+
+
 
 Generate the JSON workflow now.

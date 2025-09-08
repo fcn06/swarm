@@ -192,7 +192,6 @@ impl WorkFlowAgent {
         };
 
         debug!("WorkFlow Generated: {}", json_string);
-        //print!("WorkFlow Generated: {} \n", json_string);
 
         // 5. Parse the LLM's JSON response into the Workflow struct
         let workflow: WorkflowPlanInput = serde_json::from_str(&json_string)?;

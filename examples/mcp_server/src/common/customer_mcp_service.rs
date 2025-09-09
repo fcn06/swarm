@@ -1,17 +1,10 @@
 use rmcp::{
-    ErrorData as McpError,  ServerHandler,  model::*, schemars,
+    ErrorData as McpError,  ServerHandler,  model::*,
     tool,  tool_handler, tool_router,
     handler::server::{router::tool::ToolRouter,wrapper::Parameters},
 };
 
-//use rmcp::{handler::server::{tool::CallToolHandler},};
-
-
-#[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
-pub struct StructRequestCustomerDetails {
-    #[schemars(description = "Give customer details from a given customer_id")]
-    pub customer_id: String,
-}
+use crate::common::mcp_tools::McpTools;
 
 #[derive(Clone)]
 pub struct CustomerMcpService {
@@ -29,12 +22,9 @@ impl CustomerMcpService {
 
     #[tool(description = "Give customer details")]
     async fn get_customer_details(
-        &self,Parameters(StructRequestCustomerDetails { customer_id }): Parameters<StructRequestCustomerDetails>) 
+        &self, params: Parameters<crate::common::mcp_tools::StructRequestCustomerDetails>) 
             -> Result<CallToolResult, McpError> {
-        let _customer_id = customer_id;
-        Ok(CallToolResult::success(vec![Content::text(
-            r#"{"Full Name": "Company A", "address": "Sunny Street BOSTON"}"#,
-        )]))
+        McpTools::get_customer_details(params).await
     }
 }
 

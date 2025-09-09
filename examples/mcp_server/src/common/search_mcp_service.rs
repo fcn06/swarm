@@ -1,19 +1,10 @@
-
 use rmcp::{
-    ErrorData as McpError,  ServerHandler,  model::*, schemars,
+    ErrorData as McpError,  ServerHandler,  model::*,
     tool,  tool_handler, tool_router,
     handler::server::{router::tool::ToolRouter,wrapper::Parameters},
 };
 
-use serde_json::json;
-
-static WIKIPEDIA_SEARCH_URL: &str = "https://en.wikipedia.org/api/rest_v1/page/summary";
-
-#[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
-pub struct SearchRequest {
-    #[schemars(description = "The search query for wikipedia")]
-    pub search_query: String,
-}
+use crate::common::mcp_tools::McpTools;
 
 #[derive(Clone)]
 pub struct SearchMcpService {
@@ -30,29 +21,9 @@ impl SearchMcpService {
 
     #[tool(description = "Performs a simple search against Wikipedia")]
     async fn search(
-        &self, Parameters(SearchRequest { search_query }): Parameters<SearchRequest>
+        &self, params: Parameters<crate::common::mcp_tools::StructRequestSearch>
     ) -> Result<CallToolResult, McpError> {
-
-        let wikipedia_media_url = format!("{}/{}",WIKIPEDIA_SEARCH_URL,&search_query );
-
-        let client = reqwest::Client::new();
-
-        let response = client.get(wikipedia_media_url.clone())
-            .header("User-Agent", "MyRustApp/1.0 (contact@example.com)")
-            .send().await.map_err(|e| McpError::invalid_request(e.to_string(),Some(json!({"messages": wikipedia_media_url.to_string()}))))?;
-
-        let parsed_json_response: serde_json::Value = response.json().await.map_err(|e| McpError::invalid_request(e.to_string(),Some(json!({"messages": wikipedia_media_url.to_string()}))))?;
-
-        let extract_from_response=    if let Some(extract_text) = parsed_json_response["extract"].as_str() {
-                extract_text
-            } else {
-                "'extract' field not found or not a string."
-            };
-
-        Ok(CallToolResult::success(vec![Content::text(
-            format!(r#"{{ "result": "Search result for '{}' : '{}' " }}"#, search_query, extract_from_response),
-        )]))
-
+        McpTools::search(params).await
     }
 }
 

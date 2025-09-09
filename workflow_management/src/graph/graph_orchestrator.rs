@@ -208,7 +208,14 @@ impl PlanExecutor {
         };
 
         self.context.results.insert(node_id.clone(), result.clone());
-        println!("Executed node '{}', result: '{}' \n", node_id, result);
+
+        // Attempt to parse the result as JSON for pretty printing
+        let printable_result = match serde_json::from_str::<serde_json::Value>(&result) {
+            Ok(json_value) => serde_json::to_string_pretty(&json_value).unwrap_or_else(|_| result.clone()),
+            Err(_) => result.clone(),
+        };
+
+        println!("Executed node '{}', result: '{}' \n", node_id, printable_result);
         self.update_downstream_dependencies(&node_id, &result)?;
         self.context.plan_state = PlanState::DecidingNextStep;
 
@@ -245,12 +252,14 @@ impl PlanExecutor {
     }
 
     fn handle_completion_state(&mut self) -> Result<(), PlanExecutorError> {
-        // todo:logs memory and evaluation
-
-        println!(
-            "\nPlan executed successfully. Final results: {:?}",
-            self.context.results
-        );
+        println!("\nPlan executed successfully. Final results:");
+        for (node_id, result) in &self.context.results {
+            let printable_result = match serde_json::from_str::<serde_json::Value>(result) {
+                Ok(json_value) => serde_json::to_string_pretty(&json_value).unwrap_or_else(|_| result.clone()),
+                Err(_) => result.clone(),
+            };
+            println!("  '{}': {}", node_id, printable_result);
+        }
         Ok(())
     }
 

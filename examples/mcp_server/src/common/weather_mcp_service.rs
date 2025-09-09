@@ -1,19 +1,10 @@
 use rmcp::{
-    ErrorData as McpError,  ServerHandler,  model::*, schemars,
+    ErrorData as McpError,  ServerHandler,  model::*,
     tool,  tool_handler, tool_router,
     handler::server::{router::tool::ToolRouter,wrapper::Parameters},
 };
 
-//use rmcp::{handler::server::{tool::CallToolHandler},};
-
-
-#[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
-pub struct StructRequestLocation {
-    #[schemars(description = "Location for which you desire to know weather")]
-    pub location: String,
-    #[schemars(description = "Temperature unit to use. You can specify Degree Celsius or Degree Farenheit")]
-    pub unit: Option<String>,
-}
+use crate::common::mcp_tools::McpTools;
 
 #[derive(Clone)]
 pub struct WeatherMcpService {
@@ -31,15 +22,8 @@ impl WeatherMcpService {
 
     #[tool(description = "Get the current weather in a given location")]
     async fn get_current_weather(
-        &self, Parameters(StructRequestLocation { location, unit }): Parameters<StructRequestLocation>) -> Result<CallToolResult, McpError> {
-
-        let _location = location;      
-        let unit = unit.unwrap_or("Degree Celsius".to_string());
-        let begining_string=r#""{"Temperature": "24", "unit":""#;
-        let end_string=r#"","description":"Sunny"}"#;
-        Ok(CallToolResult::success(vec![Content::text(
-            format!("{}{}{}",begining_string,unit,end_string),
-        )]))
+        &self, params: Parameters<crate::common::mcp_tools::StructRequestLocation>) -> Result<CallToolResult, McpError> {
+        McpTools::get_current_weather(params).await
     }
 }
 

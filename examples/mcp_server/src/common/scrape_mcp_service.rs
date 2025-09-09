@@ -1,18 +1,10 @@
 use rmcp::{
-    ErrorData as McpError,  ServerHandler, model::*, schemars,
+    ErrorData as McpError,  ServerHandler, model::*,
     tool,  tool_handler, tool_router,
     handler::server::{router::tool::ToolRouter,wrapper::Parameters},
 };
 
-use serde_json::json;
-
-static JINA_AI_URL: &str = "https://r.jina.ai";
-
-#[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
-pub struct StructRequestUrlToScrape {
-    #[schemars(description = "The URL to scrape")]
-    pub url_to_scrape: String,
-}
+use crate::common::mcp_tools::McpTools;
 
 #[derive(Clone)]
 pub struct ScrapeMcpService {
@@ -30,13 +22,9 @@ impl ScrapeMcpService {
 
     #[tool(description = "Scrapes a given URL using Jina AI's web scraping service.")]
     async fn scrape_url(
-        &self, Parameters(StructRequestUrlToScrape { url_to_scrape }): Parameters<StructRequestUrlToScrape>
+        &self, params: Parameters<crate::common::mcp_tools::StructRequestUrlToScrape>
     ) -> Result<CallToolResult, McpError> {
-        let jina_ai_url = format!("{}/{}",JINA_AI_URL, url_to_scrape);
-        let client = reqwest::Client::new();
-        let response = client.get(&jina_ai_url).send().await.map_err(|e| McpError::invalid_request(e.to_string(),Some(json!({"messages": url_to_scrape.to_string()}))))?;
-        let body = response.text().await.map_err(|e| McpError::invalid_request(e.to_string(),Some(json!({"messages": url_to_scrape.to_string()}))))?;
-        Ok(CallToolResult::success(vec![Content::text(body)]))
+        McpTools::scrape_url(params).await
     }
 }
 

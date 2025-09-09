@@ -33,6 +33,8 @@ struct Args {
     graph_file: String,
     #[clap(long, default_value = "load_workflow")]
     generation_type: String,
+    #[clap(long, default_value = None)]
+    user_query: Option<String>,
 }
 
 #[tokio::main]
@@ -94,7 +96,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     let user_text="Prepare a small message to describe who is Carl Lewis.".to_string();
     //let user_text="Prepare a nice welcome message for the company with customer_id 12345 , where you mention the weather from their location.".to_string();
-       
+    
+    let user_text=match args.user_query {
+        Some(user_query) => user_query,
+        None => user_text,
+    };
 
     println!("\nUser_Query : {}",user_text);
     

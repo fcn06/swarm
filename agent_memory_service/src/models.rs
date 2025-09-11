@@ -32,3 +32,10 @@ pub struct LogPayload {
     pub content: String,
     pub agent_id: Option<String>,
 }
+
+#[allow(dead_code)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ConversationContext {
+    pub conversation_id: String,
+    pub log_entries:Vec<LogEntry>,
+}

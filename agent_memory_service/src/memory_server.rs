@@ -12,6 +12,7 @@ use std::sync::Arc;
 use tracing::info;
 
 /// Application state holding configurations
+/// The outcome could be converted into a ConversationContext
 #[derive(Clone)] // AppState needs to be Clone to be used as Axum state
 pub struct AppState {
     pub db_memory: Arc<DashMap<String, Vec<LogEntry>>>,

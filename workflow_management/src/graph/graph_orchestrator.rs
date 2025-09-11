@@ -9,7 +9,7 @@ use serde_json::Value;
 use std::collections::{HashMap, VecDeque};
 use std::sync::Arc;
 use thiserror::Error;
-use tracing::debug;
+use tracing::{debug,info};
 
 #[derive(Error, Debug, PartialEq)]
 pub enum PlanExecutorError {
@@ -64,7 +64,7 @@ impl PlanExecutor {
         }
     }
 
-    pub async fn execute_plan(&mut self) -> Result<(), PlanExecutorError> {
+    pub async fn execute_plan(&mut self) -> Result<HashMap<String, String>, PlanExecutorError> {
         self.context.plan_state = PlanState::Idle;
         loop {
             match self.context.plan_state.clone() {
@@ -73,17 +73,14 @@ impl PlanExecutor {
                 PlanState::DecidingNextStep => self.handle_deciding_next_step_state()?,
                 PlanState::ExecutingStep => self.handle_executing_step_state().await?,
                 PlanState::Completed => {
-                    self.handle_completion_state()?;
-                    break;
+                    return self.handle_completion_state();
                 }
                 PlanState::Failed(ref reason) => {
-                    self.handle_failure_state(reason.clone())?;
-                    break;
+                    return self.handle_failure_state(reason.clone());
                 }
                 _ => return Err(PlanExecutorError::InvalidState),
             }
         }
-        Ok(())
     }
 
     fn handle_idle_state(&mut self) -> Result<(), PlanExecutorError> {
@@ -215,7 +212,7 @@ impl PlanExecutor {
             Err(_) => result.clone(),
         };
 
-        println!("Executed node '{}', result: '{}' \n", node_id, printable_result);
+        info!("Executed node '{}', result: '{}' \n", node_id, printable_result);
         self.update_downstream_dependencies(&node_id, &result)?;
         self.context.plan_state = PlanState::DecidingNextStep;
 
@@ -251,20 +248,20 @@ impl PlanExecutor {
         Ok(())
     }
 
-    fn handle_completion_state(&mut self) -> Result<(), PlanExecutorError> {
-        println!("\nPlan executed successfully. Final results:");
+    fn handle_completion_state(&mut self) -> Result<HashMap<String, String>, PlanExecutorError> {
+        debug!("\nPlan executed successfully. Final results:");
         for (node_id, result) in &self.context.results {
             let printable_result = match serde_json::from_str::<serde_json::Value>(result) {
                 Ok(json_value) => serde_json::to_string_pretty(&json_value).unwrap_or_else(|_| result.clone()),
                 Err(_) => result.clone(),
             };
-            println!("  '{}': {}", node_id, printable_result);
+            debug!("  '{}': {}", node_id, printable_result);
         }
-        Ok(())
+        Ok(self.context.results.clone())
     }
 
-    fn handle_failure_state(&self, reason: String) -> Result<(), PlanExecutorError> {
-        eprintln!("Execution failed: {}", reason);
+    fn handle_failure_state(&self, reason: String) -> Result<HashMap<String, String>, PlanExecutorError> {
+        debug!("Execution failed: {}", reason);
         Err(PlanExecutorError::ExecutionFailed(reason))
     }
 

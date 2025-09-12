@@ -21,7 +21,7 @@ use agent_core::business_logic::services::DiscoveryService;
 use agent_core::business_logic::services::WorkflowServiceApi;
 use workflow_management::graph::config::load_graph_from_file;
 
-use agent_evaluation_service::evaluation_server::judge_agent::AgentLogData;
+use agent_evaluation_service::evaluation_server::judge_agent::AgentEvaluationLogData;
 
 use workflow_management::graph::{ graph_orchestrator::PlanExecutor};
 
@@ -91,7 +91,7 @@ impl Agent for WorkFlowAgent {
         let conversation_id = Uuid::new_v4().to_string();
         let user_query = request.content.clone().unwrap_or_default();
 
-        debug!("---WorkflowAgent: Starting to handle user request -- Query: '{}'---", user_query);
+        debug!("---WorkflowAgent: Starting to handle user request -- Query: \'{}\'---", user_query);
 
         if self.extract_high_level_plan_flag(metadata.clone()) {
             info!("High level plan requested. Creating high level plan.");
@@ -99,7 +99,7 @@ impl Agent for WorkFlowAgent {
             info!("High level plan: {}", high_level_plan);
 
             if let Some(eval_service) = &self.evaluation_service {
-                let data=AgentLogData{
+                let data=AgentEvaluationLogData{
                     agent_id:self.agent_config.agent_name.clone(),
                     request_id:request_id.clone(),
                     conversation_id:conversation_id.clone(),
@@ -152,11 +152,21 @@ impl Agent for WorkFlowAgent {
         
         match executor.execute_plan().await {
             Ok(execution_outcome) => {
-                info!("Workflow execution completed successfully.");
-                let output = format!("Workflow executed successfully. Outcome: {:?}", execution_outcome);
-                
+               
+                let mut parsed_outcome_map = serde_json::Map::new();
+                for (key, value_string) in execution_outcome.into_iter() {
+                    // Try to parse the value string as JSON, if it fails, keep it as a plain string
+                    let parsed_value = serde_json::from_str(&value_string)
+                        .unwrap_or_else(|_| serde_json::Value::String(value_string));
+                    parsed_outcome_map.insert(key, parsed_value);
+                }
+                let output = serde_json::to_string(&serde_json::Value::Object(parsed_outcome_map))
+                    .context("Failed to serialize processed execution outcome to JSON")?;
+
+                debug!("\nWorkflow execution completed successfully. Outcome : {}\n", output);
+
                 if let Some(eval_service) = &self.evaluation_service {
-                    let data=AgentLogData{
+                    let data=AgentEvaluationLogData{
                         agent_id:self.agent_config.agent_name.clone(),
                         request_id:request_id.clone(),
                         conversation_id:conversation_id.clone(),
@@ -183,7 +193,7 @@ impl Agent for WorkFlowAgent {
                 let error_message = format!("Workflow execution failed: {}", e);
 
                 if let Some(eval_service) = &self.evaluation_service { 
-                    let data=AgentLogData{
+                    let data=AgentEvaluationLogData{
                         agent_id:self.agent_config.agent_name.clone(),
                         request_id:request_id.clone(),
                         conversation_id:conversation_id.clone(),
@@ -233,7 +243,7 @@ impl WorkFlowAgent {
         info!("WorkflowAgent: LLM responded with plan content:{:?}", response_content);
 
 
-        // 4. Extract JSON from the LLM's response (in case it's wrapped in markdown code block)
+        // 4. Extract JSON from the LLM\'s response (in case it\'s wrapped in markdown code block)
         let json_string = if let (Some(start_idx), Some(end_idx)) = (response_content.find("```json"), response_content.rfind("```")) {
             let start = start_idx + "```json".len();
             if start < end_idx {
@@ -249,7 +259,7 @@ impl WorkFlowAgent {
 
         debug!("WorkFlow Generated: {}", json_string);
 
-        // 5. Parse the LLM's JSON response into the Workflow struct
+        // 5. Parse the LLM\'s JSON response into the Workflow struct
         let workflow: WorkflowPlanInput = serde_json::from_str(&json_string)?;
 
         

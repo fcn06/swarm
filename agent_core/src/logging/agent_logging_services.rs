@@ -1,4 +1,4 @@
-use agent_evaluation_service::evaluation_server::judge_agent::AgentLogData;
+use agent_evaluation_service::evaluation_server::judge_agent::AgentEvaluationLogData;
 use agent_memory_service::models::Role;
 use crate::business_logic::services::{EvaluationService, MemoryService};
 
@@ -39,7 +39,7 @@ impl AgentLogging  {
             };
 
             tokio::spawn(async move {
-                let log_data = AgentLogData {
+                let log_data = AgentEvaluationLogData {
                     agent_id: agent_name.to_string(),
                     request_id: request_id_clone,
                     conversation_id: conversation_id,

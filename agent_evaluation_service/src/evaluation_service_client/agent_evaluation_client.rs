@@ -1,5 +1,5 @@
 use reqwest::{Client};
-use crate::evaluation_server::judge_agent::AgentLogData;
+use crate::evaluation_server::judge_agent::AgentEvaluationLogData;
 
 
 #[derive(Debug,Clone)]
@@ -16,7 +16,7 @@ impl AgentEvaluationServiceClient {
         }
     }
 
-    pub async fn log_evaluation(&self, log_data: AgentLogData) -> anyhow::Result<String> {
+    pub async fn log_evaluation(&self, log_data: AgentEvaluationLogData) -> anyhow::Result<String> {
         let url = format!("{}/log", self.evaluation_service_url);
         
         let response = self.client.post(&url)

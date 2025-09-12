@@ -8,7 +8,7 @@ use axum::{
 };
 use tracing::{info,trace};
 use std::sync::Arc;
-use crate::evaluation_server::judge_agent::{AgentLogData, EvaluatedAgentData};
+use crate::evaluation_server::judge_agent::{AgentEvaluationLogData, EvaluatedAgentData};
 use crate::evaluation_server::judge_agent::JudgeAgent;
 
 use configuration::AgentConfig;
@@ -67,7 +67,7 @@ async fn root() -> &'static str {
 
 async fn log_evaluation(
     State(state): State<AppState>,
-    Json(log_data): Json<AgentLogData>,
+    Json(log_data): Json<AgentEvaluationLogData>,
 ) -> Result<Json<String>, (StatusCode, String)> {
     
     let judge_agent = state.judge_agent.to_owned();

@@ -7,13 +7,12 @@ use std::fs;
 
 use tracing::trace;
 
-
 use configuration::AgentConfig;
 
-// todo:move in agent_core and rename in EvaluationLogData
+
 /// Represents the data received from the agent's log/message queue.
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct AgentLogData {
+pub struct AgentEvaluationLogData {
     pub agent_id: String,
     pub request_id: String,
     pub conversation_id: String,
@@ -38,7 +37,7 @@ pub struct JudgeEvaluation {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct EvaluatedAgentData {
     #[serde(flatten)]
-    pub agent_log: AgentLogData,
+    pub agent_log: AgentEvaluationLogData,
     pub evaluation: JudgeEvaluation,
     pub timestamp: String,
 }
@@ -79,7 +78,7 @@ impl JudgeAgent {
     
 
     /// Main function to evaluate agent output using a Judge LLM.
-    pub async fn evaluate_agent_output(&self,log_data: AgentLogData) -> Result<EvaluatedAgentData> {
+    pub async fn evaluate_agent_output(&self,log_data: AgentEvaluationLogData) -> Result<EvaluatedAgentData> {
 
         // Read the prompt template from the file
         let prompt_template = fs::read_to_string("./configuration/prompts/judge_agent_prompt.txt")

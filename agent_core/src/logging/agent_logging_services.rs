@@ -30,6 +30,7 @@ impl AgentLogging  {
             let user_query_clone = user_query.to_string();
             let request_id_clone = request_id.to_string();
             let agent_name=agent_name.to_string();
+            let conversation_id=execution_result.as_ref().clone().unwrap().conversation_id.clone();
 
             // Extract and clone the output string before spawning the task
             let agent_output = match execution_result {
@@ -41,7 +42,8 @@ impl AgentLogging  {
                 let log_data = AgentLogData {
                     agent_id: agent_name.to_string(),
                     request_id: request_id_clone,
-                    step_id: "".to_string(),
+                    conversation_id: conversation_id,
+                    step_id: None,
                     original_user_query: user_query_clone.clone(),
                     agent_input: user_query_clone,
                     agent_output, // agent_output is now an owned String

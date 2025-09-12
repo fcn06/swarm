@@ -21,6 +21,8 @@ use agent_core::business_logic::services::DiscoveryService;
 use agent_core::business_logic::services::WorkflowServiceApi;
 use workflow_management::graph::config::load_graph_from_file;
 
+use agent_evaluation_service::evaluation_server::judge_agent::AgentLogData;
+
 use workflow_management::graph::{ graph_orchestrator::PlanExecutor};
 
 
@@ -44,13 +46,14 @@ pub struct WorkFlowAgent {
     llm_interaction: ChatLlmInteraction,
     workflow_runners: Arc<WorkFlowRunners>,
     discovery_service: Arc<dyn DiscoveryService>,
+    evaluation_service: Option<Arc<dyn EvaluationService>>,
 }
 
 #[async_trait]
 impl Agent for WorkFlowAgent {
     async fn new(
         agent_config: AgentConfig,
-        _evaluation_service: Option<Arc<dyn EvaluationService>>,
+        evaluation_service: Option<Arc<dyn EvaluationService>>,
         _memory_service: Option<Arc<dyn MemoryService>>,
         discovery_service: Option<Arc<dyn DiscoveryService>>,
         workflow_service: Option<Arc<dyn WorkflowServiceApi>>,
@@ -76,6 +79,7 @@ impl Agent for WorkFlowAgent {
             llm_interaction,
             workflow_runners,
             discovery_service,
+            evaluation_service,
         })
     }
 
@@ -87,12 +91,30 @@ impl Agent for WorkFlowAgent {
         let conversation_id = Uuid::new_v4().to_string();
         let user_query = request.content.clone().unwrap_or_default();
 
-        debug!("---WorkflowAgent: Starting to handle user request -- Query: \'{}\'---", user_query);
+        debug!("---WorkflowAgent: Starting to handle user request -- Query: '{}'---", user_query);
 
         if self.extract_high_level_plan_flag(metadata.clone()) {
             info!("High level plan requested. Creating high level plan.");
-            let high_level_plan = self.create_high_level_plan(user_query).await?;
+            let high_level_plan = self.create_high_level_plan(user_query.clone()).await?;
             info!("High level plan: {}", high_level_plan);
+
+            if let Some(eval_service) = &self.evaluation_service {
+                let data=AgentLogData{
+                    agent_id:self.agent_config.agent_name.clone(),
+                    request_id:request_id.clone(),
+                    conversation_id:conversation_id.clone(),
+                    step_id:None,
+                    original_user_query:user_query.clone(),
+                    agent_input:user_query.clone(),
+                    agent_output:high_level_plan.clone(),
+                    context_snapshot:None,
+                    success_criteria:None,
+                };
+
+                let _ = eval_service.log_evaluation(data).await;
+            }
+
+
             // Directly return the high-level plan without further execution
             return Ok(ExecutionResult {
                 request_id,
@@ -131,17 +153,51 @@ impl Agent for WorkFlowAgent {
         match executor.execute_plan().await {
             Ok(execution_outcome) => {
                 info!("Workflow execution completed successfully.");
+                let output = format!("Workflow executed successfully. Outcome: {:?}", execution_outcome);
+                
+                if let Some(eval_service) = &self.evaluation_service {
+                    let data=AgentLogData{
+                        agent_id:self.agent_config.agent_name.clone(),
+                        request_id:request_id.clone(),
+                        conversation_id:conversation_id.clone(),
+                        step_id:None,
+                        original_user_query:user_query.clone(),
+                        agent_input:user_query.clone(),
+                        agent_output: output.clone(),
+                        context_snapshot:None,
+                        success_criteria:None,
+                    };
+                    let _ = eval_service.log_evaluation(data).await;
+                }
+
                 // You might want to return a more specific ExecutionResult based on execution_outcome
                 Ok(ExecutionResult { 
                     request_id: request_id.clone(), 
                     conversation_id: conversation_id.clone(), 
                     success: true, 
-                    output: format!("Workflow executed successfully. Outcome: {:?}", execution_outcome), 
+                    output, 
                 })
             },
             Err(e) => {
                 warn!("Error executing plan: {}", e);
-                Err(anyhow::anyhow!("Workflow execution failed: {}", e))
+                let error_message = format!("Workflow execution failed: {}", e);
+
+                if let Some(eval_service) = &self.evaluation_service { 
+                    let data=AgentLogData{
+                        agent_id:self.agent_config.agent_name.clone(),
+                        request_id:request_id.clone(),
+                        conversation_id:conversation_id.clone(),
+                        step_id:None,
+                        original_user_query:user_query.clone(),
+                        agent_input:user_query.clone(),
+                        agent_output: error_message.clone(),
+                        context_snapshot:None,
+                        success_criteria:None,
+                    };
+                    let _ =eval_service.log_evaluation(data).await;
+                }
+
+                Err(anyhow::anyhow!("{}", error_message))
             }
         }
     }
@@ -165,7 +221,7 @@ impl WorkFlowAgent {
                 .context("Failed to read workflow_agent_prompt.txt")?;
 
         let prompt = prompt_template
-            .replacen("{}",&user_query, 1)
+            .replacen("{}", &user_query, 1)
             .replacen("{}", &capabilities, 1);
 
         debug!("Prompt for Plan creation : {}", prompt);
@@ -241,7 +297,7 @@ impl WorkFlowAgent {
                     .context("Failed to read high_level_plan_agent_prompt.txt")?;
     
             let prompt = prompt_template
-                .replacen("{}",&user_query, 1)
+                .replacen("{}", &user_query, 1)
                 .replacen("{}", &capabilities, 1);
     
             debug!("Prompt for Plan creation : {}", prompt);

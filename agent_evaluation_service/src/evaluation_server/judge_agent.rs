@@ -10,12 +10,14 @@ use tracing::trace;
 
 use configuration::AgentConfig;
 
+// todo:move in agent_core and rename in EvaluationLogData
 /// Represents the data received from the agent's log/message queue.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct AgentLogData {
     pub agent_id: String,
     pub request_id: String,
-    pub step_id: String,
+    pub conversation_id: String,
+    pub step_id:Option<String>,
     pub original_user_query: String,
     pub agent_input: String,
     pub agent_output: String,

@@ -1,4 +1,4 @@
-//use dashmap::DashMap;
+use dashmap::DashMap;
 use axum::{
     Json,
     Router,
@@ -8,7 +8,8 @@ use axum::{
 };
 use tracing::{info,trace};
 use std::sync::Arc;
-use crate::evaluation_server::judge_agent::{AgentEvaluationLogData, JudgeEvaluation};
+use chrono::Utc;
+use crate::evaluation_server::judge_agent::{AgentEvaluationLogData, JudgeEvaluation, EvaluatedAgentData};
 use crate::evaluation_server::judge_agent::JudgeAgent;
 
 use configuration::AgentConfig;
@@ -17,6 +18,7 @@ use configuration::AgentConfig;
 #[derive(Clone)]
 pub struct AppState {
     pub judge_agent: Arc<JudgeAgent>,
+    pub evaluations: Arc<DashMap<String, EvaluatedAgentData>>,
 }
 
 /// EvaluationServer for handling agent evaluation logs.
@@ -32,11 +34,13 @@ impl EvaluationServer {
         // Create AppState
         let app_state = AppState {
             judge_agent: Arc::new(judge_agent),
+            evaluations: Arc::new(DashMap::new()),
         };
 
         let app = Router::new()
             .route("/", get(root))
             .route("/log", post(log_evaluation))
+            .route("/evaluations", get(list_evaluations))
             .with_state(app_state);
 
         Ok(Self {
@@ -64,12 +68,20 @@ async fn log_evaluation(
 ) -> Result<Json<JudgeEvaluation>, (StatusCode, String)> {
     
     let judge_agent = state.judge_agent.to_owned();
+    let evaluations = state.evaluations.to_owned();
 
     info!("Received log_evaluation request for agent: {}", log_data.agent_id);
 
     match judge_agent.evaluate_agent_output(log_data.clone()).await {
         Ok(judge_evaluation) => {
             trace!("Received Agent Evaluation Data : {:?}", judge_evaluation);
+            let evaluated_data = EvaluatedAgentData {
+                agent_log: log_data.clone(),
+                evaluation: judge_evaluation.clone(),
+                timestamp: Utc::now().to_rfc3339(),
+            };
+            // Changed the key to log_data.request_id.clone()
+            evaluations.insert(log_data.request_id.clone(), evaluated_data);
             Ok(Json(judge_evaluation))
         }
         Err(e) => {
@@ -78,4 +90,17 @@ async fn log_evaluation(
             Err((StatusCode::INTERNAL_SERVER_ERROR, error_message))
         }
     }
+}
+
+async fn list_evaluations(
+    State(state): State<AppState>,
+) -> Result<Json<Vec<EvaluatedAgentData>>, (StatusCode, String)> {
+    let evaluations = state.evaluations.to_owned();
+    let mut evaluation_list = Vec::new();
+
+    for item in evaluations.iter() {
+        evaluation_list.push(item.value().clone());
+    }
+
+    Ok(Json(evaluation_list))
 }

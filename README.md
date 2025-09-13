@@ -14,7 +14,7 @@ Building multi-agent systems is complex. You need to manage communication, seque
 
 Swarm's architecture is centered around a "conductor" and "specialist" model:
 
-*   **Workflow Agent (The Conductor):** This is the orchestrator. It takes a user's request and determines the best course of action. It can either follow a predefined plan (a "static workflow") from a JSON file or, more powerfully, create a new plan on the fly (a "dynamic workflow") by assessing the skills of the available agents.
+*   **Workflow Agent (The Conductor):** This is the orchestrator. It takes a user's request and determines the best course of action. It can either follow a predefined plan (a "static workflow") from a JSON file or, more powerfully, create a new plan on the fly (a "dynamic workflow") by assessing the skills of the available agents. Once workflow is executed, the outcome of the agent is evaluated by LLM as a Judge principle. If rating is not good enough, it will take into account recommendation of Evaluation Service , re generate a workflow and re execute it.
 *   **Domain Agents (The Specialists):** These are your workhorse agents, each an expert in a specific domain (e.g., customer care, weather forecasting, data analysis). They have their own LLM and a dedicated set of tools to get their job done.
 
 This structure allows you to build sophisticated systems where a central agent delegates tasks to a team of specialized agents.

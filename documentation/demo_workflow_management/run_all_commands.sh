@@ -89,7 +89,8 @@ echo $'\n'
 echo "##############################################################"
 echo $'\n'
 
-echo "F) Launch the agent_client with complex requests, some of them are targetting a specific tool, and the last one is  a general knowledge question"
+echo "F) Launch the agent_client with complex requests. The outcome of the agents will be evaluated by the LLM as a Judge."
+echo " Agents will redefine and re execute workflow if evaluation rating is below 5 out of 10."
 
 echo $'\n'
 read -n 1 -s -r -p "Press any key to continue..."
@@ -114,5 +115,7 @@ echo $'\n'
 echo "When it is finished..." 
 echo "* You can access registered agents:"
 echo "curl http://127.0.0.1:4000/agents"
-echo "Just Try it"
+echo "* You can access evaluation of the outcome of the agents"
+echo "curl http://127.0.0.1:7000/evaluations"
+echo "Just Try them"
 echo $'\n'

@@ -294,6 +294,7 @@ impl McpAgent {
         &mut self,
         user_message: Message,
     ) -> anyhow::Result<Option<Message>>  {
+        self.reset_messages()?;
         self.push_message(user_message);
         self.execute_loop().await
     }

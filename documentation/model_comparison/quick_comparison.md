@@ -15,8 +15,8 @@ Below is a summary of our findings. The models were evaluated based on their per
 
 | Provider | Model | General Purpose | MCP | Orchestration / Workflow Management | Use Case & Comments |
 | :--- | :--- | :---: | :---: | :---: | :--- |
-| Groq | qwen/qwen3-32b | ✓ | ✓ | ✓ | **Recommended for most use cases.** Works well and is very fast, but you may encounter rate limiting with the free plan. |
-| Groq | openai/gpt-oss-20b | ✓ | ✓ | ✓ | **A good alternative to Qwen.** Works well and is very fast, but you may encounter rate limiting with the free plan. |
+| Groq | qwen/qwen3-32b | ✓ | ✓ | ✓ | **Recommended for Basic Agents and MCP Agents.** Works well and is very fast, but you may encounter rate limiting with the free plan. |
+| Groq | openai/gpt-oss-20b | ✓ | ✓ | ✓ | **Excellent for complex use cases. Recommended for Worklflow management and LLM as a Judge** Works well and is very fast |
 | Groq | deepseek-r1-distill-llama-70b | ✓ | ✓ | ✓ | **Another good alternative.** Works well and is very fast, but you may encounter rate limiting with the free plan. |
 | Groq | meta-llama/llama-4-scout-17b-16e-instruct | ✓ | ✓ | ✓ | **A solid choice.** Works well and is very fast, but you may encounter rate limiting with the free plan. |
 | Google | gemini-2.0-flash | ✓ | ✓ | ✓ | **Good, but can be verbose.** Works well, but the responses can be more verbose than other models. |

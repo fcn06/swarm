@@ -12,69 +12,68 @@ Building multi-agent systems is complex. You need to manage communication, seque
 
 ## **How It Works**
 
-Swarm's architecture is centered around a "conductor" and "specialist" model:
+Swarm's architecture revolves around a "conductor" and "specialist" model:
 
-*   **Workflow Agent (The Conductor):** This is the orchestrator. It takes a user's request and determines the best course of action. It can either follow a predefined plan (a "static workflow") from a JSON file or, more powerfully, create a new plan on the fly (a "dynamic workflow") by assessing the skills of the available agents. Once workflow is executed, the outcome of the agent is evaluated by LLM as a Judge principle. If rating is not good enough, it will take into account recommendation of Evaluation Service , re generate a workflow and re execute it.
-*   **Domain Agents (The Specialists):** These are your workhorse agents, each an expert in a specific domain (e.g., customer care, weather forecasting, data analysis). They have their own LLM and a dedicated set of tools to get their job done.
+*   **Workflow Agent (The Conductor):** This agent acts as the orchestrator. It receives a user's request and determines the optimal course of action. It can execute a predefined plan (a "static workflow") loaded from a JSON file, or dynamically generate a new plan ("dynamic workflow") by evaluating the capabilities of available Domain Agents. After a workflow is executed, an integrated LLM-as-a-Judge system evaluates the outcome. If the evaluation score is not satisfactory, the Workflow Agent can leverage recommendations from the Evaluation Service to regenerate and re-execute an improved workflow.
+*   **Domain Agents (The Specialists):** These are the workhorse agents, each specializing in a particular domain (e.g., customer care, weather forecasting, data analysis). Each Domain Agent is powered by its own LLM and equipped with a dedicated set of tools to accomplish its specific tasks.
 
-This structure allows you to build sophisticated systems where a central agent delegates tasks to a team of specialized agents.
+This modular structure enables the creation of sophisticated multi-agent systems where a central orchestrator efficiently delegates tasks to a team of specialized agents.
 
 ## **🚀 Quickstart: Launch Your First Swarm in 5 Minutes**
 
 ### Prerequisites
 
-1.  **Install Rust**: If you don't have it, get it from [rust-lang.org](https://www.rust-lang.org/tools/install).
-2.  **Get an LLM API Key**: Swarm agents need an LLM to think. We recommend starting with a free plan from [Groq](https://console.groq.com/keys) or [Google AI Studio (for Gemini)](https://aistudio.google.com/app/apikey).
+1.  **Install Rust**: If you don't have it already, download and install it from [rust-lang.org](https://www.rust-lang.org/tools/install).
+2.  **Get an LLM API Key**: Swarm agents require an LLM to function. We recommend obtaining a free API key from [Groq](https://console.groq.com/keys) or [Google AI Studio (for Gemini)](https://aistudio.google.com/app/apikey).
 
 ### Step 1: Clone and Build the Project
 
 ```bash
-git clone https://your-repo-url/swarm.git
+git clone https://github.com/your-username/swarm.git # Replace with your actual repository URL
 cd swarm
 cargo build --release
 ```
 
-### Step 2: Set Your API Keys
+### Step 2: Set Your LLM API Keys
 
-The quickstart scenario uses the Groq API by default. Export your API key as an environment variable:
+The quickstart demo utilizes LLMs for various agent roles. For simplicity, you can use the *same* API key for all roles, especially when starting with Groq.
 
 ```bash
-# Replace <YOUR-GROQ-API-KEY> with your actual key
-export LLM_A2A_API_KEY=<YOUR-GROQ-API-KEY>
-export LLM_MCP_API_KEY=<YOUR-GROQ-API-KEY>
-export LLM_WORKFLOW_API_KEY=<YOUR-GROQ-API-KEY>
-export LLM_JUDGE_API_KEY=<YOUR-GROQ-API-KEY>
+# Replace <YOUR-LLM-API-KEY> with your actual API key. 
+# For the pre configured demo below, we use groq provider. ( https://groq.com/)
+export LLM_A2A_API_KEY=<YOUR-LLM-API-KEY>       # For general Agent-to-Agent communication
+export LLM_MCP_API_KEY=<YOUR-LLM-API-KEY>       # For Model Context Protocol interactions
+export LLM_WORKFLOW_API_KEY=<YOUR-LLM-API-KEY>  # For the Workflow Agent's planning
+export LLM_JUDGE_API_KEY=<YOUR-LLM-API-KEY>     # For the LLM-as-a-Judge evaluation service
 ```
 
 ### Step 3: Run the Demo
 
-Our main demo showcases the power of workflow management, running a mix of direct tool calls and actions delegated to agents. You have three ways to run it:
+Our primary demo showcases Swarm's workflow management capabilities, integrating direct tool calls and delegated actions to specialized agents. You can run it in three modes:
 
-*   **Dynamic Workflow Generation:** Dynamically generates a plan based on your query and the available agents. This showcases Swarm's ability to adapt.
-
+*   **Dynamic Workflow Generation:** This mode dynamically generates an execution plan based on your query and the skills of available agents. It highlights Swarm's adaptive planning capabilities.
     ```bash
     # This command must be run from the root of the swarm project
     sh ./documentation/demo_workflow_management/run_all_commands.sh --dynamic-generation
     ```
 
-*   **Static Workflow (Default):** Executes a predefined workflow from a file. This is great for predictable, repeatable processes.
-
+*   **Static Workflow (Default):** This executes a predefined workflow loaded from a JSON file. Ideal for predictable and repeatable processes.
     ```bash
     # This command must be run from the root of the swarm project
     sh ./documentation/demo_workflow_management/run_all_commands.sh
     ```
 
-*   **High-Level Plan Generation:** Generates only a high-level plan, without executing it. This is useful for evaluating the planning capabilities of your LLM.
-
+*   **High-Level Plan Generation:** This option only generates a high-level plan without executing it. It's useful for evaluating the planning logic of your LLM.
     ```bash
-    # This command must be in the root of the swarm project
+    # This command must be run from the root of the swarm project
     sh ./documentation/demo_workflow_management/run_all_commands.sh --high-level-plan
     ```
 
-**To stop all services after the demo, run:**
+**Important: Stopping the Demo Services**
+After running any of the above demos, it's crucial to stop all active agent processes to prevent resource consumption and conflicts.
 
 ```bash
-# This command must be in the root of the swarm project
+# This command must be run from the root of the swarm project
 sh ./documentation/demo_workflow_management/terminate_all_agents_process.sh
 ```
 
@@ -86,30 +85,30 @@ sh ./documentation/demo_workflow_management/terminate_all_agents_process.sh
 
 ## **💡 Core Components of Swarm**
 
-Swarm is built from a set of modular components that work together:
+Swarm is composed of several modular and interconnected components:
 
-*   **🗣️ Basic Domain Agent:** The **Specialist**. An agent designed to be an expert in a single domain, like "weather forecasting" or "database queries."
-*   **🧠 Workflow Agent:** The **Conductor**. This agent orchestrates complex operations by executing predefined workflows or dynamically generating new ones. Each fulfillment of request is evaluated by LLM as a judge component, and potentially modify execution to improve fulfillment of user request.
-*   **🔗 Workflow Management Runtime:** The **Engine**. This is the powerful, flexible engine that executes the workflows. It can run as part of a Workflow Agent or independently.
-*   **🛠️ MCP Runtime (Model Context Protocol):** The **Bridge** to the outside world. This runtime enables agents to interact with external services and data sources, like a weather API or a database.
-*   **⚖️ LLM as a Judge:** The **Evaluator**. An LLM that assesses the outcome of agent and workflow executions, providing a feedback loop for improvement.
+*   **🗣️ Basic Domain Agent (The Specialist):** An agent designed to be an expert in a specific domain, such as weather forecasting or database queries.
+*   **🧠 Workflow Agent (The Conductor):** The orchestrator that manages complex operations by executing predefined or dynamically generated workflows. It leverages the LLM-as-a-Judge for self-correction and improved request fulfillment.
+*   **🔗 Workflow Management Runtime (The Engine):** The flexible core responsible for defining, validating, and executing multi-agent workflows and plans. It can be integrated into a Workflow Agent or used standalone.
+*   **🛠️ MCP Runtime (Model Context Protocol) (The Bridge):** Facilitates agent interaction with external services, tools, and data sources, extending their capabilities to the outside world.
+*   **⚖️ LLM as a Judge (The Evaluator):** An autonomous LLM-based service that assesses the performance and outcomes of agent and workflow executions, providing critical feedback for continuous improvement.
 
 ## **🔬 Under the Hood: Crate Breakdown**
 
-The Swarm project is composed of several specialized crates:
+The Swarm project is organized into several specialized Rust crates:
 
-*   `agent_core`: Foundational elements for all agent types.
-*   `basic_agent`: Business logic for the "specialist" domain agents.
-*   `workflow_agent`: Business logic for the "conductor" workflow agent.
-*   `workflow_management`: The core runtime for defining and executing workflows.
-*   `mcp_runtime`: The runtime for connecting to external tools and services.
-*   `llm_api`: A convenient interface for interacting with various Large Language Models.
-*   `agent_discovery_service`: An HTTP service where agents can register themselves, allowing them to be discovered by the Workflow Agent.
-*   `agent_memory_service`: A service allowing agents to share conversation history and context.
-*   `agent_evaluation_service`: A service that uses an "LLM as a Judge" to evaluate agent performance.
-*   `configuration`: Default configuration files and prompts.
-*   `documentation`: Example configuration files and guides.
-*   `examples`: Illustrative examples to help you interact with Swarm. In particular, there is a test MCP server with capability to scrape a url and search against wikipedia.
+*   `agent_core`: Provides foundational traits, data structures, and shared logic for all agent types within Swarm.
+*   `basic_agent`: Implements the business logic for a general-purpose "specialist" Domain Agent.
+*   `workflow_agent`: Contains the business logic for the "conductor" Workflow Agent, responsible for planning and orchestration.
+*   `workflow_management`: The core library for defining, parsing, and executing multi-agent workflows and plans.
+*   `mcp_runtime`: Manages interactions with external tools and services via the Model Context Protocol (MCP).
+*   `llm_api`: Offers a standardized interface for seamless integration with various Large Language Models.
+*   `agent_discovery_service`: An HTTP service enabling agents to register themselves and discover other available agents.
+*   `agent_memory_service`: A service designed to manage and share conversational history and contextual information among agents.
+*   `agent_evaluation_service`: Implements the "LLM as a Judge" functionality to evaluate agent and workflow execution outcomes.
+*   `configuration`: Stores default configuration files, prompts, and agent definitions.
+*   `documentation`: Contains example configuration files, guides, and architectural illustrations.
+*   `examples`: Provides illustrative code examples, including a test MCP server with web scraping and Wikipedia search capabilities.
 
 ## **🗺️ Roadmap & Contributing**
 

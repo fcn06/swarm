@@ -248,6 +248,7 @@ impl PlanExecutor {
         Ok(())
     }
 
+    // todo : Only extract the final step
     fn handle_completion_state(&mut self) -> Result<HashMap<String, String>, PlanExecutorError> {
         debug!("\nPlan executed successfully. Final results:");
         for (node_id, result) in &self.context.results {

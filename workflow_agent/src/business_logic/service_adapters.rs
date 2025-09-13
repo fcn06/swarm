@@ -1,7 +1,7 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use agent_evaluation_service::evaluation_service_client::agent_evaluation_client::AgentEvaluationServiceClient;
-use agent_evaluation_service::evaluation_server::judge_agent::AgentEvaluationLogData;
+use agent_evaluation_service::evaluation_server::judge_agent::{AgentEvaluationLogData, JudgeEvaluation};
 use agent_memory_service::memory_service_client::agent_memory_client::AgentMemoryServiceClient;
 use agent_memory_service::models::Role;
 use agent_core::business_logic::services::{EvaluationService, MemoryService};
@@ -28,8 +28,8 @@ impl AgentEvaluationServiceAdapter {
 
 #[async_trait]
 impl EvaluationService for AgentEvaluationServiceAdapter {
-    async fn log_evaluation(&self, data: AgentEvaluationLogData) -> Result<()> {
-        self.client.log_evaluation(data).await.map(|_| ())
+    async fn log_evaluation(&self, data: AgentEvaluationLogData) -> Result<JudgeEvaluation> {
+        self.client.log_evaluation(data).await
     }
 }
 
@@ -89,5 +89,4 @@ impl DiscoveryService for AgentDiscoveryServiceAdapter {
             .map(|agent| agent.url))
     }
 }
-
 

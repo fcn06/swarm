@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::env;
-use chrono::Utc;
+//use chrono::Utc;
 use llm_api::chat::{ChatLlmInteraction};
 use anyhow::{Context, Result};
 use std::fs;
@@ -78,7 +78,7 @@ impl JudgeAgent {
     
 
     /// Main function to evaluate agent output using a Judge LLM.
-    pub async fn evaluate_agent_output(&self,log_data: AgentEvaluationLogData) -> Result<EvaluatedAgentData> {
+    pub async fn evaluate_agent_output(&self,log_data: AgentEvaluationLogData) -> Result<JudgeEvaluation> {
 
         // Read the prompt template from the file
         let prompt_template = fs::read_to_string("./configuration/prompts/judge_agent_prompt.txt")
@@ -102,16 +102,8 @@ impl JudgeAgent {
 
         trace!("Judge Evaluation Structured Answer : {:?}",judge_evaluation );
 
-        let evaluated_data = EvaluatedAgentData {
-            agent_log: log_data,
-            evaluation: judge_evaluation,
-            timestamp: Utc::now().to_rfc3339(),
-        };
-
-        Ok(evaluated_data)
+        Ok(judge_evaluation)
     }
 
 }
-
-
 

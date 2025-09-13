@@ -89,7 +89,7 @@ sh ./documentation/demo_workflow_management/terminate_all_agents_process.sh
 Swarm is built from a set of modular components that work together:
 
 *   **🗣️ Basic Domain Agent:** The **Specialist**. An agent designed to be an expert in a single domain, like "weather forecasting" or "database queries."
-*   **🧠 Workflow Agent:** The **Conductor**. This agent orchestrates complex operations by executing predefined workflows or dynamically generating new ones.
+*   **🧠 Workflow Agent:** The **Conductor**. This agent orchestrates complex operations by executing predefined workflows or dynamically generating new ones. Each fulfillment of request is evaluated by LLM as a judge component, and potentially modify execution to improve fulfillment of user request.
 *   **🔗 Workflow Management Runtime:** The **Engine**. This is the powerful, flexible engine that executes the workflows. It can run as part of a Workflow Agent or independently.
 *   **🛠️ MCP Runtime (Model Context Protocol):** The **Bridge** to the outside world. This runtime enables agents to interact with external services and data sources, like a weather API or a database.
 *   **⚖️ LLM as a Judge:** The **Evaluator**. An LLM that assesses the outcome of agent and workflow executions, providing a feedback loop for improvement.

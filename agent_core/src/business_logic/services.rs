@@ -1,6 +1,6 @@
 use anyhow::Result;
 use async_trait::async_trait;
-use agent_evaluation_service::evaluation_server::judge_agent::AgentEvaluationLogData;
+use agent_evaluation_service::evaluation_server::judge_agent::{AgentEvaluationLogData, JudgeEvaluation};
 use agent_memory_service::models::Role;
 use std::any::Any;
 use a2a_rs::domain::AgentCard;
@@ -8,7 +8,7 @@ use a2a_rs::domain::AgentCard;
 /// A trait that defines the interface for an evaluation service.
 #[async_trait]
 pub trait EvaluationService: Send + Sync {
-    async fn log_evaluation(&self, data: AgentEvaluationLogData) -> Result<()>;
+    async fn log_evaluation(&self, data: AgentEvaluationLogData) -> Result<JudgeEvaluation>;
 }
 
 /// A trait that defines the interface for a memory service.

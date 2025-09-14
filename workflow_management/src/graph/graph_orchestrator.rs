@@ -71,7 +71,7 @@ impl PlanExecutor {
         }
     }
 
-    pub async fn execute_plan(&mut self) -> Result<String, PlanExecutorError> {
+    pub async fn execute_plan(&mut self) -> Result<(String, HashMap<String, String>), PlanExecutorError> {
         self.context.plan_state = PlanState::Idle;
         loop {
             match self.context.plan_state.clone() {
@@ -269,7 +269,7 @@ impl PlanExecutor {
         Ok(())
     }
 
-    fn handle_completion_state(&mut self) -> Result<String, PlanExecutorError> {
+    fn handle_completion_state(&mut self) -> Result<(String, HashMap<String, String>), PlanExecutorError> {
         let all_node_ids: HashSet<String> = self.context.graph.nodes.keys().cloned().collect();
         let source_node_ids: HashSet<String> =
             self.context.graph.edges.iter().map(|e| e.source.clone()).collect();
@@ -295,10 +295,10 @@ impl PlanExecutor {
             debug!("  '{}': {}", node_id, printable_result);
         }
         debug!("Final Outcome: {}", self.context.final_outcome);
-        Ok(self.context.final_outcome.clone())
+        Ok((self.context.final_outcome.clone(), self.context.activities_outcome.clone()))
     }
 
-    fn handle_failure_state(&self, reason: String) -> Result<String, PlanExecutorError> {
+    fn handle_failure_state(&self, reason: String) -> Result<(String, HashMap<String, String>), PlanExecutorError> {
         debug!("Execution failed: {}", reason);
         Err(PlanExecutorError::ExecutionFailed(reason))
     }

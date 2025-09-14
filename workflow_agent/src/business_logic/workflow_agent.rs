@@ -143,7 +143,7 @@ impl WorkFlowAgent {
             );
         
         match executor.execute_plan().await {
-            Ok(execution_outcome) => {
+            Ok((execution_outcome, activities_outcome)) => {
                 let output = execution_outcome;
 
                 debug!("\nWorkflow execution completed successfully. Outcome : {}\n", output);
@@ -154,6 +154,7 @@ impl WorkFlowAgent {
                     original_user_query,
                     user_query.clone(),
                     output.clone(),
+                    activities_outcome,
                     retry_count,
                 ).await? {
                     Some(new_user_query) => {
@@ -180,6 +181,7 @@ impl WorkFlowAgent {
                     original_user_query,
                     user_query.clone(),
                     error_message.clone(),
+                    HashMap::new(), // Pass an empty HashMap on error
                     retry_count,
                 ).await? {
                     Some(new_user_query) => {
@@ -201,9 +203,16 @@ impl WorkFlowAgent {
         original_user_query: &str,
         agent_input: String,
         agent_output: String,
+        activities_outcome: HashMap<String, String>,
         retry_count: &mut u8,
     ) -> anyhow::Result<Option<String>> { // Returns Some(new_user_query) if retry, None if done
         if let Some(eval_service) = &self.evaluation_service {
+
+            /* 
+            let context_snapshot_json = serde_json::to_string(&activities_outcome)
+                .context("Failed to serialize activities_outcome to JSON for context_snapshot")?;
+            */
+
             let data = AgentEvaluationLogData {
                 agent_id: self.agent_config.agent_name.clone(),
                 request_id: request_id.to_string(),
@@ -211,9 +220,10 @@ impl WorkFlowAgent {
                 step_id: None,
                 original_user_query: original_user_query.to_string(),
                 agent_input,
-                activities_outcome: HashMap::new(),
+                activities_outcome,
                 agent_output: agent_output.clone(),
                 context_snapshot: None,
+                //context_snapshot: Some(context_snapshot_json),
                 success_criteria: None,
             };
             let evaluation = eval_service.log_evaluation(data).await;
@@ -235,7 +245,7 @@ impl WorkFlowAgent {
                 Err(e) => {
                     error!("Error during evaluation logging: {}", e);
                     // If evaluation itself fails, we still might want to proceed or abort based on other factors
-                    // For now, let's just proceed without retry based on evaluation if evaluation itself failed.
+                    // For now, let\'s just proceed without retry based on evaluation if evaluation itself failed.
                     Ok(None)
                 }
             }
@@ -257,7 +267,7 @@ impl WorkFlowAgent {
                 step_id:None,
                 original_user_query:user_query.clone(),
                 agent_input:user_query.clone(),
-                activities_outcome: HashMap::new(),
+                activities_outcome: HashMap::new(), // Still an empty HashMap for this path
                 agent_output:high_level_plan.clone(),
                 context_snapshot:None,
                 success_criteria:None,
@@ -318,7 +328,7 @@ impl WorkFlowAgent {
         info!("WorkflowAgent: LLM responded with plan content:{:?}", response_content);
 
 
-        // 4. Extract JSON from the LLM's response (in case it's wrapped in markdown code block)
+        // 4. Extract JSON from the LLM\'s response (in case it\'s wrapped in markdown code block)
         let json_string = if let (Some(start_idx), Some(end_idx)) = (response_content.find("```json"), response_content.rfind("```")) {
             let start = start_idx + "```json".len();
             if start < end_idx {
@@ -334,7 +344,7 @@ impl WorkFlowAgent {
 
         debug!("WorkFlow Generated: {}", json_string);
 
-        // 5. Parse the LLM's JSON response into the Workflow struct
+        // 5. Parse the LLM\'s JSON response into the Workflow struct
         let workflow: WorkflowPlanInput = serde_json::from_str(&json_string)?;
 
         

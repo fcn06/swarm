@@ -4,6 +4,7 @@ use tracing::{info, debug, error,warn};
 use uuid::Uuid;
 use std::env;
 use anyhow::{Context,bail};
+use std::collections::HashMap;
 
 use serde_json::Map;
 use serde_json::Value;
@@ -143,8 +144,7 @@ impl WorkFlowAgent {
         
         match executor.execute_plan().await {
             Ok(execution_outcome) => {
-                let output = self.parse_execution_outcome(execution_outcome)
-                    .context("Failed to process execution outcome")?;
+                let output = execution_outcome;
 
                 debug!("\nWorkflow execution completed successfully. Outcome : {}\n", output);
 
@@ -194,17 +194,6 @@ impl WorkFlowAgent {
         }
     }
 
-    fn parse_execution_outcome(&self, execution_outcome: std::collections::HashMap<String, String>) -> anyhow::Result<String> {
-        let mut parsed_outcome_map = serde_json::Map::new();
-        for (key, value_string) in execution_outcome.into_iter() {
-            let parsed_value = serde_json::from_str(&value_string)
-                .unwrap_or_else(|_| serde_json::Value::String(value_string));
-            parsed_outcome_map.insert(key, parsed_value);
-        }
-        serde_json::to_string(&serde_json::Value::Object(parsed_outcome_map))
-            .context("Failed to serialize processed execution outcome to JSON")
-    }
-
     async fn handle_evaluation_and_retry(
         &self,
         request_id: &str,
@@ -222,6 +211,7 @@ impl WorkFlowAgent {
                 step_id: None,
                 original_user_query: original_user_query.to_string(),
                 agent_input,
+                activities_outcome: HashMap::new(),
                 agent_output: agent_output.clone(),
                 context_snapshot: None,
                 success_criteria: None,
@@ -267,6 +257,7 @@ impl WorkFlowAgent {
                 step_id:None,
                 original_user_query:user_query.clone(),
                 agent_input:user_query.clone(),
+                activities_outcome: HashMap::new(),
                 agent_output:high_level_plan.clone(),
                 context_snapshot:None,
                 success_criteria:None,

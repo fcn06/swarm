@@ -133,15 +133,15 @@ pub enum PlanState {
 }
 
 #[derive(Debug, Clone)]
-pub struct PlanContext {
+pub struct PlanContextOld {
     pub plan_state: PlanState,
     pub graph: Graph,
     pub current_step_id: Option<String>,
-    pub results: HashMap<String, String>,
+    pub results: HashMap<String, String>, 
     pub user_query: String, // Add this field
 }
 
-impl PlanContext {
+impl PlanContextOld {
     pub fn new(graph: Graph, user_query: String) -> Self { // Modify signature
         Self {
             plan_state: PlanState::Idle,
@@ -152,6 +152,32 @@ impl PlanContext {
         }
     }
 }
+
+#[derive(Debug, Clone)]
+pub struct PlanContext {
+    pub plan_state: PlanState,
+    pub graph: Graph,
+    pub current_step_id: Option<String>,
+    pub activities_outcome: HashMap<String, String>, // to store the outcome of each activity processed during graph execution
+    pub final_outcome: String,  // to store the very final result of the last node
+    pub user_query: String, // Add this field
+}
+
+impl PlanContext {
+    pub fn new(graph: Graph, user_query: String) -> Self { // Modify signature
+        
+        Self {
+            plan_state: PlanState::Idle,
+            graph,
+            current_step_id: None,
+            activities_outcome: HashMap::new(),
+            final_outcome: String::new(),
+            user_query, // Initialize user_query
+        }
+        
+    }
+}
+
 
 // Conversion from WorkflowPlanInput to Graph
 impl From<WorkflowPlanInput> for Graph {

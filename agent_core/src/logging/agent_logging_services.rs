@@ -1,3 +1,4 @@
+
 use agent_evaluation_service::evaluation_server::judge_agent::AgentEvaluationLogData;
 use agent_memory_service::models::Role;
 use crate::business_logic::services::{EvaluationService, MemoryService};
@@ -13,6 +14,8 @@ pub struct AgentLogging {
     evaluation_service: Option<Arc<dyn EvaluationService>>,
     memory_service: Option<Arc<dyn MemoryService>>,
 }
+
+
 
 #[allow(dead_code)]
 impl AgentLogging  {
@@ -86,3 +89,5 @@ impl AgentLogging  {
     }
 
 }
+
+    

@@ -4,6 +4,7 @@ use std::env;
 use llm_api::chat::{ChatLlmInteraction};
 use anyhow::{Context, Result};
 use std::fs;
+use std::collections::HashMap;
 
 use tracing::trace;
 
@@ -19,6 +20,7 @@ pub struct AgentEvaluationLogData {
     pub step_id:Option<String>,
     pub original_user_query: String,
     pub agent_input: String,
+    pub activities_outcome: HashMap<String, String>, // in case there are, store all activities processed by the agent
     pub agent_output: String,
     pub context_snapshot: Option<String>,
     pub success_criteria: Option<String>,

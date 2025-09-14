@@ -57,6 +57,24 @@
         }
       ],
       "expected_outcome": "A personalized message for the customer."
+    },
+    {
+      "activity_type": "delegation_agent",
+      "id": "send_notification",
+      "description": "Send notification by email of the previously generated message : {{compose_personalized_message}}",
+      "type": "send_email",
+      "agent": {
+        "skill_to_use": null,
+        "assigned_agent_id_preference": "Basic_Agent"
+      },
+      "tools": [],
+      "tasks": [],
+      "dependencies": [
+        {
+          "source": "compose_personalized_message"
+        }
+      ],
+      "expected_outcome": "Email notification sent successfully."
     }
   ]
 }

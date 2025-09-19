@@ -1,0 +1,45 @@
+[package]
+name = "executor_agent"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+# Internal dependencies
+configuration = { workspace = true }
+llm_api = { workspace = true }
+agent_core = { workspace = true }
+mcp_runtime={ workspace = true }
+agent_evaluation_service = { workspace = true }
+agent_memory_service = { workspace = true }
+agent_discovery_service={ workspace = true }
+workflow_management = { workspace = true }
+
+
+a2a-rs= { workspace = true }
+rmcp={workspace=true}
+
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+thiserror = { workspace = true }
+tokio = { workspace = true }
+chrono ={ workspace = true }
+
+async-trait = { workspace = true }
+
+anyhow={ workspace = true }
+
+clap = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+reqwest = { workspace = true }
+url = { workspace = true }
+uuid = { workspace = true }
+
+regex="1"
+
+
+[[bin]]
+name = "launch_executor_agent"
+path = "bin/launch_executor_agent.rs"

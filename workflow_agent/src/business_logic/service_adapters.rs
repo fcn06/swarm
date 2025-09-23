@@ -88,5 +88,9 @@ impl DiscoveryService for AgentDiscoveryServiceAdapter {
             .find(|agent| agent.name == agent_name)
             .map(|agent| agent.url))
     }
+
+    async fn discover_agents(&self) -> Result<Vec<AgentCard>> {
+        Ok(self.client.list_agents().await?)
+    }
 }
 

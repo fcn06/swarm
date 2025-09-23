@@ -63,6 +63,7 @@ impl Agent for ExecutorAgent {
         _discovery_service: Option<Arc<dyn DiscoveryService>>,
         workflow_service: Option<Arc<dyn WorkflowServiceApi>>,
     ) -> anyhow::Result<Self> {
+        
         let workflow_runners = workflow_service
             .and_then(|ws| ws.as_any().downcast_ref::<WorkFlowRunners>().map(|wr| Arc::new(wr.clone())))
             .ok_or_else(|| anyhow::anyhow!("WorkFlowRunners not provided or invalid type"))?;

@@ -44,7 +44,7 @@ impl<T:Agent> AgentServer<T> {
                 ds.register_agent(&agent_info.get_agent_card().await?).await
             } else if let Some(discovery_url) = self.config.agent_discovery_url() {
                 // Fallback to creating a client if URL is provided in config
-                let client = AgentDiscoveryServiceClient::new(discovery_url);
+                let client = AgentDiscoveryServiceClient::new(&discovery_url);
                 client.register(&agent_info.get_agent_card().await?)
                     .await
                     .map(|_| ()) // Map Ok(String) to Ok(())

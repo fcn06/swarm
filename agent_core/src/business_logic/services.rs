@@ -23,6 +23,7 @@ pub trait DiscoveryService: Send + Sync {
     async fn register_agent(&self, agent_card: &AgentCard) -> Result<()>;
     async fn unregister_agent(&self, agent_card: &AgentCard) -> Result<()>;
     async fn get_agent_address(&self, agent_name: String) -> Result<Option<String>>;
+    async fn discover_agents(&self) -> Result<Vec<AgentCard>>; // Added this method
 }
 
 // New trait for workflow related services

@@ -4,7 +4,7 @@ mod agents;
 
 use clap::Parser;
 use std::sync::Arc;
-use tracing::{ info, debug,warn};
+use tracing::{ info, debug,warn,error};
 
 use configuration::{setup_logging, AgentReference,AgentConfig};
 
@@ -17,7 +17,6 @@ use crate::agents::a2a_agent_invoker::A2AAgentInvoker;
 
 use executor_agent::business_logic::executor_agent::{ExecutorAgent, WorkFlowRunners};
 
-use configuration::{setup_logging, AgentReference,AgentConfig};
 
 
 use workflow_management::agent_communication::agent_runner::AgentRunner;
@@ -87,7 +86,7 @@ async fn setup_memory_service(workflow_agent_config: &AgentConfig) -> Option<Arc
 
 async fn setup_discovery_service(discovery_url: String) -> Option<Arc<dyn DiscoveryService>> {
     info!("Discovery service configured at: {}", discovery_url);
-    let client = AgentDiscoveryServiceClient::new(discovery_url.clone());
+    let client = AgentDiscoveryServiceClient::new(&discovery_url.clone());
     let adapter = AgentDiscoveryServiceAdapter::new(client);
     Some(Arc::new(adapter))
 }
@@ -134,7 +133,7 @@ async fn setup_tool_runner(mcp_config_path: String) -> anyhow::Result<Arc<ToolRu
 
 async fn setup_agent_runner(workflow_agent_config: &AgentConfig) -> anyhow::Result<Arc<AgentRunner>> {
     let discovery_client = Arc::new(AgentDiscoveryServiceClient::new(
-        workflow_agent_config.agent_discovery_url.clone().expect("Discovery URL not configured")
+        &workflow_agent_config.agent_discovery_url.clone().expect("Discovery URL not configured")
     ));
     let a2a_agent_invoker = A2AAgentInvoker::new(vec![AgentReference {
         name: "Basic_Agent".to_string(),
@@ -195,11 +194,11 @@ async fn main() -> anyhow::Result<()> {
         tool_runner.clone(),
     ).await?;
 
-    debug!("{}",workflow_runners.list_available_resources());
+   // debug!("{}",workflow_runners.list_available_resources());
 
     let workflow_runners: Option<Arc<dyn WorkflowServiceApi>> = Some(Arc::new(workflow_runners));
 
-
+/* 
 
     // The executor agent doesn't need discovery or memory service itself, but the runners do.
     // The `new` function for the agent needs to be adapted to this.
@@ -211,7 +210,7 @@ async fn main() -> anyhow::Result<()> {
     ).await?;
     
     let agent = ExecutorAgent::new(
-        agent_config.clone(),
+        workflow_agent_config.clone(),
         Some(Arc::new(services.evaluation_service)),
         None,
         None,
@@ -219,16 +218,18 @@ async fn main() -> anyhow::Result<()> {
     ).await?;
 
     let agent_server = AgentServer::new(
-        agent_config.agent_name.clone(),
-        agent_config.agent_host.clone(),
-        agent_config.agent_port,
+        workflow_agent_config.agent_name.clone(),
+        workflow_agent_config.agent_host.clone(),
+        workflow_agent_config.agent_port,
     );
 
-    info!("Starting executor agent server at http://{}:{}", agent_config.agent_host, agent_config.agent_port);
+    info!("Starting executor agent server at http://{}:{}", workflow_agent_config.agent_host, workflow_agent_config.agent_port);
     
     if let Err(e) = agent_server.run(agent).await {
         error!("Server error: {}", e);
     }
+
+    */
     
     Ok(())
 }

@@ -3,23 +3,15 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use tracing::{info, debug};
 use std::env;
-use anyhow::Context;
-use std::collections::HashMap;
-
-use serde_json::Map;
-use serde_json::Value;
-
-use llm_api::chat::{ChatLlmInteraction};
-use llm_api::chat::Message as LlmMessage;
-
+use anyhow::{Context, bail};
+use serde_json::{Map, Value};
+use llm_api::chat::{ChatLlmInteraction, Message as LlmMessage};
 use configuration::AgentConfig;
 use agent_core::business_logic::agent::Agent;
-use agent_core::business_logic::services::{DiscoveryService, MemoryService, EvaluationService, WorkflowServiceApi};
+use agent_core::business_logic::services::{DiscoveryService, MemoryService, EvaluationService};
 use agent_core::graph::graph_definition::{Graph, WorkflowPlanInput};
 use agent_core::execution::execution_result::ExecutionResult;
-
 use std::fs;
-use anyhow::bail;
 
 static DEFAULT_WORKFLOW_PROMPT_TEMPLATE: &str = "./configuration/prompts/detailed_workflow_agent_prompt.txt";
 static DEFAULT_HIGH_LEVEL_PLAN_PROMPT_TEMPLATE: &str = "./configuration/prompts/high_level_plan_workflow_agent_prompt.txt";
@@ -40,14 +32,14 @@ impl Agent for PlannerAgent {
         _evaluation_service: Option<Arc<dyn EvaluationService>>,
         _memory_service: Option<Arc<dyn MemoryService>>,
         discovery_service: Option<Arc<dyn DiscoveryService>>,
-        _workflow_service: Option<Arc<dyn WorkflowServiceApi>>,
+        _workflow_service: Option<Arc<dyn agent_core::business_logic::services::WorkflowServiceApi>>,
     ) -> anyhow::Result<Self> {
-        let llm_workflow_api_key = env::var("LLM_WORKFLOW_API_KEY").expect("LLM_WORKFLOW_API_KEY must be set");
+        let llm_planner_api_key = env::var("LLM_PLANNER_API_KEY").expect("LLM_PLANNER_API_KEY must be set");
 
         let llm_interaction = ChatLlmInteraction::new(
             agent_config.agent_llm_url(),
             agent_config.agent_model_id(),
-            llm_workflow_api_key,
+            llm_planner_api_key,
         );
         
         let discovery_service = discovery_service
@@ -79,6 +71,7 @@ impl Agent for PlannerAgent {
             let executor_request = LlmMessage {
                 role: "user".to_string(),
                 content: Some(graph_json),
+                tool_call_id:None,
                 tool_calls: None,
             };
 
@@ -92,26 +85,39 @@ impl Agent for PlannerAgent {
                 Ok(execution_result)
             } else {
                 let error_text = res.text().await?;
-                anyhow::bail!("Executor agent failed with status: {} and error: {}", res.status(), error_text);
+                //anyhow::bail!("Executor agent failed with status: {} and error: {}", res.status(), error_text);
+                anyhow::bail!("Executor agent failed with error: {}", error_text);
             }
         }
     }
 }
 
 impl PlannerAgent {
+    async fn get_available_capabilities(&self) -> anyhow::Result<String> {
+        // The user_query parameter for discover_agents is not needed if we are listing all agents
+        let discovered_agents = self.discovery_service.discover_agents().await?;
+        
+        let mut capabilities = String::new();
+        
+        // Format discovered agents
+        let agent_details: Vec<String> = discovered_agents.into_iter()
+            .map(|agent| format!("- Agent: '{}', Purpose: '{}'", agent.name, agent.description))
+            .collect();
 
+        if !agent_details.is_empty() {
+            capabilities.push_str("Available Agents:\n");
+            capabilities.push_str(&agent_details.join("\n"));
+        }
 
-    pub async fn create_plan(
-        &self,
-        user_query: String,
-    ) -> anyhow::Result<Graph>  {
+        // TODO: Add tasks from the `common_tasks` crate here later.
 
-        // todo : Make resources list available without runners
-        // 1. Get capabilities string from workflow_runners
-        let capabilities = self.workflow_runners.list_available_resources();
+        Ok(capabilities)
+    }
 
-        // 2. Format the prompt with dynamic data
-        // Read the prompt template from the file
+    pub async fn create_plan(&self, user_query: String) -> anyhow::Result<Graph> {
+        let capabilities = self.get_available_capabilities().await?;
+        debug!("Capabilities for plan creation:\n{}", capabilities);
+
         let prompt_template = fs::read_to_string(DEFAULT_WORKFLOW_PROMPT_TEMPLATE)
                 .context("Failed to read workflow_agent_prompt.txt")?;
 
@@ -121,48 +127,21 @@ impl PlannerAgent {
 
         debug!("Prompt for Plan creation : {}", prompt);
 
-        // 3. Call the LLM API
-        // This api returns raw text from llm
-        let response_content = self.llm_interaction.call_api_simple_v2("user".to_string(),prompt.to_string()).await?;
-        let response_content=response_content.expect("No plan created from LLM");
-        info!("WorkflowAgent: LLM responded with plan content:{:?}", response_content);
+        let response_content = self.llm_interaction.call_api_simple_v2("user".to_string(), prompt).await?
+            .context("LLM returned no content")?;
+        info!("LLM responded with plan content: {:?}", response_content);
 
-
-        // 4. Extract JSON from the LLM\'s response (in case it\'s wrapped in markdown code block)
-        let json_string = if let (Some(start_idx), Some(end_idx)) = (response_content.find("```json"), response_content.rfind("```")) {
-            let start = start_idx + "```json".len();
-            if start < end_idx {
-                response_content[start..end_idx].trim().to_string()
-            } else {
-                // to be improved
-                bail!("Failed to extract JSON: malformed markdown block or empty content.");
-            }
-        } else {
-            // If no markdown block, assume the entire response is the JSON string
-            response_content.trim().to_string()
-        };
-
+        let json_string = self.extract_json_from_response(&response_content)?;
         debug!("WorkFlow Generated: {}", json_string);
 
-        // 5. Parse the LLM\'s JSON response into the Workflow struct
         let workflow: WorkflowPlanInput = serde_json::from_str(&json_string)?;
-
-        
         Ok(workflow.into())
     }
 
+    pub async fn create_high_level_plan(&self, user_query: String) -> anyhow::Result<String> {
+        let capabilities = self.get_available_capabilities().await?;
+        debug!("Capabilities for high-level plan creation:\n{}", capabilities);
 
-
-    pub async fn create_high_level_plan(
-        &self,
-        user_query: String,
-    ) -> anyhow::Result<String>  {
-
-        // 1. Get capabilities string from workflow_runners
-        let capabilities = self.workflow_runners.list_available_resources();
-
-        // 2. Format the prompt with dynamic data
-        // Read the prompt template from the file
         let prompt_template = fs::read_to_string(DEFAULT_HIGH_LEVEL_PLAN_PROMPT_TEMPLATE)
                 .context("Failed to read high_level_plan_agent_prompt.txt")?;
 
@@ -170,19 +149,14 @@ impl PlannerAgent {
             .replacen("{}", &user_query, 1)
             .replacen("{}", &capabilities, 1);
 
-        debug!("Prompt for Plan creation : {}", prompt);
+        debug!("Prompt for high-level plan creation: {}", prompt);
 
-        // 3. Call the LLM API
-        // This api returns raw text from llm
-        let response_content = self.llm_interaction.call_api_simple_v2("user".to_string(),prompt.to_string()).await?;
-        let response_content=response_content.expect("No plan created from LLM");
-        info!("WorkflowAgent: LLM responded with high level plan content:{:?}", response_content);
+        let response_content = self.llm_interaction.call_api_simple_v2("user".to_string(), prompt).await?
+            .context("LLM returned no content")?;
+        info!("LLM responded with high level plan content: {:?}", response_content);
         
         Ok(response_content)
     }
-
-
-
 
     fn extract_json_from_response(&self, response: &str) -> anyhow::Result<String> {
         if let (Some(start_idx), Some(end_idx)) = (response.find("```json"), response.rfind("```")) {
@@ -190,7 +164,7 @@ impl PlannerAgent {
             if start < end_idx {
                 Ok(response[start..end_idx].trim().to_string())
             } else {
-                anyhow::bail!("Failed to extract JSON: malformed markdown block or empty content.")
+                bail!("Failed to extract JSON: malformed markdown block or empty content.");
             }
         } else {
             Ok(response.trim().to_string())
@@ -198,11 +172,9 @@ impl PlannerAgent {
     }
 
     fn extract_high_level_plan_flag(&self, metadata: Option<Map<String, Value>>) -> bool {
-        if let Some(map) = metadata {
-            if let Some(value) = map.get("high_level_plan") {
-                return value.as_bool().unwrap_or(false);
-            }
-        }
-        false
+        metadata
+            .and_then(|map| map.get("high_level_plan").cloned())
+            .and_then(|value| value.as_bool())
+            .unwrap_or(false)
     }
 }

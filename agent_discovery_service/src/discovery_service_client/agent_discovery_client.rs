@@ -1,5 +1,7 @@
 use reqwest::{Client, Error};
 use a2a_rs::domain::AgentCard;
+use anyhow::Result;
+
 
 /// A client for interacting with the Agent Discovery Service.
 #[derive(Debug)]
@@ -10,9 +12,9 @@ pub struct AgentDiscoveryServiceClient {
 
 impl AgentDiscoveryServiceClient {
     /// Creates a new client for the given discovery service URL.
-    pub fn new(discovery_service_url: String) -> Self {
+    pub fn new(discovery_service_url: &str) -> Self {
         AgentDiscoveryServiceClient {
-            discovery_service_url,
+            discovery_service_url: discovery_service_url.to_string(),
             client: Client::new(),
         }
     }

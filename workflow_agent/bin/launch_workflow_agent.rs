@@ -88,7 +88,7 @@ async fn setup_memory_service(workflow_agent_config: &AgentConfig) -> Option<Arc
 
 async fn setup_discovery_service(discovery_url: String) -> Option<Arc<dyn DiscoveryService>> {
     info!("Discovery service configured at: {}", discovery_url);
-    let client = AgentDiscoveryServiceClient::new(discovery_url.clone());
+    let client = AgentDiscoveryServiceClient::new(&discovery_url.clone());
     let adapter = AgentDiscoveryServiceAdapter::new(client);
     Some(Arc::new(adapter))
 }
@@ -135,7 +135,7 @@ async fn setup_tool_runner(mcp_config_path: String) -> anyhow::Result<Arc<ToolRu
 
 async fn setup_agent_runner(workflow_agent_config: &AgentConfig) -> anyhow::Result<Arc<AgentRunner>> {
     let discovery_client = Arc::new(AgentDiscoveryServiceClient::new(
-        workflow_agent_config.agent_discovery_url.clone().expect("Discovery URL not configured")
+        &workflow_agent_config.agent_discovery_url.clone().expect("Discovery URL not configured")
     ));
     let a2a_agent_invoker = A2AAgentInvoker::new(vec![AgentReference {
         name: "Basic_Agent".to_string(),

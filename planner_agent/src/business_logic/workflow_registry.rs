@@ -4,6 +4,7 @@ use std::any::Any;
 use workflow_management::tasks::task_registry::TaskRegistry;
 use workflow_management::agent_communication::agent_registry::AgentRegistry;
 use workflow_management::tools::tool_registry::ToolRegistry;
+use agent_core::business_logic::services::{WorkflowServiceApi};
 
 
 #[derive( Clone)]
@@ -42,4 +43,14 @@ impl WorkFlowRegistry {
     }
 
 
+}
+
+impl WorkflowServiceApi for WorkFlowRegistry {
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
+    }
 }

@@ -157,7 +157,7 @@ async fn setup_agent_runner(workflow_agent_config: &AgentConfig) -> anyhow::Resu
 
 
 #[tokio::main]
-async fn main() -> anyhow::Result<()> {
+async fn main() -> Result<(), Box<dyn std::error::Error>>{
 
     let args = Args::parse();
     setup_logging(&args.log_level);
@@ -198,38 +198,25 @@ async fn main() -> anyhow::Result<()> {
 
     let workflow_runners: Option<Arc<dyn WorkflowServiceApi>> = Some(Arc::new(workflow_runners));
 
-/* 
+    /************************************************/
+    /* Launch Workflow Agent                        */
+    /************************************************/ 
+    let agent = ExecutorAgent::new(workflow_agent_config.clone(), evaluation_service, memory_service, discovery_service.clone(), workflow_runners).await?;
 
-    // The executor agent doesn't need discovery or memory service itself, but the runners do.
-    // The `new` function for the agent needs to be adapted to this.
-    let services = BusinessServices::new(
-        None,
-        None,
-        None,
-        Some(workflow_runners),
-    ).await?;
-    
-    let agent = ExecutorAgent::new(
-        workflow_agent_config.clone(),
-        Some(Arc::new(services.evaluation_service)),
-        None,
-        None,
-        Some(Arc::new(services.workflow_service.clone())),
-    ).await?;
+    /************************************************/
+    /* Launch Workflow Agent Server                 */
+    /************************************************/ 
+    // Create the modern server, and pass the runtime elements
+    let server = AgentServer::<ExecutorAgent>::new(workflow_agent_config, agent, discovery_service).await?;
+   
+    println!("🌐 Starting HTTP server only...");
+    server.start_http().await?;
 
-    let agent_server = AgentServer::new(
-        workflow_agent_config.agent_name.clone(),
-        workflow_agent_config.agent_host.clone(),
-        workflow_agent_config.agent_port,
-    );
+    /************************************************/
+    /* Agent server launched                        */
+    /* Responding to any A2A CLient                 */
+    /************************************************/ 
 
-    info!("Starting executor agent server at http://{}:{}", workflow_agent_config.agent_host, workflow_agent_config.agent_port);
-    
-    if let Err(e) = agent_server.run(agent).await {
-        error!("Server error: {}", e);
-    }
 
-    */
-    
     Ok(())
 }

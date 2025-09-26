@@ -91,6 +91,9 @@ pub async fn initialize_mcp_client_v2(agent_mcp_config: AgentMcpConfig)
         client_info: Implementation {
             name: "tool execution client".to_string(),
             version: "0.0.1".to_string(),
+            title:None,
+            icons:None,
+            website_url:None
         },
     };
 
@@ -141,6 +144,7 @@ pub async fn execute_tool_call_v2(
                 content: vec![],
                 structured_content:None,
                 is_error: Some(true),
+                meta:None,
             } // Fixed: Provide bool directly
         }
     };

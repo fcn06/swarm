@@ -28,8 +28,8 @@ workflow_management = { path = "./workflow_management" }
 # executor_agent = { path = "./executor_agent" }
 
 # For rmcp and a2a-rs, in the future, I have to pin a revision number because this crate is evolving rapidly with significant number of breaking changes
-# Update to the latest revision of rmcp on 2025, August the 31rst. Pinning specific release of rmcp and a2a-rs ensure stability of swarm
-rmcp= { git = "https://github.com/modelcontextprotocol/rust-sdk.git", features = ["client","transport-sse-client", "transport-child-process","reqwest","transport-sse-client-reqwest"] ,rev="98e2b9df822f7cf51553f90a1034a3ad05cdb9c2" }
+# Update to the latest revision of rmcp on 2025, September the 26th. Pinning specific release of rmcp and a2a-rs ensure stability of swarm
+rmcp= { git = "https://github.com/modelcontextprotocol/rust-sdk.git", features = ["client","transport-sse-client", "transport-child-process","reqwest","transport-sse-client-reqwest"] ,rev="717ec56e230ce7073ec464fe0b339e0aff0b97b9" }
 
 a2a-rs= { git = "https://github.com/EmilLindfors/a2a-rs.git" , features=["server","http-server","client","http-client","tracing"] , rev="2cf954129de8b4cc3b3146780877e508fa34c00c" }
 

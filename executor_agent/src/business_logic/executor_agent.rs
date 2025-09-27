@@ -2,9 +2,10 @@
 use std::sync::Arc;
 use async_trait::async_trait;
 use tracing::{info, debug, warn};
-use serde_json::Map;
-use serde_json::Value;
+
 use std::collections::HashMap;
+use serde_json::{Map, Value, json};
+use uuid::Uuid;
 
 use llm_api::chat::Message as LlmMessage;
 
@@ -82,6 +83,8 @@ impl Agent for ExecutorAgent {
         debug!("---ExecutorAgent: Starting to execute plan---");
         debug!("Graph Received: {:#?}", graph);
 
+        println!("Graph Received: {:#?}", graph);
+
         let mut executor = PlanExecutor::new(
             graph,
             self.workflow_runners.task_runner.clone(),
@@ -93,17 +96,25 @@ impl Agent for ExecutorAgent {
         match executor.execute_plan().await {
             Ok((execution_outcome, _activities_outcome)) => {
                 debug!("\nWorkflow execution completed successfully. Outcome : {}\n", execution_outcome);
+                let output_json = json!({ "text_response": execution_outcome }).to_string();
                 Ok(ExecutionResult {
-                    request_id: "".to_string(),
-                    conversation_id: "".to_string(),
+                    request_id: Uuid::new_v4().to_string(), // Generate a new UUID
+                    conversation_id: Uuid::new_v4().to_string(), // Generate a new UUID
                     success: true,
-                    output: execution_outcome,
+                    output: output_json,
                 })
             },
             Err(e) => {
                 warn!("Error executing plan: {}", e);
                 let error_message = format!("Workflow execution failed: {}", e);
-                Err(anyhow::anyhow!(error_message))
+                // For errors, also ensure the output is a JSON string
+                let output_json = json!({ "error": error_message }).to_string();
+                Ok(ExecutionResult {
+                    request_id: Uuid::new_v4().to_string(),
+                    conversation_id: Uuid::new_v4().to_string(),
+                    success: false,
+                    output: output_json,
+                })
             }
         }
     }

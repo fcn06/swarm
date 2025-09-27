@@ -12,17 +12,20 @@ use agent_core::business_logic::services::{DiscoveryService, MemoryService, Eval
 use agent_core::graph::graph_definition::{Graph, WorkflowPlanInput};
 use agent_core::execution::execution_result::ExecutionResult;
 use std::fs;
+use a2a_rs::{HttpClient, domain::{Message, Part, Role, TaskState}};
+use uuid::Uuid;
+use a2a_rs::services::AsyncA2AClient;
 
 static DEFAULT_WORKFLOW_PROMPT_TEMPLATE: &str = "./configuration/prompts/detailed_workflow_agent_prompt.txt";
 static DEFAULT_HIGH_LEVEL_PLAN_PROMPT_TEMPLATE: &str = "./configuration/prompts/high_level_plan_workflow_agent_prompt.txt";
-static EXECUTOR_AGENT_URL: &str = "http://127.0.0.1:8082/handle_request"; // TODO: Move to config
+static EXECUTOR_AGENT_URL: &str = "http://127.0.0.1:9580"; // Kept as constant, base URL for the A2A client
 
 #[derive(Clone)]
 pub struct PlannerAgent {
     agent_config: Arc<AgentConfig>,
     llm_interaction: ChatLlmInteraction,
     discovery_service: Arc<dyn DiscoveryService>,
-    client: reqwest::Client,
+    client: Arc<HttpClient>, // Changed from reqwest::Client to a2a_rs::HttpClient
 }
 
 #[async_trait]
@@ -49,14 +52,14 @@ impl Agent for PlannerAgent {
             agent_config: Arc::new(agent_config),
             llm_interaction,
             discovery_service,
-            client: reqwest::Client::new(),
+            client: Arc::new(HttpClient::new(EXECUTOR_AGENT_URL.to_string())), // Initialize a2a_rs::HttpClient with the constant URL
         })
     }
 
     async fn handle_request(&self, request: LlmMessage, metadata: Option<Map<String, Value>>) -> anyhow::Result<ExecutionResult> {
         let user_query = request.content.clone().unwrap_or_default();
         
-        if self.extract_high_level_plan_flag(metadata) {
+        if self.extract_high_level_plan_flag(metadata.clone()) {
             let plan = self.create_high_level_plan(user_query).await?;
             Ok(ExecutionResult {
                 request_id: "".to_string(),
@@ -68,25 +71,55 @@ impl Agent for PlannerAgent {
             let graph = self.create_plan(user_query).await?;
             let graph_json = serde_json::to_string(&graph)?;
             
-            let executor_request = LlmMessage {
-                role: "user".to_string(),
-                content: Some(graph_json),
-                tool_call_id:None,
-                tool_calls: None,
-            };
+            let task_id = format!("task-{}", Uuid::new_v4());
+            let message_id = Uuid::new_v4().to_string();
 
-            let res = self.client.post(EXECUTOR_AGENT_URL)
-                .json(&executor_request)
-                .send()
+            let a2a_message = Message::builder()
+                .role(Role::User)
+                .parts(vec![Part::Text {
+                    text: graph_json,
+                    metadata: metadata,
+                }])
+                .message_id(message_id)
+                .build();
+
+            debug!("Sending plan to executor agent at: {}. Task ID: {}", EXECUTOR_AGENT_URL, task_id);
+            
+            let task_response = self.client
+                .send_task_message(&task_id, &a2a_message, None, Some(50)) // Using A2A client
                 .await?;
+            
+            info!("Executor agent response status for task {}: {:?}", task_id, task_response.status.state);
 
-            if res.status().is_success() {
-                let execution_result: ExecutionResult = res.json().await?;
-                Ok(execution_result)
+            if task_response.status.state == TaskState::Completed {
+                if let Some(response_message) = task_response.status.message {
+                    if let Some(Part::Text { text, .. }) = response_message.parts.into_iter().next() {
+                        // The received 'text' is the already JSON-formatted output from the executor.
+                        // We now construct a new ExecutionResult for the PlannerAgent's return.
+                        Ok(ExecutionResult {
+                            request_id: Uuid::new_v4().to_string(), // Generate new UUID for request_id
+                            conversation_id: Uuid::new_v4().to_string(), // Generate new UUID for conversation_id
+                            success: true,
+                            output: text, // Use the received JSON string directly as output
+                        })
+                    } else {
+                        bail!("Executor agent responded with non-text content or empty message for task {}", task_id);
+                    }
+                } else {
+                    bail!("Executor agent responded with no message for task {}", task_id);
+                }
             } else {
-                let error_text = res.text().await?;
-                //anyhow::bail!("Executor agent failed with status: {} and error: {}", res.status(), error_text);
-                anyhow::bail!("Executor agent failed with error: {}", error_text);
+                // Handle other task states as errors
+                let error_detail = task_response.status.message.and_then(|msg| {
+                    msg.parts.into_iter().filter_map(|part| {
+                        if let Part::Text { text, .. } = part {
+                            Some(text)
+                        } else {
+                            None
+                        }
+                    }).next()
+                }).unwrap_or_else(|| "Unknown error".to_string());
+                bail!("Executor agent task {} failed with state: {:?} and error: {}", task_id, task_response.status.state, error_detail);
             }
         }
     }

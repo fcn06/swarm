@@ -49,7 +49,7 @@ use agent_core::business_logic::service_adapters::{AgentEvaluationServiceAdapter
 #[clap(author, version, about, long_about = None)]
 struct Args {
     /// Configuration file path (TOML format)
-    #[clap(long, default_value = "configuration/agent_workflow_config.toml")]
+    #[clap(long, default_value = "configuration/agent_planner_config.toml")]
     config_file: String,
     /// Log level
     #[clap(long, default_value = "warn")]

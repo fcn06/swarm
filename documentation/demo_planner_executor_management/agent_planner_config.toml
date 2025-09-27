@@ -18,6 +18,7 @@ agent_ws_port="8281"
 # connect to
 #################################################################
 agent_discovery_url="http://127.0.0.1:4000"
+agent_discoverable=false
 
 #################################################################
 # executor agent to which planner delegates execution

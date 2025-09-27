@@ -115,7 +115,7 @@ echo $'\n'
 
 # Check for the --dynamic-generation or --high-level-plan flag
 if [[ "$1" == "--dynamic-generation" ]]; then
-    ./target/release/simple_workflow_agent_client --port 8280 --log-level "warn" --generation-type "dynamic_generation"
+    ./target/release/simple_workflow_agent_client --port 8280 --log-level "warn" --generation-type "dynamic_generation" --user-query "How many times did Bernard Hinault win the Tour de France ?"
 elif [[ "$1" == "--high-level-plan" ]]; then
     ./target/release/simple_workflow_agent_client --port 8280 --log-level "warn" --generation-type "high_level_plan"
 else

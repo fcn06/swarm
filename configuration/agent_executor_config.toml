@@ -18,6 +18,7 @@ agent_ws_port="9581"
 # connect to
 #################################################################
 agent_discovery_url="http://127.0.0.1:4000"
+agent_discoverable=false
 
 
 #################################################################
@@ -29,13 +30,13 @@ You are an executor agent that executes precsiley workflow that you are delegate
 """
 
 agent_skill_id="generic_request"
-agent_skill_name="All_requests about Weather and Customer"
-agent_skill_description="Helps with all types of requests."
+agent_skill_name="Execute Strictly Defined Workflow"
+agent_skill_description="Receives a workflow definition as an input and execute it"
 agent_version="1.0.0"
-agent_description="An agent that can process requests related to weather, customer information or web search"
+agent_description="An agent that only executes strictly defined workflow. MUST NOT BE USED IN CONSTRUCTION OF A WORKLOW"
 agent_doc_url="/docs"
-agent_tags=["find weather","details about customer","general","search"]
-agent_examples=["What is the weather like in Boston?","What is address of customer 1234","Tell me about rust"]
+agent_tags=["execute plan"]
+agent_examples=["execute this plan"]
 
 #################################################################
 # Define her the url of openai compatible endpoint 

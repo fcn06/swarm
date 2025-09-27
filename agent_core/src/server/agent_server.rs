@@ -105,7 +105,10 @@ impl<T:Agent> AgentServer<T> {
             Some(vec!["text".to_string(), "data".to_string()]),
         );
 
-        self.register_with_discovery_service(&agent_info).await?;
+
+        if let Some(true) = self.config.agent_discoverable() {
+            self.register_with_discovery_service(&agent_info).await?;
+        }
 
         let bind_address = format!("{}:{}", self.config.agent_host(), self.config.agent_http_port());
 

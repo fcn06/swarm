@@ -4,7 +4,7 @@ mod agents;
 
 use clap::Parser;
 use std::sync::Arc;
-use tracing::{ info, debug,warn,error};
+use tracing::{ info, warn};
 
 use configuration::{setup_logging, AgentReference,AgentConfig};
 

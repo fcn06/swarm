@@ -1,9 +1,9 @@
 
 use std::sync::Arc;
 use async_trait::async_trait;
-use tracing::{info, debug, warn};
+use tracing::{ debug, warn};
 
-use std::collections::HashMap;
+//use std::collections::HashMap;
 use serde_json::{Map, Value, json};
 use uuid::Uuid;
 
@@ -82,8 +82,6 @@ impl Agent for ExecutorAgent {
 
         debug!("---ExecutorAgent: Starting to execute plan---");
         debug!("Graph Received: {:#?}", graph);
-
-        println!("Graph Received: {:#?}", graph);
 
         let mut executor = PlanExecutor::new(
             graph,

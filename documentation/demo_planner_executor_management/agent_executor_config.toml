@@ -18,7 +18,7 @@ agent_ws_port="9581"
 # connect to
 #################################################################
 agent_discovery_url="http://127.0.0.1:4000"
-
+agent_discoverable=false
 
 #################################################################
 # Purpose and high level skills

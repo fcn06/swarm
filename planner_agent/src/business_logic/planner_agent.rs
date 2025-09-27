@@ -16,6 +16,8 @@ use a2a_rs::{HttpClient, domain::{Message, Part, Role, TaskState}};
 use uuid::Uuid;
 use a2a_rs::services::AsyncA2AClient;
 
+use super::workflow_registry::WorkFlowRegistry;
+
 static DEFAULT_WORKFLOW_PROMPT_TEMPLATE: &str = "./configuration/prompts/detailed_workflow_agent_prompt.txt";
 static DEFAULT_HIGH_LEVEL_PLAN_PROMPT_TEMPLATE: &str = "./configuration/prompts/high_level_plan_workflow_agent_prompt.txt";
 static EXECUTOR_AGENT_URL: &str = "http://127.0.0.1:9580"; // Kept as constant, base URL for the A2A client
@@ -24,6 +26,7 @@ static EXECUTOR_AGENT_URL: &str = "http://127.0.0.1:9580"; // Kept as constant, 
 pub struct PlannerAgent {
     agent_config: Arc<AgentConfig>,
     llm_interaction: ChatLlmInteraction,
+    workflow_registry: Arc<WorkFlowRegistry>,
     discovery_service: Arc<dyn DiscoveryService>,
     client: Arc<HttpClient>, // Changed from reqwest::Client to a2a_rs::HttpClient
 }
@@ -35,7 +38,7 @@ impl Agent for PlannerAgent {
         _evaluation_service: Option<Arc<dyn EvaluationService>>,
         _memory_service: Option<Arc<dyn MemoryService>>,
         discovery_service: Option<Arc<dyn DiscoveryService>>,
-        _workflow_service: Option<Arc<dyn agent_core::business_logic::services::WorkflowServiceApi>>,
+        workflow_service: Option<Arc<dyn agent_core::business_logic::services::WorkflowServiceApi>>,
     ) -> anyhow::Result<Self> {
         let llm_planner_api_key = env::var("LLM_PLANNER_API_KEY").expect("LLM_PLANNER_API_KEY must be set");
 
@@ -48,9 +51,14 @@ impl Agent for PlannerAgent {
         let discovery_service = discovery_service
             .ok_or_else(|| anyhow::anyhow!("DiscoveryService not provided"))?;
 
+        let workflow_registry = workflow_service
+        .and_then(|ws| ws.as_any().downcast_ref::<WorkFlowRegistry>().map(|wr| Arc::new(wr.clone())))
+        .ok_or_else(|| anyhow::anyhow!("WorkFlowRegistry not provided or invalid type"))?;
+
         Ok(Self {
             agent_config: Arc::new(agent_config),
             llm_interaction,
+            workflow_registry,
             discovery_service,
             client: Arc::new(HttpClient::new(EXECUTOR_AGENT_URL.to_string())), // Initialize a2a_rs::HttpClient with the constant URL
         })
@@ -142,13 +150,20 @@ impl PlannerAgent {
             capabilities.push_str(&agent_details.join("\n"));
         }
 
-        // TODO: Add tasks from the `common_tasks` crate here later.
+        // TODO: Add tasks from the `common_tasks` crate here later and tools.
+
+        debug!("Discovered Capabilities : {:#?}", capabilities);
 
         Ok(capabilities)
     }
 
     pub async fn create_plan(&self, user_query: String) -> anyhow::Result<Graph> {
-        let capabilities = self.get_available_capabilities().await?;
+        
+        // 1. Get capabilities string from workflow_registries
+        let capabilities = self.workflow_registry.list_available_resources();
+        // Future Use : Get data from discovery service
+        //let capabilities = self.get_available_capabilities().await?;
+        
         debug!("Capabilities for plan creation:\n{}", capabilities);
 
         let prompt_template = fs::read_to_string(DEFAULT_WORKFLOW_PROMPT_TEMPLATE)

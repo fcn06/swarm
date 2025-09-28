@@ -47,7 +47,7 @@ impl WorkflowServiceApi for WorkFlowRunners {
     fn as_any_mut(&mut self) -> &mut dyn Any { self }
 }
 
-
+#[allow(dead_code)]
 #[derive(Clone)]
 pub struct ExecutorAgent {
     agent_config: Arc<AgentConfig>,

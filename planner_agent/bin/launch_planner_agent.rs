@@ -128,6 +128,7 @@ async fn setup_tool_registry(mcp_config_path: String) -> anyhow::Result<Arc<Tool
     Ok(Arc::new(tool_registry))
 }
 
+#[allow(unused_variables)]
 async fn setup_agent_registry(workflow_agent_config: &AgentConfig) -> anyhow::Result<Arc<AgentRegistry>> {
 
     let mut agent_registry = AgentRegistry::new();

@@ -22,6 +22,7 @@ static DEFAULT_WORKFLOW_PROMPT_TEMPLATE: &str = "./configuration/prompts/detaile
 static DEFAULT_HIGH_LEVEL_PLAN_PROMPT_TEMPLATE: &str = "./configuration/prompts/high_level_plan_workflow_agent_prompt.txt";
 static EXECUTOR_AGENT_URL: &str = "http://127.0.0.1:9580"; // Kept as constant, base URL for the A2A client
 
+#[allow(dead_code)]
 #[derive(Clone)]
 pub struct PlannerAgent {
     agent_config: Arc<AgentConfig>,
@@ -55,12 +56,15 @@ impl Agent for PlannerAgent {
         .and_then(|ws| ws.as_any().downcast_ref::<WorkFlowRegistry>().map(|wr| Arc::new(wr.clone())))
         .ok_or_else(|| anyhow::anyhow!("WorkFlowRegistry not provided or invalid type"))?;
 
+        let executor_url=agent_config.agent_executor_url().unwrap();
+
         Ok(Self {
             agent_config: Arc::new(agent_config),
             llm_interaction,
             workflow_registry,
             discovery_service,
-            client: Arc::new(HttpClient::new(EXECUTOR_AGENT_URL.to_string())), // Initialize a2a_rs::HttpClient with the constant URL
+            //client: Arc::new(HttpClient::new(EXECUTOR_AGENT_URL.to_string())), // Initialize a2a_rs::HttpClient with the constant URL
+            client: Arc::new(HttpClient::new(executor_url)), // Initialize a2a_rs::HttpClient with the executor url defined
         })
     }
 

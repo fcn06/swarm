@@ -10,7 +10,7 @@ use anyhow::Result;
 use std::sync::Arc;
 use tokio::time::{sleep, Duration};
 
-use agent_core::agent_interaction_protocol::agent_interaction::AgentInteraction;
+use super::agent_interaction::AgentInteraction;
 
 /// This structure enable Interaction with an A2A enabled single Agent
 #[derive(Clone)]

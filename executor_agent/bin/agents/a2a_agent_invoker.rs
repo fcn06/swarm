@@ -7,11 +7,14 @@ use serde_json::Value;
 use anyhow::anyhow;
 
 use agent_core::agent_interaction_protocol::agent_interaction::AgentInteraction;
+use agent_core::agent_interaction_protocol::a2a_agent_interaction::A2AAgentInteraction;
+//use super::a2a_agent_interaction::A2AAgentInteraction;
+
 use agent_core::business_logic::services::{EvaluationService, MemoryService};
 use agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient;
 use configuration::AgentReference;
 
-use super::a2a_agent_interaction::A2AAgentInteraction;
+
 use workflow_management::agent_communication::agent_invoker::AgentInvoker;
 //use workflow_management::graph::graph_definition::Activity;
 

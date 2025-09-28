@@ -23,6 +23,8 @@ serde_json = { workspace = true }
 tokio = { workspace = true }
 anyhow = { workspace = true }
 
+reqwest = { workspace = true }
+
 async-trait = { workspace = true }
 futures = { workspace = true }
 

@@ -1,29 +1,20 @@
-mod tasks;
 mod tools;
-mod agents;
 
 use clap::Parser;
 use std::sync::Arc;
 use tracing::{ info, warn};
 
-//use configuration::{setup_logging, AgentReference,AgentConfig};
 use configuration::{setup_logging, AgentConfig};
 
 use serde_json::json;
 
-//use crate::tasks::tasks_invoker::{GreetTask};
 use crate::tools::mcp_runtime_tool_invoker::McpRuntimeToolInvoker;
-//use crate::agents::a2a_agent_invoker::A2AAgentInvoker;
 
 use planner_agent::business_logic::planner_agent::PlannerAgent;
 use planner_agent::business_logic::workflow_registry::WorkFlowRegistry;
 
-
-//use workflow_management::agent_communication::agent_runner::AgentRunner;
 use workflow_management::agent_communication::agent_registry::AgentDefinition;
-//use workflow_management::tasks::task_runner::TaskRunner;
 use workflow_management::tasks::task_registry::TaskDefinition;
-//use workflow_management::tools::tool_runner::ToolRunner;
 use workflow_management::tools::tool_registry::ToolDefinition;
 
 use workflow_management::agent_communication::{agent_registry::AgentRegistry,};
@@ -35,12 +26,9 @@ use agent_discovery_service::discovery_service_client::agent_discovery_client::A
 use agent_evaluation_service::evaluation_service_client::agent_evaluation_client::AgentEvaluationServiceClient;
 use agent_memory_service::memory_service_client::agent_memory_client::AgentMemoryServiceClient;
 
-
 use agent_core::business_logic::agent::Agent;
 use agent_core::server::agent_server::AgentServer;
 use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService,WorkflowServiceApi};
-
-
 
 
 use agent_core::business_logic::service_adapters::{AgentEvaluationServiceAdapter, AgentMemoryServiceAdapter,AgentDiscoveryServiceAdapter};

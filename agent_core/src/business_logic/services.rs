@@ -3,7 +3,7 @@ use async_trait::async_trait;
 use agent_evaluation_service::evaluation_server::judge_agent::{AgentEvaluationLogData, JudgeEvaluation};
 use agent_memory_service::models::Role;
 use std::any::Any;
-use a2a_rs::domain::AgentCard;
+use agent_discovery_service::model::models::{AgentDefinition, TaskDefinition, ToolDefinition};
 
 /// A trait that defines the interface for an evaluation service.
 #[async_trait]
@@ -20,10 +20,14 @@ pub trait MemoryService: Send + Sync {
 /// A trait that defines the interface for a discovery service.
 #[async_trait]
 pub trait DiscoveryService: Send + Sync {
-    async fn register_agent(&self, agent_card: &AgentCard) -> Result<()>;
-    async fn unregister_agent(&self, agent_card: &AgentCard) -> Result<()>;
-    async fn get_agent_address(&self, agent_name: String) -> Result<Option<String>>;
-    async fn discover_agents(&self) -> Result<Vec<AgentCard>>; // Added this method
+    async fn register_agent(&self, agent_def: &AgentDefinition) -> Result<()>;
+    async fn unregister_agent(&self, agent_def: &AgentDefinition) -> Result<()>;
+    async fn get_agent_address(&self, agent_id: String) -> Result<Option<String>>;
+    async fn discover_agents(&self) -> Result<Vec<AgentDefinition>>; 
+    async fn register_task(&self, task_def: &TaskDefinition) -> Result<()>;
+    async fn list_tasks(&self) -> Result<Vec<TaskDefinition>>; 
+    async fn register_tool(&self, tool_def: &ToolDefinition) -> Result<()>;
+    async fn list_tools(&self) -> Result<Vec<ToolDefinition>>; 
 }
 
 // New trait for workflow related services

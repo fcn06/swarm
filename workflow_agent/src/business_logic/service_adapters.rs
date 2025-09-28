@@ -4,12 +4,10 @@ use agent_evaluation_service::evaluation_service_client::agent_evaluation_client
 use agent_evaluation_service::evaluation_server::judge_agent::{AgentEvaluationLogData, JudgeEvaluation};
 use agent_memory_service::memory_service_client::agent_memory_client::AgentMemoryServiceClient;
 use agent_memory_service::models::Role;
-use agent_core::business_logic::services::{EvaluationService, MemoryService};
+use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService};
 
 use agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient;
-use agent_core::business_logic::services::DiscoveryService;
-use a2a_rs::domain::AgentCard;
-
+use agent_discovery_service::model::models::{AgentDefinition, TaskDefinition, ToolDefinition};
 
 /********************************************/
 /* Service Adapter for Evaluation Service   */
@@ -71,26 +69,50 @@ impl AgentDiscoveryServiceAdapter {
 
 #[async_trait]
 impl DiscoveryService for AgentDiscoveryServiceAdapter {
-    async fn register_agent(&self, agent_card: &AgentCard) -> Result<()> {
-        self.client.register(agent_card).await?;
+    async fn register_agent(&self, agent_def: &AgentDefinition) -> Result<()> {
+        self.client.register_agent_definition(agent_def).await?;
         Ok(())
     }
 
-    async fn unregister_agent(&self, agent_card: &AgentCard) -> Result<()> {
-                self.client.deregister(agent_card).await?;
+    async fn unregister_agent(&self, agent_def: &AgentDefinition) -> Result<()> {
+        self.client.deregister_agent_definition(agent_def).await?;
         Ok(())
     }
 
-    async fn get_agent_address(&self, agent_name: String) -> Result<Option<String>> {
-        let all_agents = self.client.list_agents().await?;
+    async fn get_agent_address(&self, agent_id: String) -> Result<Option<String>> {
+        let all_agents = self.client.list_agent_definitions().await?;
         Ok(all_agents
             .into_iter()
-            .find(|agent| agent.name == agent_name)
-            .map(|agent| agent.url))
+            .find(|agent| agent.id == agent_id)
+            .map(|agent| {
+                if !agent.skills.is_empty() {
+                    Some(format!("agent://{}/", agent.id))
+                } else {
+                    None
+                }
+            }).flatten()
+        )
     }
 
-    async fn discover_agents(&self) -> Result<Vec<AgentCard>> {
-        Ok(self.client.list_agents().await?)
+    async fn discover_agents(&self) -> Result<Vec<AgentDefinition>> {
+        Ok(self.client.list_agent_definitions().await?)
+    }
+
+    async fn register_task(&self, task_def: &TaskDefinition) -> Result<()> {
+        self.client.register_task_definition(task_def).await?;
+        Ok(())
+    }
+
+    async fn list_tasks(&self) -> Result<Vec<TaskDefinition>> {
+        Ok(self.client.list_task_definitions().await?)
+    }
+
+    async fn register_tool(&self, tool_def: &ToolDefinition) -> Result<()> {
+        self.client.register_tool_definition(tool_def).await?;
+        Ok(())
+    }
+
+    async fn list_tools(&self) -> Result<Vec<ToolDefinition>> {
+        Ok(self.client.list_tool_definitions().await?)
     }
 }
-

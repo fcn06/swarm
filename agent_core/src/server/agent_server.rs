@@ -3,7 +3,7 @@ use a2a_rs::adapter::{
     DefaultRequestProcessor, HttpServer, InMemoryTaskStorage,
     NoopPushNotificationSender, SimpleAgentInfo,
 };
-use a2a_rs::services::AgentInfoProvider;
+//use a2a_rs::services::AgentInfoProvider;
 
 use crate::business_logic::agent::{Agent};
 
@@ -14,6 +14,10 @@ use std::sync::Arc;
 use crate::business_logic::services::DiscoveryService;
 use agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient;
 use anyhow::Result;
+
+use uuid::Uuid;
+use agent_discovery_service::model::models::AgentDefinition;
+use agent_discovery_service::model::models::AgentSkill;
 
 pub struct AgentServer<T:Agent> {
     config: AgentConfig,
@@ -33,7 +37,7 @@ impl<T:Agent> AgentServer<T> {
         InMemoryTaskStorage::with_push_sender(push_sender)
     }
 
-    async fn register_with_discovery_service(&self, agent_info: &SimpleAgentInfo) -> Result<()> {
+    async fn register_with_discovery_service(&self, agent_definition: &AgentDefinition) -> Result<()> {
         let max_retries = 2;
         let mut retries = 0;
         let mut delay = 1; // seconds
@@ -41,11 +45,11 @@ impl<T:Agent> AgentServer<T> {
         loop {
             let registration_result = if let Some(ds) = &self.discovery_service {
                 // Use injected discovery service
-                ds.register_agent(&agent_info.get_agent_card().await?).await
+                ds.register_agent(&agent_definition).await
             } else if let Some(discovery_url) = self.config.agent_discovery_url() {
                 // Fallback to creating a client if URL is provided in config
                 let client = AgentDiscoveryServiceClient::new(&discovery_url);
-                client.register(&agent_info.get_agent_card().await?)
+                client.register_agent_definition(&agent_definition)
                     .await
                     .map(|_| ()) // Map Ok(String) to Ok(())
                     .map_err(|e| e.into()) // Convert reqwest::Error to anyhow::Error
@@ -105,9 +109,21 @@ impl<T:Agent> AgentServer<T> {
             Some(vec!["text".to_string(), "data".to_string()]),
         );
 
+        let agent_definition=AgentDefinition{
+            id:Uuid::new_v4().to_string(),
+            name:self.config.agent_name(),
+            description:self.config.agent_description(),
+            skills:vec![AgentSkill{
+                name:self.config.agent_skill_name(),
+                description:self.config.agent_skill_description(),
+                parameters:serde_json::Value::Null,
+                output:serde_json::Value::Null,
+            }]
+        };
+
 
         if let Some(true) = self.config.agent_discoverable() {
-            self.register_with_discovery_service(&agent_info).await?;
+            self.register_with_discovery_service(&agent_definition).await?;
         }
 
         let bind_address = format!("{}:{}", self.config.agent_host(), self.config.agent_http_port());

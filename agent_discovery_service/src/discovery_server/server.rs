@@ -9,18 +9,22 @@ use axum::{
 };
 use tracing::info;
 use std::sync::Arc;
-use a2a_rs::domain::AgentCard;
+use crate::model::models::{AgentDefinition, TaskDefinition, ToolDefinition};
 
 /// Application state holding configurations and in-memory data.
 #[derive(Clone)]
 pub struct AppState {
-    /// In-memory database for registered agents. Key: agent_name, Value: AgentCard.
-    pub db_agents: Arc<DashMap<String, AgentCard>>,
-    /// In-memory index for agent skills. Key: skill, Value: Set of agent_names.
+    /// In-memory database for registered agents. Key: agent_id, Value: AgentDefinition.
+    pub db_agents: Arc<DashMap<String, AgentDefinition>>,
+    /// In-memory index for agent skills. Key: skill_name, Value: Set of agent_ids.
     pub skills_index: Arc<DashMap<String, HashSet<String>>>,
+    /// In-memory database for registered tasks. Key: task_id, Value: TaskDefinition.
+    pub db_tasks: Arc<DashMap<String, TaskDefinition>>,
+    /// In-memory database for registered tools. Key: tool_id, Value: ToolDefinition.
+    pub db_tools: Arc<DashMap<String, ToolDefinition>>,
 }
 
-/// The discovery server, responsible for agent registration and search.
+/// The discovery server, responsible for agent, task, and tool registration and search.
 pub struct DiscoveryServer {
     pub uri: String,
     pub app: Router,
@@ -31,20 +35,31 @@ impl DiscoveryServer {
         // Initialize the in-memory stores
         let db_agents = DashMap::new();
         let skills_index = DashMap::new();
+        let db_tasks = DashMap::new();
+        let db_tools = DashMap::new();
 
         // Create the application state
         let app_state = AppState {
             db_agents: Arc::new(db_agents),
             skills_index: Arc::new(skills_index),
+            db_tasks: Arc::new(db_tasks),
+            db_tools: Arc::new(db_tools),
         };
 
         // Configure the API routes
         let app = Router::new()
             .route("/", get(root))
-            .route("/register", post(register_agent))
-            .route("/deregister", post(deregister_agent))
-            .route("/agents", get(list_agents))
+            // Agent Definition Routes
+            .route("/agents/register", post(register_agent_definition))
+            .route("/agents/deregister", post(deregister_agent_definition))
+            .route("/agents", get(list_agent_definitions))
             .route("/agents/search", get(search_agents_by_skill))
+            // Task Definition Routes
+            .route("/tasks/register", post(register_task_definition))
+            .route("/tasks", get(list_task_definitions))
+            // Tool Definition Routes
+            .route("/tools/register", post(register_tool_definition))
+            .route("/tools", get(list_tool_definitions))
             .with_state(app_state);
 
         Ok(Self { uri, app })
@@ -64,78 +79,69 @@ async fn root() -> &'static str {
     "Hello, Swarm Discovery Service!"
 }
 
-/// Registers an agent and indexes its skills.
-async fn register_agent(
+/// Registers an AgentDefinition and indexes its skills.
+async fn register_agent_definition(
     State(state): State<AppState>,
-    Json(agent_card): Json<AgentCard>,
+    Json(agent_def): Json<AgentDefinition>,
 ) -> impl IntoResponse {
-    info!("Received register request for agent: {}", agent_card.name);
-    let agent_name = agent_card.name.clone();
-    let agent_skills=agent_card.skills.clone();
+    info!("Received register request for agent: {}", agent_def.name);
+    let agent_id = agent_def.id.clone();
+    let agent_skills = agent_def.skills.clone();
 
     // Index the agent's skills
-    // Assumes `agent_card.skills` is a `Vec<String>`.
-    // This part needs to be adjusted if the `skills` field in `AgentCard` is different.
-    if let Some(skills) = Some(agent_skills.into_iter().map(|x | x.name)) {
-        for skill in skills {
-            state
-                .skills_index
-                .entry(skill.to_lowercase())
-                .or_default()
-                .insert(agent_name.clone());
-        }
+    for skill in agent_skills {
+        state
+            .skills_index
+            .entry(skill.name.to_lowercase())
+            .or_default()
+            .insert(agent_id.clone());
     }
 
-    // Store the agent card
-    state.db_agents.insert(agent_name, agent_card);
+    // Store the agent definition
+    state.db_agents.insert(agent_id, agent_def);
 
     (StatusCode::CREATED, "Agent registered successfully")
 }
 
-// todo: Should be improved. We should just send agent_id to de register
-/// Deregisters an agent and removes it from the skills index.
-async fn deregister_agent(
+/// Deregisters an AgentDefinition and removes it from the skills index.
+async fn deregister_agent_definition(
     State(state): State<AppState>,
-    Json(agent_card): Json<AgentCard>,
+    Json(agent_def): Json<AgentDefinition>,
 ) -> impl IntoResponse {
-    info!("Received deregister request for agent: {}", agent_card.name);
-    let agent_name = &agent_card.name;
-    let agent_skills=agent_card.skills.clone();
+    info!("Received deregister request for agent: {}", agent_def.name);
+    let agent_id = &agent_def.id;
+    let agent_skills = agent_def.skills.clone();
 
     // Remove the agent from the skills index
-    if let Some(skills) = Some(agent_skills.into_iter().map(|x | x.name)) {
-        for skill in skills {
-            let skill_key = skill.to_lowercase();
-            if let Some(mut agents_with_skill) = state.skills_index.get_mut(&skill_key) {
-                agents_with_skill.remove(agent_name);
-                // Clean up the skill entry if no agents are left
-                if agents_with_skill.is_empty() {
-                    state.skills_index.remove(&skill_key);
-                }
+    for skill in agent_skills {
+        let skill_key = skill.name.to_lowercase();
+        if let Some(mut agents_with_skill) = state.skills_index.get_mut(&skill_key) {
+            agents_with_skill.remove(agent_id);
+            // Clean up the skill entry if no agents are left
+            if agents_with_skill.is_empty() {
+                state.skills_index.remove(&skill_key);
             }
         }
     }
 
     // Remove the agent from the main database
-    state.db_agents.remove(agent_name);
+    state.db_agents.remove(agent_id);
 
     (StatusCode::OK, "Agent deregistered successfully")
 }
 
-
-/// Lists all currently registered agents.
-async fn list_agents(State(state): State<AppState>) -> Json<Vec<AgentCard>> {
-    let list_agents: Vec<AgentCard> = state.db_agents.iter().map(|e| e.value().clone()).collect();
+/// Lists all currently registered AgentDefinitions.
+async fn list_agent_definitions(State(state): State<AppState>) -> Json<Vec<AgentDefinition>> {
+    let list_agents: Vec<AgentDefinition> = state.db_agents.iter().map(|e| e.value().clone()).collect();
     Json(list_agents)
 }
 
-// todo: Fix the bug. This search does not work properly
 /// Searches for agents possessing a specific skill.
 /// The skill is provided as a query parameter, e.g., /agents/search?skill=math
 async fn search_agents_by_skill(
     State(state): State<AppState>,
     Query(params): Query<HashMap<String, String>>,
-) -> Result<Json<Vec<AgentCard>>, StatusCode> {
+) -> Result<Json<Vec<AgentDefinition>>, StatusCode> {
     // Get the skill from the query parameters
     let skill = match params.get("skill") {
         Some(s) => s.to_lowercase(),
@@ -149,15 +155,47 @@ async fn search_agents_by_skill(
 
     let mut found_agents = Vec::new();
     // Look up the skill in the index
-    if let Some(agent_names) = state.skills_index.get(&skill) {
-        // Retrieve the full AgentCard for each matching agent name
-        for name in agent_names.iter() {
-            if let Some(agent_card) = state.db_agents.get(name) {
-                found_agents.push(agent_card.value().clone());
+    if let Some(agent_ids) = state.skills_index.get(&skill) {
+        // Retrieve the full AgentDefinition for each matching agent ID
+        for id in agent_ids.iter() {
+            if let Some(agent_def) = state.db_agents.get(id) {
+                found_agents.push(agent_def.value().clone());
             }
         }
     }
 
     info!("Found {} agents with skill '{}'", found_agents.len(), skill);
     Ok(Json(found_agents))
+}
+
+/// Registers a TaskDefinition.
+async fn register_task_definition(
+    State(state): State<AppState>,
+    Json(task_def): Json<TaskDefinition>,
+) -> impl IntoResponse {
+    info!("Received register request for task: {}", task_def.name);
+    state.db_tasks.insert(task_def.id.clone(), task_def);
+    (StatusCode::CREATED, "Task registered successfully")
+}
+
+/// Lists all currently registered TaskDefinitions.
+async fn list_task_definitions(State(state): State<AppState>) -> Json<Vec<TaskDefinition>> {
+    let list_tasks: Vec<TaskDefinition> = state.db_tasks.iter().map(|e| e.value().clone()).collect();
+    Json(list_tasks)
+}
+
+/// Registers a ToolDefinition.
+async fn register_tool_definition(
+    State(state): State<AppState>,
+    Json(tool_def): Json<ToolDefinition>,
+) -> impl IntoResponse {
+    info!("Received register request for tool: {}", tool_def.name);
+    state.db_tools.insert(tool_def.id.clone(), tool_def);
+    (StatusCode::CREATED, "Tool registered successfully")
+}
+
+/// Lists all currently registered ToolDefinitions.
+async fn list_tool_definitions(State(state): State<AppState>) -> Json<Vec<ToolDefinition>> {
+    let list_tools: Vec<ToolDefinition> = state.db_tools.iter().map(|e| e.value().clone()).collect();
+    Json(list_tools)
 }

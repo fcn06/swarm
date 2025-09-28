@@ -7,9 +7,8 @@ use agent_memory_service::models::Role;
 
 
 use agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient;
-use super::services::{EvaluationService, MemoryService};
-use super::services::DiscoveryService;
-use a2a_rs::domain::AgentCard;
+use agent_discovery_service::model::models::{AgentDefinition, TaskDefinition, ToolDefinition};
+use super::services::{EvaluationService, MemoryService, DiscoveryService};
 
 
 /********************************************/
@@ -72,27 +71,57 @@ impl AgentDiscoveryServiceAdapter {
 
 #[async_trait]
 impl DiscoveryService for AgentDiscoveryServiceAdapter {
-    async fn register_agent(&self, agent_card: &AgentCard) -> Result<()> {
-        self.client.register(agent_card).await?;
+    async fn register_agent(&self, agent_def: &AgentDefinition) -> Result<()> {
+        self.client.register_agent_definition(agent_def).await?;
         Ok(())
     }
 
-    async fn unregister_agent(&self, agent_card: &AgentCard) -> Result<()> {
-                self.client.deregister(agent_card).await?;
+    async fn unregister_agent(&self, agent_def: &AgentDefinition) -> Result<()> {
+        self.client.deregister_agent_definition(agent_def).await?;
         Ok(())
     }
 
-    async fn get_agent_address(&self, agent_name: String) -> Result<Option<String>> {
-        let all_agents = self.client.list_agents().await?;
+    async fn get_agent_address(&self, agent_id: String) -> Result<Option<String>> {
+        let all_agents = self.client.list_agent_definitions().await?;
         Ok(all_agents
             .into_iter()
-            .find(|agent| agent.name == agent_name)
-            .map(|agent| agent.url))
+            .find(|agent| agent.id == agent_id)
+            .map(|agent| {
+                // Find the skill that provides the endpoint, assuming it's the agent itself
+                // This part needs to be refined based on how you model agent endpoints
+                // For now, let's assume the agent's ID is its endpoint for discovery purposes
+                // In a real scenario, AgentDefinition might have a direct `endpoint` field
+                if !agent.skills.is_empty() {
+                    // Assuming the first skill's output might contain the endpoint, or directly the agent's ID is the endpoint
+                    // For simplicity, returning the agent's ID as the "address" for now.
+                    // You would typically have a dedicated `endpoint` field in AgentDefinition.
+                    Some(format!("agent://{}/", agent.id))
+                } else {
+                    None
+                }
+            }).flatten() // Use flatten to convert Option<Option<String>> to Option<String>
+        )
     }
 
-    async fn discover_agents(&self) -> Result<Vec<AgentCard>> {
-        Ok(self.client.list_agents().await?)
+    async fn discover_agents(&self) -> Result<Vec<AgentDefinition>> {
+        Ok(self.client.list_agent_definitions().await?)
     }
 
+    async fn register_task(&self, task_def: &TaskDefinition) -> Result<()> {
+        self.client.register_task_definition(task_def).await?;
+        Ok(())
+    }
+
+    async fn list_tasks(&self) -> Result<Vec<TaskDefinition>> {
+        Ok(self.client.list_task_definitions().await?)
+    }
+
+    async fn register_tool(&self, tool_def: &ToolDefinition) -> Result<()> {
+        self.client.register_tool_definition(tool_def).await?;
+        Ok(())
+    }
+
+    async fn list_tools(&self) -> Result<Vec<ToolDefinition>> {
+        Ok(self.client.list_tool_definitions().await?)
+    }
 }
-

@@ -1,14 +1,17 @@
 use anyhow::Result;
 use async_trait::async_trait;
-use agent_evaluation_service::evaluation_service_client::agent_evaluation_client::AgentEvaluationServiceClient;
-use agent_evaluation_service::evaluation_server::judge_agent::{AgentEvaluationLogData, JudgeEvaluation};
-use agent_memory_service::memory_service_client::agent_memory_client::AgentMemoryServiceClient;
-use agent_memory_service::models::Role;
 
 
-use agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient;
-use agent_discovery_service::model::models::{AgentDefinition, TaskDefinition, ToolDefinition};
+// Generic Definition of Services
 use super::services::{EvaluationService, MemoryService, DiscoveryService};
+
+// connection to client definition of generic traits
+use agent_memory_service::models::Role;
+use agent_memory_service::memory_service_client::agent_memory_client::AgentMemoryServiceClient;
+use agent_evaluation_service::evaluation_server::judge_agent::{AgentEvaluationLogData, JudgeEvaluation};
+use agent_evaluation_service::evaluation_service_client::agent_evaluation_client::AgentEvaluationServiceClient;
+use agent_discovery_service::model::models::{AgentDefinition, TaskDefinition, ToolDefinition};
+use agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient;
 
 
 /********************************************/

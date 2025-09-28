@@ -12,10 +12,10 @@ configuration = { workspace = true }
 
 agent_evaluation_service = { workspace = true }
 agent_memory_service = { workspace = true }
-
-a2a-rs= { workspace = true }
-
 agent_discovery_service = { workspace = true }
+
+a2a-rs = { workspace = true }
+
 
 axum = { workspace = true }
 serde = { workspace = true }

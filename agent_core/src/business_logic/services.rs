@@ -3,7 +3,8 @@ use async_trait::async_trait;
 use agent_evaluation_service::evaluation_server::judge_agent::{AgentEvaluationLogData, JudgeEvaluation};
 use agent_memory_service::models::Role;
 use std::any::Any;
-use agent_discovery_service::model::models::{AgentDefinition, TaskDefinition, ToolDefinition};
+//use agent_discovery_service::model::models::{AgentDefinition, TaskDefinition, ToolDefinition};
+use agent_models::registry::registry_models::{AgentDefinition, TaskDefinition, ToolDefinition};
 
 /// A trait that defines the interface for an evaluation service.
 #[async_trait]

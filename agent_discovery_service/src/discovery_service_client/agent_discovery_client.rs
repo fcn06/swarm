@@ -1,6 +1,7 @@
 use reqwest::{Client, Error};
 use anyhow::Result;
-use crate::model::models::{AgentDefinition, TaskDefinition, ToolDefinition};
+//use crate::model::models::{AgentDefinition, TaskDefinition, ToolDefinition};
+use agent_models::registry::registry_models::{AgentDefinition, TaskDefinition, ToolDefinition};
 
 
 /*

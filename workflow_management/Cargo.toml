@@ -8,6 +8,7 @@ edition = "2021"
 crate-type = ["rlib"]
 
 [dependencies]
+agent_models = { workspace = true }
 agent_core = { workspace = true }
 configuration = { workspace = true }
 agent_discovery_service = { workspace = true }

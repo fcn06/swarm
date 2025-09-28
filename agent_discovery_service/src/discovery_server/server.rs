@@ -9,7 +9,9 @@ use axum::{
 };
 use tracing::info;
 use std::sync::Arc;
-use crate::model::models::{AgentDefinition, TaskDefinition, ToolDefinition};
+
+//use crate::model::models::{AgentDefinition, TaskDefinition, ToolDefinition};
+use agent_models::registry::registry_models::{AgentDefinition, TaskDefinition, ToolDefinition};
 
 // This is a sample and simple implementation
 

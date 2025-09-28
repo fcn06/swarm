@@ -16,8 +16,12 @@ use agent_discovery_service::discovery_service_client::agent_discovery_client::A
 use anyhow::Result;
 
 use uuid::Uuid;
-use agent_discovery_service::model::models::AgentDefinition;
-use agent_discovery_service::model::models::AgentSkill;
+
+
+//use agent_discovery_service::model::models::AgentSkill;
+//use agent_discovery_service::model::models::AgentDefinition;
+use agent_models::registry::registry_models::{AgentDefinition,AgentSkill};
+
 
 pub struct AgentServer<T:Agent> {
     config: AgentConfig,

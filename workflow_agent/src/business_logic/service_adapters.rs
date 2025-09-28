@@ -7,7 +7,8 @@ use agent_memory_service::models::Role;
 use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService};
 
 use agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient;
-use agent_discovery_service::model::models::{AgentDefinition, TaskDefinition, ToolDefinition};
+//use agent_discovery_service::model::models::{AgentDefinition, TaskDefinition, ToolDefinition};
+use agent_models::registry::registry_models::{AgentDefinition, TaskDefinition, ToolDefinition};
 
 /********************************************/
 /* Service Adapter for Evaluation Service   */

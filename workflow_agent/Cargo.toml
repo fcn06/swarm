@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 # Internal dependencies
+agent_models = { workspace = true }
 configuration = { workspace = true }
 llm_api = { workspace = true }
 agent_core = { workspace = true }

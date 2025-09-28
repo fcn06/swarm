@@ -13,7 +13,8 @@ members = [ "configuration","llm_api",
                 "planner_agent",
                 "executor_agent",
                 "examples/*",
-                "agent_models"]
+                "agent_models",
+                "agent_service_adapters"]
 
 [workspace.dependencies]
 configuration = { path = "./configuration" }
@@ -28,6 +29,7 @@ workflow_management = { path = "./workflow_management" }
 
 executor_agent = { path = "./executor_agent" }
 agent_models = { path = "./agent_models" }
+agent_service_adapters = { path = "./agent_service_adapters" }
 
 # For rmcp and a2a-rs, in the future, I have to pin a revision number because this crate is evolving rapidly with significant number of breaking changes
 # Update to the latest revision of rmcp on 2025, September the 26th. Pinning specific release of rmcp and a2a-rs ensure stability of swarm

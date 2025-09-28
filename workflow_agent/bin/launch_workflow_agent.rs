@@ -40,8 +40,9 @@ use agent_core::business_logic::services::{EvaluationService, MemoryService, Dis
 use workflow_agent::business_logic::workflow_agent::WorkFlowAgent;
 use workflow_agent::business_logic::workflow_runners::WorkFlowRunners;
 
-use workflow_agent::business_logic::service_adapters::{AgentEvaluationServiceAdapter, AgentMemoryServiceAdapter};
-use workflow_agent::business_logic::service_adapters::AgentDiscoveryServiceAdapter;
+//use workflow_agent::business_logic::service_adapters::{AgentEvaluationServiceAdapter, AgentMemoryServiceAdapter};
+//use workflow_agent::business_logic::service_adapters::AgentDiscoveryServiceAdapter;
+use agent_service_adapters::{AgentEvaluationServiceAdapter, AgentMemoryServiceAdapter,AgentDiscoveryServiceAdapter};
 
 
 

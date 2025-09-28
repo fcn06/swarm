@@ -41,9 +41,8 @@ use agent_core::server::agent_server::AgentServer;
 use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService,WorkflowServiceApi};
 
 
-
-
-use agent_core::business_logic::service_adapters::{AgentEvaluationServiceAdapter, AgentMemoryServiceAdapter,AgentDiscoveryServiceAdapter};
+//use agent_core::business_logic::service_adapters::{AgentEvaluationServiceAdapter, AgentMemoryServiceAdapter,AgentDiscoveryServiceAdapter};
+use agent_service_adapters::{AgentEvaluationServiceAdapter, AgentMemoryServiceAdapter,AgentDiscoveryServiceAdapter};
 
 /// Command-line arguments
 #[derive(Parser, Debug)]

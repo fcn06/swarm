@@ -13,6 +13,22 @@ use agent_evaluation_service::evaluation_service_client::agent_evaluation_client
 use agent_discovery_service::model::models::{AgentDefinition, TaskDefinition, ToolDefinition};
 use agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient;
 
+/*
+service_adapters.rs 
+is concerned with providing a consistent interface for agents 
+to use discovery (and other) services, abstracting away the communication details.
+
+service_adapters.rs: 
+This file provides adapters that implement generic service traits 
+(e.g., DiscoveryService, EvaluationService, MemoryService). 
+These adapters wrap the concrete service clients 
+(like AgentDiscoveryServiceClient) and expose a standardized, 
+abstract interface to the core business logic of the agents. 
+This means that the core agent logic doesn't directly depend on the specific HTTP client 
+or the exact implementation of the discovery service. 
+Instead, it interacts with the DiscoveryService trait, 
+and the AgentDiscoveryServiceAdapter translates these calls to the AgentDiscoveryServiceClient.
+*/
 
 /********************************************/
 /* Service Adapter for Evaluation Service   */

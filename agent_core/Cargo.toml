@@ -3,6 +3,8 @@ name = "agent_core"
 version = "0.1.0"
 edition = "2024"
 
+# Should contain all traits
+
 [lib]
 crate-type = ["rlib"]
 

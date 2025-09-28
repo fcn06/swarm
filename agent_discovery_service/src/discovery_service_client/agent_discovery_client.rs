@@ -3,6 +3,17 @@ use anyhow::Result;
 use crate::model::models::{AgentDefinition, TaskDefinition, ToolDefinition};
 
 
+/*
+agent_discovery_client.rs 
+is concerned with how to communicate with the discovery service over the network.
+
+agent_discovery_client.rs: 
+This file contains the concrete client implementation for interacting directly 
+with the Agent Discovery Service's HTTP API. 
+It handles the low-level details of making network requests (using reqwest) to register, deregister, 
+list, and search for agents, tasks, and tools. It knows the specific endpoints and data formats of the discovery service.
+*/
+
 /// A client for interacting with the Agent Discovery Service.
 #[derive(Debug)]
 pub struct AgentDiscoveryServiceClient {

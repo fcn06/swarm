@@ -1,5 +1,7 @@
 use async_trait::async_trait;
-use crate::execution::execution_result::{ExecutionResult};
+//use crate::execution::execution_result::{ExecutionResult};
+use agent_models::execution::execution_result::{ExecutionResult};
+
 use llm_api::chat::Message as LlmMessage;
 use configuration::AgentConfig;
 

@@ -1,4 +1,6 @@
-use agent_core::graph::graph_definition::{Activity, ActivityType, Graph, NodeType, PlanContext, PlanState};
+//use agent_core::graph::graph_definition::{Activity, ActivityType, Graph, NodeType, PlanContext, PlanState};
+use agent_models::graph::graph_definition::{Activity, ActivityType, Graph, NodeType, PlanContext, PlanState};
+
 
 use crate::agent_communication::agent_runner::AgentRunner;
 use crate::tasks::condition_evaluator::evaluate_condition;

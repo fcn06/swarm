@@ -12,8 +12,13 @@ use llm_api::chat::Message as LlmMessage;
 use configuration::AgentConfig;
 use agent_core::business_logic::agent::Agent;
 use agent_core::business_logic::services::{DiscoveryService, MemoryService, EvaluationService, WorkflowServiceApi};
-use agent_core::graph::graph_definition::Graph;
-use agent_core::execution::execution_result::ExecutionResult;
+
+//use agent_core::graph::graph_definition::Graph;
+use agent_models::graph::graph_definition::{Graph};
+
+//use agent_core::execution::execution_result::ExecutionResult;
+use agent_models::execution::execution_result::{ExecutionResult};
+
 use workflow_management::graph::graph_orchestrator::PlanExecutor;
 use workflow_management::agent_communication::agent_runner::AgentRunner;
 use workflow_management::tasks::task_runner::TaskRunner;

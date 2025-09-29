@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 # Internal dependencies
+agent_models={workspace=true}
 agent_service_adapters={workspace=true}
 configuration = { workspace = true }
 llm_api = { workspace = true }

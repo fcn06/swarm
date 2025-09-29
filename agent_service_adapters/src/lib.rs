@@ -6,7 +6,10 @@ use agent_models::evaluation::evaluation_models::{AgentEvaluationLogData,JudgeEv
 
 
 use agent_memory_service::memory_service_client::agent_memory_client::AgentMemoryServiceClient;
-use agent_memory_service::models::Role;
+
+//use agent_memory_service::models::Role;
+use agent_models::memory::memory_models::Role;
+
 use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService};
 
 use agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient;

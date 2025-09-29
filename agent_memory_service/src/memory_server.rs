@@ -1,6 +1,9 @@
 use dashmap::DashMap;
 
-use crate::models::{LogEntry, LogPayload};
+//use crate::models::{LogEntry, LogPayload};
+
+use agent_models::memory::memory_models::{LogEntry, LogPayload};
+
 
 use axum::{
     extract::{Path, State},

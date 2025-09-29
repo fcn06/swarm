@@ -1,4 +1,5 @@
-use agent_core::graph::graph_definition::{ Graph,  WorkflowPlanInput};
+//use agent_core::graph::graph_definition::{ Graph,  WorkflowPlanInput};
+use agent_models::graph::graph_definition::{ Graph,  WorkflowPlanInput};
 
 use std::fs;
 use thiserror::Error;

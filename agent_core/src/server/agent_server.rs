@@ -12,7 +12,10 @@ use configuration::AgentConfig;
 use crate::server::agent_handler::AgentHandler;
 use std::sync::Arc;
 use crate::business_logic::services::DiscoveryService;
-use agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient;
+
+// Removed direct dependency on AgentDiscoveryServiceClient
+// use agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient;
+
 use anyhow::Result;
 
 use uuid::Uuid;
@@ -46,40 +49,31 @@ impl<T:Agent> AgentServer<T> {
         let mut retries = 0;
         let mut delay = 1; // seconds
 
-        loop {
-            let registration_result = if let Some(ds) = &self.discovery_service {
-                // Use injected discovery service
-                ds.register_agent(&agent_definition).await
-            } else if let Some(discovery_url) = self.config.agent_discovery_url() {
-                // Fallback to creating a client if URL is provided in config
-                let client = AgentDiscoveryServiceClient::new(&discovery_url);
-                client.register_agent_definition(&agent_definition)
-                    .await
-                    .map(|_| ()) // Map Ok(String) to Ok(())
-                    .map_err(|e| e.into()) // Convert reqwest::Error to anyhow::Error
-            } else {
-                tracing::warn!("Discovery service not configured. Skipping registration.");
-                return Ok(()); // No discovery service to register with
-            };
+        if let Some(ds) = &self.discovery_service {
+            loop {
+                let registration_result = ds.register_agent(&agent_definition).await;
 
-            match registration_result {
-                Ok(_) => {
-                    tracing::info!("Agent successfully registered with discovery service.");
-                    break;
-                },
-                Err(e) => {
-                    retries += 1;
-                    if retries < max_retries {
-                        tracing::warn!("Failed to register with discovery service, attempt {}/{}. Error: {}. Retrying in {} seconds...", retries, max_retries, e, delay);
-                        tokio::time::sleep(std::time::Duration::from_secs(delay)).await;
-                        delay *= 2; // Exponential backoff
-                    } else {
-                        tracing::error!("Failed to register with discovery service after {} attempts. Error: {}. Proceeding without discovery service registration.", max_retries, e);
-                        // Allow the agent to start even if registration fails
-                        return Ok(());
+                match registration_result {
+                    Ok(_) => {
+                        tracing::info!("Agent successfully registered with discovery service.");
+                        break;
+                    },
+                    Err(e) => {
+                        retries += 1;
+                        if retries < max_retries {
+                            tracing::warn!("Failed to register with discovery service, attempt {}/{}. Error: {}. Retrying in {} seconds...", retries, max_retries, e, delay);
+                            tokio::time::sleep(std::time::Duration::from_secs(delay)).await;
+                            delay *= 2; // Exponential backoff
+                        } else {
+                            tracing::error!("Failed to register with discovery service after {} attempts. Error: {}. Proceeding without discovery service registration.", max_retries, e);
+                            // Allow the agent to start even if registration fails
+                            return Ok(());
+                        }
                     }
                 }
             }
+        } else {
+            tracing::warn!("Discovery service not configured. Skipping registration.");
         }
         Ok(())
     }

@@ -1,7 +1,9 @@
 use reqwest::Client;
 use anyhow::Result;
 
-use crate::models::{LogEntry, LogPayload, Role};
+//use crate::models::{LogEntry, LogPayload, Role};
+use agent_models::memory::memory_models::{LogEntry, LogPayload, Role};
+
 
 #[derive(Debug, Clone)]
 pub struct AgentMemoryServiceClient {

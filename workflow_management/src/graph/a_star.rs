@@ -1,5 +1,6 @@
 #[allow(unused_imports)]
-use agent_core::graph::graph_definition::{Edge, Graph, Node};
+//use agent_core::graph::graph_definition::{Edge, Graph, Node};
+use agent_models::graph::graph_definition::{Edge, Graph, Node};
 
 use std::collections::{BinaryHeap, HashMap};
 use std::cmp::Ordering;

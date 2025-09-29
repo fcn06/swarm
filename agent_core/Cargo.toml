@@ -13,9 +13,6 @@ agent_models={ workspace = true }
 llm_api = { workspace = true }
 configuration = { workspace = true }
 
-agent_evaluation_service = { workspace = true }
-agent_memory_service = { workspace = true }
-agent_discovery_service = { workspace = true }
 
 a2a-rs = { workspace = true }
 

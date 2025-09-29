@@ -9,8 +9,13 @@ use llm_api::chat::{ChatLlmInteraction, Message as LlmMessage};
 use configuration::AgentConfig;
 use agent_core::business_logic::agent::Agent;
 use agent_core::business_logic::services::{DiscoveryService, MemoryService, EvaluationService};
-use agent_core::graph::graph_definition::{Graph, WorkflowPlanInput};
-use agent_core::execution::execution_result::ExecutionResult;
+
+//use agent_core::graph::graph_definition::{Graph, WorkflowPlanInput};
+use agent_models::graph::graph_definition::{WorkflowPlanInput,Graph};
+
+//use agent_core::execution::execution_result::ExecutionResult;
+use agent_models::execution::execution_result::{ExecutionResult};
+
 use std::fs;
 use a2a_rs::{HttpClient, domain::{Message, Part, Role, TaskState}};
 use uuid::Uuid;

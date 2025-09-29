@@ -88,7 +88,9 @@ sh ./documentation/demo_workflow_management/terminate_all_agents_process.sh
 Swarm is composed of several modular and interconnected components:
 
 *   **🗣️ Basic Domain Agent (The Specialist):** An agent designed to be an expert in a specific domain, such as weather forecasting or database queries.
-*   **🧠 Workflow Agent (The Conductor):** The orchestrator that manages complex operations by executing predefined or dynamically generated workflows. It leverages the LLM-as-a-Judge for self-correction and improved request fulfillment.
+*   **🧠 Workflow Agent (The Conductor):** The orchestrator is a one stop shop that manages complex operations by executing predefined or dynamically generated workflows. It both generate a plan, and ensure execution and monitoring.
+*   **✍️ Planner Agent (The Architect):** A specialized agent that focuses solely on generating detailed, step-by-step execution plans or workflows based on a high-level goal.
+*   **🏃 Executor Agent (The Doer):** An agent that takes an execution plan (from a Planner) and carries out the individual tasks, interacting with tools and other agents as needed.
 *   **🔗 Workflow Management Runtime (The Engine):** The flexible core responsible for defining, validating, and executing multi-agent workflows and plans. It can be integrated into a Workflow Agent or used standalone.
 *   **🛠️ MCP Runtime (Model Context Protocol) (The Bridge):** Facilitates agent interaction with external services, tools, and data sources, extending their capabilities to the outside world.
 *   **⚖️ LLM as a Judge (The Evaluator):** An autonomous LLM-based service that assesses the performance and outcomes of agent and workflow executions, providing critical feedback for continuous improvement.
@@ -98,11 +100,15 @@ Swarm is composed of several modular and interconnected components:
 The Swarm project is organized into several specialized Rust crates:
 
 *   `agent_core`: Provides foundational traits, data structures, and shared logic for all agent types within Swarm.
+*   `agent_models`: Defines the shared data structures, such as payloads and configurations, used for communication between agents and services.
 *   `basic_agent`: Implements the business logic for a general-purpose "specialist" Domain Agent.
-*   `workflow_agent`: Contains the business logic for the "conductor" Workflow Agent, responsible for planning and orchestration.
+*   `workflow_agent`: Contains the business logic for the "conductor" Workflow Agent, responsible for high-level orchestration.
+*   `planner_agent`: Implements the "architect" agent, which specializes in generating detailed execution plans from a user request.
+*   `executor_agent`: Implements the "doer" agent, which executes tasks defined in a plan from the Planner Agent.
 *   `workflow_management`: The core library for defining, parsing, and executing multi-agent workflows and plans.
 *   `mcp_runtime`: Manages interactions with external tools and services via the Model Context Protocol (MCP).
 *   `llm_api`: Offers a standardized interface for seamless integration with various Large Language Models.
+*   `agent_service_adapters`: Provides client-side implementations (adapters) for interacting with the core agent services (discovery, memory, evaluation).
 *   `agent_discovery_service`: An HTTP service enabling agents to register themselves and discover other available agents.
 *   `agent_memory_service`: A service designed to manage and share conversational history and contextual information among agents.
 *   `agent_evaluation_service`: Implements the "LLM as a Judge" functionality to evaluate agent and workflow execution outcomes.

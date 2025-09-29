@@ -5,13 +5,12 @@ edition = "2024"
 
 
 [dependencies]
+agent_models={ workspace = true }
 llm_api = { workspace = true }
 agent_core = { workspace = true }
 
 configuration = { workspace = true }
 mcp_runtime={ workspace = true }
-
-agent_discovery_service={ workspace = true }
 
 
 a2a-rs= { workspace = true }

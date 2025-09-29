@@ -19,7 +19,10 @@ use agent_core::business_logic::agent::{Agent};
 use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService};
 
 use configuration::AgentConfig;
-use agent_core::execution::execution_result::{ExecutionResult};
+
+//use agent_core::execution::execution_result::{ExecutionResult};
+use agent_models::execution::execution_result::{ExecutionResult};
+
 use agent_core::business_logic::services::WorkflowServiceApi;
 
 /// Modern A2A server setup 

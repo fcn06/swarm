@@ -25,7 +25,8 @@ use a2a_rs::{
 
 use llm_api::chat::Message as LlmMessage;
 use crate::business_logic::agent::{Agent};
-use crate::execution::execution_result::ExecutionResult;
+//use crate::execution::execution_result::ExecutionResult;
+use agent_models::execution::execution_result::{ExecutionResult};
 
 /// Simple agent handler that coordinates all business capability traits
 /// by delegating to InMemoryTaskStorage which implements the actual functionality.

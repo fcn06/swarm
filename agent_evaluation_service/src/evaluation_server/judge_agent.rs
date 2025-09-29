@@ -10,7 +10,10 @@ use tracing::trace;
 
 use configuration::AgentConfig;
 
+use agent_models::evaluation::evaluation_models::{AgentEvaluationLogData,JudgeEvaluation,EvaluatedAgentData};
 
+
+/* 
 /// Represents the data received from the agent's log/message queue.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct AgentEvaluationLogData {
@@ -44,6 +47,7 @@ pub struct EvaluatedAgentData {
     pub timestamp: String,
 }
 
+*/
 
 /// Modern A2A server setup 
 #[derive(Clone)]

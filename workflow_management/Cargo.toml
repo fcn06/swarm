@@ -11,7 +11,7 @@ crate-type = ["rlib"]
 agent_models = { workspace = true }
 agent_core = { workspace = true }
 configuration = { workspace = true }
-agent_discovery_service = { workspace = true }
+#agent_discovery_service = { workspace = true }
 mcp_runtime = { workspace = true }
 llm_api = { workspace = true }
 

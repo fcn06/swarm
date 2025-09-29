@@ -9,7 +9,9 @@ use axum::{
 use tracing::{info,trace};
 use std::sync::Arc;
 use chrono::Utc;
-use crate::evaluation_server::judge_agent::{AgentEvaluationLogData, JudgeEvaluation, EvaluatedAgentData};
+//use crate::evaluation_server::judge_agent::{AgentEvaluationLogData, JudgeEvaluation, EvaluatedAgentData};
+use agent_models::evaluation::evaluation_models::{AgentEvaluationLogData,JudgeEvaluation,EvaluatedAgentData};
+
 use crate::evaluation_server::judge_agent::JudgeAgent;
 
 use configuration::AgentConfig;

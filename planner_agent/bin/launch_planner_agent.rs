@@ -22,16 +22,17 @@ use workflow_management::tasks::task_registry::TaskRegistry;
 use workflow_management::tools::tool_registry::ToolRegistry;
 
 
-use agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient;
-use agent_evaluation_service::evaluation_service_client::agent_evaluation_client::AgentEvaluationServiceClient;
-use agent_memory_service::memory_service_client::agent_memory_client::AgentMemoryServiceClient;
+// Removed direct dependencies on service client crates
+// use agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient;
+// use agent_evaluation_service::evaluation_service_client::agent_evaluation_client::AgentEvaluationServiceClient;
+// use agent_memory_service::memory_service_client::agent_memory_client::AgentMemoryServiceClient;
 
 use agent_core::business_logic::agent::Agent;
 use agent_core::server::agent_server::AgentServer;
 use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService,WorkflowServiceApi};
 
 
-use agent_core::business_logic::service_adapters::{AgentEvaluationServiceAdapter, AgentMemoryServiceAdapter,AgentDiscoveryServiceAdapter};
+use agent_service_adapters::{AgentEvaluationServiceAdapter, AgentMemoryServiceAdapter,AgentDiscoveryServiceAdapter};
 
 /// Command-line arguments
 #[derive(Parser, Debug)]
@@ -48,11 +49,10 @@ struct Args {
     mcp_config_path: String,
 }
 
-async fn setup_evaluation_service(workflow_agent_config: &AgentConfig) -> Option<Arc<dyn EvaluationService>> {
-    if let Some(url) = workflow_agent_config.agent_evaluation_service_url() {
+async fn setup_evaluation_service(planner_agent_config: &AgentConfig) -> Option<Arc<dyn EvaluationService>> {
+    if let Some(url) = planner_agent_config.agent_evaluation_service_url() {
         info!("Evaluation service configured at: {}", url);
-        let client = AgentEvaluationServiceClient::new(url);
-        let adapter = AgentEvaluationServiceAdapter::new(client);
+        let adapter = AgentEvaluationServiceAdapter::new(&url);
         Some(Arc::new(adapter))
     } else {
         warn!("Evaluation service URL not configured. No evaluations will be logged.");
@@ -60,11 +60,10 @@ async fn setup_evaluation_service(workflow_agent_config: &AgentConfig) -> Option
     }
 }
 
-async fn setup_memory_service(workflow_agent_config: &AgentConfig) -> Option<Arc<dyn MemoryService>> {
-    if let Some(url) = workflow_agent_config.agent_memory_service_url() {
+async fn setup_memory_service(planner_agent_config: &AgentConfig) -> Option<Arc<dyn MemoryService>> {
+    if let Some(url) = planner_agent_config.agent_memory_service_url() {
         info!("Memory service configured at: {}", url);
-        let client = AgentMemoryServiceClient::new(url);
-        let adapter = AgentMemoryServiceAdapter::new(client);
+        let adapter = AgentMemoryServiceAdapter::new(&url);
         Some(Arc::new(adapter))
     } else {
         warn!("Memory service URL not configured. No memory will be used.");
@@ -74,8 +73,7 @@ async fn setup_memory_service(workflow_agent_config: &AgentConfig) -> Option<Arc
 
 async fn setup_discovery_service(discovery_url: String) -> Option<Arc<dyn DiscoveryService>> {
     info!("Discovery service configured at: {}", discovery_url);
-    let client = AgentDiscoveryServiceClient::new(&discovery_url.clone());
-    let adapter = AgentDiscoveryServiceAdapter::new(client);
+    let adapter = AgentDiscoveryServiceAdapter::new(&discovery_url);
     Some(Arc::new(adapter))
 }
 
@@ -117,7 +115,7 @@ async fn setup_tool_registry(mcp_config_path: String) -> anyhow::Result<Arc<Tool
 }
 
 #[allow(unused_variables)]
-async fn setup_agent_registry(workflow_agent_config: &AgentConfig) -> anyhow::Result<Arc<AgentRegistry>> {
+async fn setup_agent_registry(planner_agent_config: &AgentConfig) -> anyhow::Result<Arc<AgentRegistry>> {
 
     let mut agent_registry = AgentRegistry::new();
     agent_registry.register_agent(AgentDefinition {

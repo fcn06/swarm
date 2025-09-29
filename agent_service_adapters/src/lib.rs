@@ -1,7 +1,10 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use agent_evaluation_service::evaluation_service_client::agent_evaluation_client::AgentEvaluationServiceClient;
-use agent_evaluation_service::evaluation_server::judge_agent::{AgentEvaluationLogData, JudgeEvaluation};
+//use agent_evaluation_service::evaluation_server::judge_agent::{AgentEvaluationLogData, JudgeEvaluation};
+use agent_models::evaluation::evaluation_models::{AgentEvaluationLogData,JudgeEvaluation};
+
+
 use agent_memory_service::memory_service_client::agent_memory_client::AgentMemoryServiceClient;
 use agent_memory_service::models::Role;
 use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService};
@@ -20,7 +23,8 @@ pub struct AgentEvaluationServiceAdapter {
 }
 
 impl AgentEvaluationServiceAdapter {
-    pub fn new(client: AgentEvaluationServiceClient) -> Self {
+    pub fn new(url: &str) -> Self {
+        let client = AgentEvaluationServiceClient::new(url.to_string());
         AgentEvaluationServiceAdapter { client }
     }
 }
@@ -42,7 +46,8 @@ pub struct AgentMemoryServiceAdapter {
 }
 
 impl AgentMemoryServiceAdapter {
-    pub fn new(client: AgentMemoryServiceClient) -> Self {
+    pub fn new(url: &str) -> Self {
+        let client = AgentMemoryServiceClient::new(url.to_string());
         AgentMemoryServiceAdapter { client }
     }
 }
@@ -63,7 +68,8 @@ pub struct AgentDiscoveryServiceAdapter {
 }
 
 impl AgentDiscoveryServiceAdapter {
-    pub fn new(client: AgentDiscoveryServiceClient) -> Self {
+    pub fn new(url: &str) -> Self {
+        let client = AgentDiscoveryServiceClient::new(url);
         AgentDiscoveryServiceAdapter { client }
     }
 }

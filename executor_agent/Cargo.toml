@@ -10,11 +10,7 @@ configuration = { workspace = true }
 llm_api = { workspace = true }
 agent_core = { workspace = true }
 mcp_runtime={ workspace = true }
-agent_evaluation_service = { workspace = true }
-agent_memory_service = { workspace = true }
-agent_discovery_service={ workspace = true }
 workflow_management = { workspace = true }
-
 
 a2a-rs= { workspace = true }
 rmcp={workspace=true}

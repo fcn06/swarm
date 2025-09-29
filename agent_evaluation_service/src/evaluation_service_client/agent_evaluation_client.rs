@@ -1,5 +1,6 @@
 use reqwest::{Client};
-use crate::evaluation_server::judge_agent::{AgentEvaluationLogData, JudgeEvaluation};
+//use crate::evaluation_server::judge_agent::{AgentEvaluationLogData, JudgeEvaluation};
+use agent_models::evaluation::evaluation_models::{AgentEvaluationLogData,JudgeEvaluation};
 
 
 #[derive(Debug,Clone)]

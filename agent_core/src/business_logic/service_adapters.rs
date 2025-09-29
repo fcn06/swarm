@@ -8,7 +8,10 @@ use super::services::{EvaluationService, MemoryService, DiscoveryService};
 // connection to client definition of generic traits
 use agent_memory_service::models::Role;
 use agent_memory_service::memory_service_client::agent_memory_client::AgentMemoryServiceClient;
-use agent_evaluation_service::evaluation_server::judge_agent::{AgentEvaluationLogData, JudgeEvaluation};
+
+//use agent_evaluation_service::evaluation_server::judge_agent::{AgentEvaluationLogData, JudgeEvaluation};
+use agent_models::evaluation::evaluation_models::{AgentEvaluationLogData,JudgeEvaluation};
+
 use agent_evaluation_service::evaluation_service_client::agent_evaluation_client::AgentEvaluationServiceClient;
 //use agent_discovery_service::model::models::{AgentDefinition, TaskDefinition, ToolDefinition};
 use agent_models::registry::registry_models::{AgentDefinition, TaskDefinition, ToolDefinition};

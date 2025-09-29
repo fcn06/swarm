@@ -17,7 +17,9 @@ use crate::business_logic::workflow_runners::WorkFlowRunners;
 use configuration::AgentConfig;
 
 use agent_core::business_logic::services::EvaluationService;
-use agent_evaluation_service::evaluation_server::judge_agent::{AgentEvaluationLogData};
+//use agent_evaluation_service::evaluation_server::judge_agent::{AgentEvaluationLogData};
+use agent_models::evaluation::evaluation_models::{AgentEvaluationLogData};
+
 
 use agent_core::business_logic::services::MemoryService;
 use agent_core::business_logic::services::DiscoveryService;

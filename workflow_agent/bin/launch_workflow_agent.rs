@@ -27,9 +27,10 @@ use workflow_management::tasks::task_registry::TaskRegistry;
 use workflow_management::tools::tool_registry::ToolRegistry;
 
 
-use agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient;
-use agent_evaluation_service::evaluation_service_client::agent_evaluation_client::AgentEvaluationServiceClient;
-use agent_memory_service::memory_service_client::agent_memory_client::AgentMemoryServiceClient;
+// These direct dependencies on service client crates are no longer needed
+// use agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient;
+// use agent_evaluation_service::evaluation_service_client::agent_evaluation_client::AgentEvaluationServiceClient;
+// use agent_memory_service::memory_service_client::agent_memory_client::AgentMemoryServiceClient;
 
 
 use agent_core::business_logic::agent::Agent;
@@ -40,8 +41,6 @@ use agent_core::business_logic::services::{EvaluationService, MemoryService, Dis
 use workflow_agent::business_logic::workflow_agent::WorkFlowAgent;
 use workflow_agent::business_logic::workflow_runners::WorkFlowRunners;
 
-//use workflow_agent::business_logic::service_adapters::{AgentEvaluationServiceAdapter, AgentMemoryServiceAdapter};
-//use workflow_agent::business_logic::service_adapters::AgentDiscoveryServiceAdapter;
 use agent_service_adapters::{AgentEvaluationServiceAdapter, AgentMemoryServiceAdapter,AgentDiscoveryServiceAdapter};
 
 
@@ -66,8 +65,7 @@ struct Args {
 async fn setup_evaluation_service(workflow_agent_config: &AgentConfig) -> Option<Arc<dyn EvaluationService>> {
     if let Some(url) = workflow_agent_config.agent_evaluation_service_url() {
         info!("Evaluation service configured at: {}", url);
-        let client = AgentEvaluationServiceClient::new(url);
-        let adapter = AgentEvaluationServiceAdapter::new(client);
+        let adapter = AgentEvaluationServiceAdapter::new(&url);
         Some(Arc::new(adapter))
     } else {
         warn!("Evaluation service URL not configured. No evaluations will be logged.");
@@ -78,8 +76,7 @@ async fn setup_evaluation_service(workflow_agent_config: &AgentConfig) -> Option
 async fn setup_memory_service(workflow_agent_config: &AgentConfig) -> Option<Arc<dyn MemoryService>> {
     if let Some(url) = workflow_agent_config.agent_memory_service_url() {
         info!("Memory service configured at: {}", url);
-        let client = AgentMemoryServiceClient::new(url);
-        let adapter = AgentMemoryServiceAdapter::new(client);
+        let adapter = AgentMemoryServiceAdapter::new(&url);
         Some(Arc::new(adapter))
     } else {
         warn!("Memory service URL not configured. No memory will be used.");
@@ -89,8 +86,7 @@ async fn setup_memory_service(workflow_agent_config: &AgentConfig) -> Option<Arc
 
 async fn setup_discovery_service(discovery_url: String) -> Option<Arc<dyn DiscoveryService>> {
     info!("Discovery service configured at: {}", discovery_url);
-    let client = AgentDiscoveryServiceClient::new(&discovery_url.clone());
-    let adapter = AgentDiscoveryServiceAdapter::new(client);
+    let adapter = AgentDiscoveryServiceAdapter::new(&discovery_url);
     Some(Arc::new(adapter))
 }
 
@@ -135,14 +131,14 @@ async fn setup_tool_runner(mcp_config_path: String) -> anyhow::Result<Arc<ToolRu
 }
 
 async fn setup_agent_runner(workflow_agent_config: &AgentConfig) -> anyhow::Result<Arc<AgentRunner>> {
-    let discovery_client = Arc::new(AgentDiscoveryServiceClient::new(
+    let discovery_service_adapter = Arc::new(AgentDiscoveryServiceAdapter::new(
         &workflow_agent_config.agent_discovery_url.clone().expect("Discovery URL not configured")
     ));
     let a2a_agent_invoker = A2AAgentInvoker::new(vec![AgentReference {
         name: "Basic_Agent".to_string(),
         url: "http://127.0.0.1:8080".to_string(),
         is_default: Some(true),
-    }], None, None, discovery_client.clone()).await?;
+    }], None, None, discovery_service_adapter.clone()).await?;
     let a2a_agent_invoker = Arc::new(a2a_agent_invoker);
 
     let mut agent_registry = AgentRegistry::new();

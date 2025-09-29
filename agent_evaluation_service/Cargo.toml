@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+agent_models = { workspace = true }
 llm_api = { workspace = true }
 configuration = { workspace = true }
 

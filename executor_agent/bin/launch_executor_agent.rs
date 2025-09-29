@@ -31,9 +31,10 @@ use workflow_management::tasks::task_registry::TaskRegistry;
 use workflow_management::tools::tool_registry::ToolRegistry;
 
 
-use agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient;
-use agent_evaluation_service::evaluation_service_client::agent_evaluation_client::AgentEvaluationServiceClient;
-use agent_memory_service::memory_service_client::agent_memory_client::AgentMemoryServiceClient;
+// Removed direct dependencies on service client crates
+// use agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient;
+// use agent_evaluation_service::evaluation_service_client::agent_evaluation_client::AgentEvaluationServiceClient;
+// use agent_memory_service::memory_service_client::agent_memory_client::AgentMemoryServiceClient;
 
 
 use agent_core::business_logic::agent::Agent;
@@ -41,7 +42,6 @@ use agent_core::server::agent_server::AgentServer;
 use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService,WorkflowServiceApi};
 
 
-//use agent_core::business_logic::service_adapters::{AgentEvaluationServiceAdapter, AgentMemoryServiceAdapter,AgentDiscoveryServiceAdapter};
 use agent_service_adapters::{AgentEvaluationServiceAdapter, AgentMemoryServiceAdapter,AgentDiscoveryServiceAdapter};
 
 /// Command-line arguments
@@ -59,11 +59,10 @@ struct Args {
     mcp_config_path: String,
 }
 
-async fn setup_evaluation_service(workflow_agent_config: &AgentConfig) -> Option<Arc<dyn EvaluationService>> {
-    if let Some(url) = workflow_agent_config.agent_evaluation_service_url() {
+async fn setup_evaluation_service(executor_agent_config: &AgentConfig) -> Option<Arc<dyn EvaluationService>> {
+    if let Some(url) = executor_agent_config.agent_evaluation_service_url() {
         info!("Evaluation service configured at: {}", url);
-        let client = AgentEvaluationServiceClient::new(url);
-        let adapter = AgentEvaluationServiceAdapter::new(client);
+        let adapter = AgentEvaluationServiceAdapter::new(&url);
         Some(Arc::new(adapter))
     } else {
         warn!("Evaluation service URL not configured. No evaluations will be logged.");
@@ -71,11 +70,10 @@ async fn setup_evaluation_service(workflow_agent_config: &AgentConfig) -> Option
     }
 }
 
-async fn setup_memory_service(workflow_agent_config: &AgentConfig) -> Option<Arc<dyn MemoryService>> {
-    if let Some(url) = workflow_agent_config.agent_memory_service_url() {
+async fn setup_memory_service(executor_agent_config: &AgentConfig) -> Option<Arc<dyn MemoryService>> {
+    if let Some(url) = executor_agent_config.agent_memory_service_url() {
         info!("Memory service configured at: {}", url);
-        let client = AgentMemoryServiceClient::new(url);
-        let adapter = AgentMemoryServiceAdapter::new(client);
+        let adapter = AgentMemoryServiceAdapter::new(&url);
         Some(Arc::new(adapter))
     } else {
         warn!("Memory service URL not configured. No memory will be used.");
@@ -85,8 +83,7 @@ async fn setup_memory_service(workflow_agent_config: &AgentConfig) -> Option<Arc
 
 async fn setup_discovery_service(discovery_url: String) -> Option<Arc<dyn DiscoveryService>> {
     info!("Discovery service configured at: {}", discovery_url);
-    let client = AgentDiscoveryServiceClient::new(&discovery_url.clone());
-    let adapter = AgentDiscoveryServiceAdapter::new(client);
+    let adapter = AgentDiscoveryServiceAdapter::new(&discovery_url);
     Some(Arc::new(adapter))
 }
 
@@ -130,15 +127,15 @@ async fn setup_tool_runner(mcp_config_path: String) -> anyhow::Result<Arc<ToolRu
     Ok(Arc::new(ToolRunner::new(tool_registry, mcp_tool_runner_invoker)))
 }
 
-async fn setup_agent_runner(workflow_agent_config: &AgentConfig) -> anyhow::Result<Arc<AgentRunner>> {
-    let discovery_client = Arc::new(AgentDiscoveryServiceClient::new(
-        &workflow_agent_config.agent_discovery_url.clone().expect("Discovery URL not configured")
+async fn setup_agent_runner(executor_agent_config: &AgentConfig) -> anyhow::Result<Arc<AgentRunner>> {
+    let discovery_service_adapter = Arc::new(AgentDiscoveryServiceAdapter::new(
+        &executor_agent_config.agent_discovery_url.clone().expect("Discovery URL not configured")
     ));
     let a2a_agent_invoker = A2AAgentInvoker::new(vec![AgentReference {
         name: "Basic_Agent".to_string(),
         url: "http://127.0.0.1:8080".to_string(),
         is_default: Some(true),
-    }], None, None, discovery_client.clone()).await?;
+    }], None, None, discovery_service_adapter.clone()).await?;
     let a2a_agent_invoker = Arc::new(a2a_agent_invoker);
 
     let mut agent_registry = AgentRegistry::new();
@@ -166,15 +163,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     /* A2A agent server                             */
     /************************************************/ 
     // load a2a config file and initialize appropriateruntime
-    let workflow_agent_config = AgentConfig::load_agent_config(&args.config_file).expect("Incorrect WorkFlow Agent config file");
+    let executor_agent_config = AgentConfig::load_agent_config(&args.config_file).expect("Incorrect Executor Agent config file");
 
 
     /************************************************/
     /* Instantiate Memory, Evaluation and Discovery Services  */
     /************************************************/ 
-    let evaluation_service = setup_evaluation_service(&workflow_agent_config).await;
-    let memory_service = setup_memory_service(&workflow_agent_config).await;
-    let discovery_service = setup_discovery_service(workflow_agent_config.agent_discovery_url.clone().expect("Discovery URL not configured")).await;
+    let evaluation_service = setup_evaluation_service(&executor_agent_config).await;
+    let memory_service = setup_memory_service(&executor_agent_config).await;
+    let discovery_service = setup_discovery_service(executor_agent_config.agent_discovery_url.clone().expect("Discovery URL not configured")).await;
 
 
     /************************************************/
@@ -182,7 +179,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     /************************************************/ 
     let task_runner = setup_task_runner().await?;
     let tool_runner = setup_tool_runner(args.mcp_config_path).await?;
-    let agent_runner = setup_agent_runner(&workflow_agent_config).await?;
+    let agent_runner = setup_agent_runner(&executor_agent_config).await?;
 
     /************************************************/
     /* Get a Workflow Registries Instance           */
@@ -200,13 +197,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     /************************************************/
     /* Launch Workflow Agent                        */
     /************************************************/ 
-    let agent = ExecutorAgent::new(workflow_agent_config.clone(), evaluation_service, memory_service, discovery_service.clone(), workflow_runners).await?;
+    let agent = ExecutorAgent::new(executor_agent_config.clone(), evaluation_service, memory_service, discovery_service.clone(), workflow_runners).await?;
 
     /************************************************/
     /* Launch Workflow Agent Server                 */
     /************************************************/ 
     // Create the modern server, and pass the runtime elements
-    let server = AgentServer::<ExecutorAgent>::new(workflow_agent_config, agent, discovery_service).await?;
+    let server = AgentServer::<ExecutorAgent>::new(executor_agent_config, agent, discovery_service).await?;
    
     println!("🌐 Starting HTTP server only...");
     server.start_http().await?;

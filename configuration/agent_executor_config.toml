@@ -20,7 +20,6 @@ agent_ws_port="9581"
 agent_discovery_url="http://127.0.0.1:4000"
 agent_discoverable=false
 
-
 #################################################################
 # Purpose and high level skills
 # The agent will use the A2A protocol for his interactions
@@ -29,11 +28,11 @@ agent_system_prompt="""
 You are an executor agent that executes precsiley workflow that you are delegated.
 """
 
-agent_skill_id="generic_request"
+agent_skill_id="workflow_execution"
 agent_skill_name="Execute Strictly Defined Workflow"
 agent_skill_description="Receives a workflow definition as an input and execute it"
 agent_version="1.0.0"
-agent_description="An agent that only executes strictly defined workflow. MUST NOT BE USED IN CONSTRUCTION OF A WORKLOW"
+agent_description="An agent that only executes strictly defined workflow."
 agent_doc_url="/docs"
 agent_tags=["execute plan"]
 agent_examples=["execute this plan"]

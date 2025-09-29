@@ -99,7 +99,7 @@ Swarm is composed of several modular and interconnected components:
 
 The Swarm project is organized into several specialized Rust crates:
 
-*   `agent_core`: Provides foundational traits, data structures, and shared logic for all agent types within Swarm.
+*   `agent_core`: Provides foundational traits, and shared logic for all agent types within Swarm.
 *   `agent_models`: Defines the shared data structures, such as payloads and configurations, used for communication between agents and services.
 *   `basic_agent`: Implements the business logic for a general-purpose "specialist" Domain Agent.
 *   `workflow_agent`: Contains the business logic for the "conductor" Workflow Agent, responsible for high-level orchestration.
@@ -108,7 +108,7 @@ The Swarm project is organized into several specialized Rust crates:
 *   `workflow_management`: The core library for defining, parsing, and executing multi-agent workflows and plans.
 *   `mcp_runtime`: Manages interactions with external tools and services via the Model Context Protocol (MCP).
 *   `llm_api`: Offers a standardized interface for seamless integration with various Large Language Models.
-*   `agent_service_adapters`: Provides client-side implementations (adapters) for interacting with the core agent services (discovery, memory, evaluation).
+*   `agent_service_adapters`: Provides client-side implementations (adapters) for interacting with the core agent services (discovery, memory, evaluation). Ensures proper dependency injection of discovery, evaluation and memory services.
 *   `agent_discovery_service`: An HTTP service enabling agents to register themselves and discover other available agents.
 *   `agent_memory_service`: A service designed to manage and share conversational history and contextual information among agents.
 *   `agent_evaluation_service`: Implements the "LLM as a Judge" functionality to evaluate agent and workflow execution outcomes.

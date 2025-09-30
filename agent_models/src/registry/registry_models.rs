@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AgentSkill {
+pub struct AgentSkillDefinition {
     pub name: String,
     pub description: String,
     pub parameters: serde_json::Value,
@@ -13,7 +13,7 @@ pub struct AgentDefinition {
     pub id: String,
     pub name: String,
     pub description: String,
-    pub skills: Vec<AgentSkill>,
+    pub skills: Vec<AgentSkillDefinition>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -23,7 +23,7 @@ use uuid::Uuid;
 
 //use agent_discovery_service::model::models::AgentSkill;
 //use agent_discovery_service::model::models::AgentDefinition;
-use agent_models::registry::registry_models::{AgentDefinition,AgentSkill};
+use agent_models::registry::registry_models::{AgentDefinition,AgentSkillDefinition};
 
 
 pub struct AgentServer<T:Agent> {
@@ -111,7 +111,7 @@ impl<T:Agent> AgentServer<T> {
             id:Uuid::new_v4().to_string(),
             name:self.config.agent_name(),
             description:self.config.agent_description(),
-            skills:vec![AgentSkill{
+            skills:vec![AgentSkillDefinition{
                 name:self.config.agent_skill_name(),
                 description:self.config.agent_skill_description(),
                 parameters:serde_json::Value::Null,

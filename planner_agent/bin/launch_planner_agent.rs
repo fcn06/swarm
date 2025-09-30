@@ -21,6 +21,7 @@ use workflow_management::agent_communication::{agent_registry::AgentRegistry,};
 use workflow_management::tasks::task_registry::TaskRegistry;
 use workflow_management::tools::tool_registry::ToolRegistry;
 
+use agent_models::registry::registry_models::{TaskDefinition as Td,AgentDefinition as Ad};
 
 // Removed direct dependencies on service client crates
 // use agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient;
@@ -92,6 +93,7 @@ async fn setup_task_registry() -> anyhow::Result<Arc<TaskRegistry>> {
     Ok(Arc::new(task_registry))
 }
 
+
 async fn setup_tool_registry(mcp_config_path: String) -> anyhow::Result<Arc<ToolRegistry>> {
     let mcp_tool_runner_invoker = McpRuntimeToolInvoker::new(mcp_config_path).await?;
     let mcp_tool_runner_invoker = Arc::new(mcp_tool_runner_invoker);
@@ -129,6 +131,39 @@ async fn setup_agent_registry(planner_agent_config: &AgentConfig) -> anyhow::Res
 }
 
 
+// Future Use : Registration using discovery Service
+/* 
+
+/// Register Tasks in Discovery Service
+async fn register_tasks(discovery_service: Arc<dyn DiscoveryService>) -> anyhow::Result<()> {
+
+    let task_definition=Td {
+        id: "greeting".to_string(),
+        name: "Say Hello".to_string(),
+        description: "Say hello to somebody".to_string(),
+        input_schema: json!({}),
+        output_schema: json!({}),
+    };
+    discovery_service.register_task(&task_definition).await?;
+    Ok(())
+}
+
+/// Register Agents in Discovery Service
+async fn register_agents(discovery_service: Arc<dyn DiscoveryService>) -> anyhow::Result<()> {
+
+    let agent_definition=Ad {
+        id: "Basic_Agent".to_string(),
+        name: "Basic Agent for weather requests, customer requests and other general topics".to_string(),
+        description: "Retrieve Weather in a Location, Get customer details and other General Requests".to_string(),
+        skills: Vec::new(),
+    };
+
+    discovery_service.register_agent(&agent_definition).await?;
+    Ok(())
+}
+
+*/
+
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>>{
@@ -153,7 +188,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
 
 
     /************************************************/
-    /* Set Up Runners                               */
+    /* Set Up Registrations                            */
+    /************************************************/ 
+    register_tasks(discovery_service.clone().unwrap()).await?;
+    register_agents(discovery_service.clone().unwrap()).await?;
+
+    /************************************************/
+    /* Set Up Registries                            */
     /************************************************/ 
     let task_registry = setup_task_registry().await?;
     let tool_registry = setup_tool_registry(args.mcp_config_path).await?;

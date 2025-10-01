@@ -21,12 +21,9 @@ use workflow_management::agent_communication::{agent_registry::AgentRegistry,};
 use workflow_management::tasks::task_registry::TaskRegistry;
 use workflow_management::tools::tool_registry::ToolRegistry;
 
+// Future Use
 use agent_models::registry::registry_models::{TaskDefinition as Td,AgentDefinition as Ad};
 
-// Removed direct dependencies on service client crates
-// use agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient;
-// use agent_evaluation_service::evaluation_service_client::agent_evaluation_client::AgentEvaluationServiceClient;
-// use agent_memory_service::memory_service_client::agent_memory_client::AgentMemoryServiceClient;
 
 use agent_core::business_logic::agent::Agent;
 use agent_core::server::agent_server::AgentServer;
@@ -132,7 +129,7 @@ async fn setup_agent_registry(planner_agent_config: &AgentConfig) -> anyhow::Res
 
 
 // Future Use : Registration using discovery Service
-/* 
+
 
 /// Register Tasks in Discovery Service
 async fn register_tasks(discovery_service: Arc<dyn DiscoveryService>) -> anyhow::Result<()> {
@@ -162,7 +159,7 @@ async fn register_agents(discovery_service: Arc<dyn DiscoveryService>) -> anyhow
     Ok(())
 }
 
-*/
+
 
 
 #[tokio::main]
@@ -188,7 +185,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
 
 
     /************************************************/
-    /* Set Up Registrations                            */
+    /* Future Use : Set Up Registrations            */
     /************************************************/ 
     register_tasks(discovery_service.clone().unwrap()).await?;
     register_agents(discovery_service.clone().unwrap()).await?;

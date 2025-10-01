@@ -18,7 +18,6 @@ use crate::agents::a2a_agent_invoker::A2AAgentInvoker;
 use executor_agent::business_logic::executor_agent::{ExecutorAgent, WorkFlowRunners};
 
 
-
 use workflow_management::agent_communication::agent_runner::AgentRunner;
 use workflow_management::agent_communication::agent_registry::AgentDefinition;
 use workflow_management::tasks::task_runner::TaskRunner;
@@ -29,12 +28,6 @@ use workflow_management::tools::tool_registry::ToolDefinition;
 use workflow_management::agent_communication::{agent_registry::AgentRegistry,};
 use workflow_management::tasks::task_registry::TaskRegistry;
 use workflow_management::tools::tool_registry::ToolRegistry;
-
-
-// Removed direct dependencies on service client crates
-// use agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient;
-// use agent_evaluation_service::evaluation_service_client::agent_evaluation_client::AgentEvaluationServiceClient;
-// use agent_memory_service::memory_service_client::agent_memory_client::AgentMemoryServiceClient;
 
 
 use agent_core::business_logic::agent::Agent;

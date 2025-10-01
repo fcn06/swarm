@@ -150,7 +150,7 @@ impl<T: Agent> AsyncMessageHandler for AgentHandler<T> {
         // Convert the message Back to A2A Message
         let llm_response = LlmMessage {
             role: "agent".to_string(), // role: "tool".to_string(), // Or appropriate role based on ExecutionResult
-            content: Some(execution_result.output.clone()),
+            content: Some(execution_result.output.to_string()), // Changed .clone() to .to_string()
             tool_call_id: None,
             tool_calls:None
         };
@@ -321,5 +321,3 @@ impl<T: Agent> AsyncStreamingHandler for AgentHandler<T> {
         self.storage.combined_update_stream(task_id).await
     }
 }
-
-

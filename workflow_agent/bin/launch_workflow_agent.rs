@@ -27,11 +27,6 @@ use workflow_management::tasks::task_registry::TaskRegistry;
 use workflow_management::tools::tool_registry::ToolRegistry;
 
 
-// These direct dependencies on service client crates are no longer needed
-// use agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient;
-// use agent_evaluation_service::evaluation_service_client::agent_evaluation_client::AgentEvaluationServiceClient;
-// use agent_memory_service::memory_service_client::agent_memory_client::AgentMemoryServiceClient;
-
 
 use agent_core::business_logic::agent::Agent;
 use agent_core::server::agent_server::AgentServer;

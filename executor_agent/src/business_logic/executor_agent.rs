@@ -1,4 +1,3 @@
-
 use std::sync::Arc;
 use async_trait::async_trait;
 use tracing::{ debug, warn};
@@ -99,24 +98,22 @@ impl Agent for ExecutorAgent {
         match executor.execute_plan().await {
             Ok((execution_outcome, _activities_outcome)) => {
                 debug!("\nWorkflow execution completed successfully. Outcome : {}\n", execution_outcome);
-                let output_json = json!({ "text_response": execution_outcome }).to_string();
+                let parsed_outcome: Value = serde_json::from_str(&execution_outcome)?;
                 Ok(ExecutionResult {
                     request_id: Uuid::new_v4().to_string(), // Generate a new UUID
                     conversation_id: Uuid::new_v4().to_string(), // Generate a new UUID
                     success: true,
-                    output: output_json,
+                    output: json!({ "text_response": parsed_outcome }),
                 })
             },
             Err(e) => {
                 warn!("Error executing plan: {}", e);
                 let error_message = format!("Workflow execution failed: {}", e);
-                // For errors, also ensure the output is a JSON string
-                let output_json = json!({ "error": error_message }).to_string();
                 Ok(ExecutionResult {
                     request_id: Uuid::new_v4().to_string(),
                     conversation_id: Uuid::new_v4().to_string(),
                     success: false,
-                    output: output_json,
+                    output: json!({ "error": error_message }),
                 })
             }
         }

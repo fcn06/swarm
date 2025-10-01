@@ -82,7 +82,7 @@ impl Agent for PlannerAgent {
                 request_id: "".to_string(),
                 conversation_id: "".to_string(),
                 success: true,
-                output: plan,
+                output: serde_json::Value::String(plan), // FIX 1: Wrap String in Value::String
             })
         } else {
             let graph = self.create_plan(user_query).await?;
@@ -117,7 +117,7 @@ impl Agent for PlannerAgent {
                             request_id: Uuid::new_v4().to_string(), // Generate new UUID for request_id
                             conversation_id: Uuid::new_v4().to_string(), // Generate new UUID for conversation_id
                             success: true,
-                            output: text, // Use the received JSON string directly as output
+                            output: serde_json::from_str(&text).context("Failed to parse executor agent response into serde_json::Value")?, // FIX 2: Parse JSON string to Value
                         })
                     } else {
                         bail!("Executor agent responded with non-text content or empty message for task {}", task_id);
@@ -131,7 +131,8 @@ impl Agent for PlannerAgent {
                     msg.parts.into_iter().filter_map(|part| {
                         if let Part::Text { text, .. } = part {
                             Some(text)
-                        } else {
+                        }
+                        else {
                             None
                         }
                     }).next()

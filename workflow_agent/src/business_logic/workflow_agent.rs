@@ -148,16 +148,19 @@ impl WorkFlowAgent {
         
         match executor.execute_plan().await {
             Ok((execution_outcome, activities_outcome)) => {
-                let output = execution_outcome;
+                // `execution_outcome` is a String containing JSON from the executor agent
+                debug!("\nWorkflow execution completed successfully. Outcome : {}\n", execution_outcome);
 
-                debug!("\nWorkflow execution completed successfully. Outcome : {}\n", output);
+                // Parse the execution_outcome string into a serde_json::Value
+                let parsed_output: Value = serde_json::from_str(&execution_outcome)
+                    .context("Failed to parse execution_outcome into serde_json::Value")?;
 
                 match self.handle_evaluation_and_retry(
                     request_id,
                     conversation_id,
                     original_user_query,
                     user_query.clone(),
-                    output.clone(),
+                    execution_outcome.clone(), // This is fine, handle_evaluation_and_retry expects String
                     activities_outcome,
                     retry_count,
                 ).await? {
@@ -170,7 +173,7 @@ impl WorkFlowAgent {
                             request_id: request_id.to_string(),
                             conversation_id: conversation_id.to_string(),
                             success: true,
-                            output,
+                            output: parsed_output, // Assign the parsed Value here
                         }))
                     }
                 }
@@ -284,7 +287,7 @@ impl WorkFlowAgent {
             request_id,
             conversation_id,
             success: true,
-            output: high_level_plan,
+            output: serde_json::Value::String(high_level_plan), // Wrap as serde_json::Value::String
         })
     }
 

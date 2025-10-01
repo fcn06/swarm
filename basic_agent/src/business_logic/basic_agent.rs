@@ -98,7 +98,7 @@ impl Agent for BasicAgent {
             request_id,
             conversation_id,
             success: true, // Mark as not fully successful if summarization fails
-            output: response.expect("No Return from LLM").content.expect("Empty result from Llm"),
+            output: serde_json::Value::String(response.expect("No Return from LLM").content.expect("Empty result from Llm")), // Wrapped String in serde_json::Value::String
         })
 
     }

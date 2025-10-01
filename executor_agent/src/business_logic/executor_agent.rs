@@ -98,7 +98,9 @@ impl Agent for ExecutorAgent {
         match executor.execute_plan().await {
             Ok((execution_outcome, _activities_outcome)) => {
                 debug!("\nWorkflow execution completed successfully. Outcome : {}\n", execution_outcome);
+
                 let parsed_outcome: Value = serde_json::from_str(&execution_outcome)?;
+
                 Ok(ExecutionResult {
                     request_id: Uuid::new_v4().to_string(), // Generate a new UUID
                     conversation_id: Uuid::new_v4().to_string(), // Generate a new UUID

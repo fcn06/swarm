@@ -22,7 +22,7 @@ use workflow_management::tasks::task_registry::TaskRegistry;
 use workflow_management::tools::tool_registry::ToolRegistry;
 
 // Future Use
-use agent_models::registry::registry_models::{TaskDefinition as Td,AgentDefinition as Ad};
+use agent_models::registry::registry_models::{TaskDefinition as Td,AgentDefinition as Ad,ToolDefinition as Tld};
 
 
 use agent_core::business_logic::agent::Agent;
@@ -103,7 +103,7 @@ async fn setup_tool_registry(mcp_config_path: String) -> anyhow::Result<Arc<Tool
                 id:tool.function.name.clone(),
                 name: tool.function.name.clone(),
                 description: tool.function.description.clone(),
-                input_schema: serde_json::Value::String(serde_json::to_string(&tool.function.parameters).unwrap_or_else(|_| "{}".to_string())),
+                input_schema: serde_json::to_value(&tool.function.parameters).unwrap_or_else(|_| json!({})),
                 output_schema: json!({}),
         };    
         tool_registry.register_tool(tool_definition);
@@ -159,6 +159,27 @@ async fn register_agents(discovery_service: Arc<dyn DiscoveryService>) -> anyhow
     Ok(())
 }
 
+/// Register Agents in Discovery Service
+async fn register_tools(mcp_config_path: String,discovery_service: Arc<dyn DiscoveryService>) -> anyhow::Result<()> {
+
+    let mcp_tool_runner_invoker = McpRuntimeToolInvoker::new(mcp_config_path).await?;
+    let mcp_tool_runner_invoker = Arc::new(mcp_tool_runner_invoker);
+
+    // Register tools
+        let list_tools= mcp_tool_runner_invoker.get_tools_list_v2().await?;
+        for tool in list_tools {
+            let tool_definition=Tld {
+                id:tool.function.name.clone(),
+                name: tool.function.name.clone(),
+                description: tool.function.description.clone(),
+                input_schema: serde_json::to_value(&tool.function.parameters).unwrap_or_else(|_| json!({})),
+                output_schema: json!({}),
+            };    
+            discovery_service.register_tool(&tool_definition).await?;
+        }
+  
+    Ok(())
+}
 
 
 
@@ -189,6 +210,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     /************************************************/ 
     register_tasks(discovery_service.clone().unwrap()).await?;
     register_agents(discovery_service.clone().unwrap()).await?;
+    register_tools(args.mcp_config_path.clone(),discovery_service.clone().unwrap()).await?;
 
     /************************************************/
     /* Set Up Registries                            */

@@ -98,9 +98,7 @@ impl McpTools {
                 "'extract' field not found or not a string."
             };
 
-        let result = json!({
-            "result": format!("Search result for '{}' : '{}' ", search_query, extract_from_response)
-        }).to_string();
+        let result = format!("Search result for '{}' : '{}' ", search_query, extract_from_response);
 
         Ok(CallToolResult::success(vec![Content::text(result)]))
 

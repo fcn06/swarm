@@ -80,11 +80,25 @@ pub fn define_all_tools(rmcp_tools: Vec<RmcpTool>) -> Result<Vec<Tool>> {
                 })?
                 .to_string(); // Convert Arc<str> to String
 
-            // Clone the input schema map directly
-            let properties_map: Map<String, Value> = tool.input_schema.as_ref().clone();
+            // The tool.input_schema is already the JSON schema for parameters
+            let parameters_schema = tool.input_schema; // This is Map<String, Value>
 
-            let properties = properties_map.get("properties");
-            //println!("Properties : {:#?}", properties);
+            let param_type = parameters_schema
+                .get("type")
+                .and_then(Value::as_str)
+                .unwrap_or("object")
+                .to_string();
+
+            let properties = parameters_schema
+                .get("properties")
+                .cloned()
+                .unwrap_or_else(|| Value::Object(Map::new()));
+
+            let required = parameters_schema
+                .get("required")
+                .and_then(Value::as_array)
+                .map(|arr| arr.iter().filter_map(Value::as_str).map(String::from).collect());
+
 
             Ok(Tool {
                 r#type: "function".to_string(),
@@ -92,11 +106,9 @@ pub fn define_all_tools(rmcp_tools: Vec<RmcpTool>) -> Result<Vec<Tool>> {
                     name: tool_name, // Use owned name
                     description,
                     parameters: FunctionParameters {
-                        r#type: "object".to_string(),
-                        properties: properties
-                            .cloned()
-                            .unwrap_or_else(|| serde_json::Value::Object(serde_json::Map::new())),
-                        required: None, // Keep as None for now
+                        r#type: param_type,
+                        properties,
+                        required,
                     },
                 },
             })

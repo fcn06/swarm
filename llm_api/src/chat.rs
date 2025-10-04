@@ -147,173 +147,120 @@ impl ChatLlmInteraction {
         }
     }
 
+    /// Unified API call function for chat completions, handling both simple messages and tool calls.
+    pub async fn call_api(
+        &self,
+        messages: Vec<Message>,
+        tools: Option<Vec<Tool>>,
+        tool_choice: Option<ToolChoice>,
+    ) -> anyhow::Result<Option<Message>> {
 
-/// for complex calls using tools, this is the api to use
-pub async fn call_chat_completions_v2(
-    &self,
-    request_payload: &ChatCompletionRequest,
-) -> Result<ChatCompletionResponse, reqwest::Error> {
-    
-    let mut retries = 0;
-    let max_retries = 3; // You can adjust this
-    let mut delay = Duration::from_secs(1); // Starting delay
+        let llm_request_payload = ChatCompletionRequest {
+            model: self.model_id.clone(),
+            messages,
+            temperature: Some(0.7),
+            max_tokens: None,
+            top_p: None,
+            stop: None,
+            stream: None,
+            tools,
+            tool_choice,
+        };
 
-    loop {
-        let response = self.client
-            .post(self.llm_url.clone())
-            .bearer_auth(self.llm_api_key.clone())
-            .header("Content-Type", "application/json; charset=utf-8")
-            .json(request_payload)
-            .send()
-            .await?;
+        let llm_response = self.call_chat_completions_v2(&llm_request_payload)
+            .await
+            .context("LLM API request failed")?;
 
-        debug!("LLM API Response : {:?}", response);
+        let response_message = llm_response
+            .choices
+            .get(0)
+            .ok_or_else(|| anyhow::anyhow!("LLM response missing choices"))?
+            .message
+            .clone();
 
-        if response.status() == reqwest::StatusCode::TOO_MANY_REQUESTS {
-            retries += 1;
-            if retries > max_retries {
-                return Err(response.error_for_status().unwrap_err()); // Return the last 429 error
+        /* 
+        // If content is present, remove think tags
+        let final_content = if let Some(content_str) = response_message.content.clone() {
+
+            println!("Content: {:?}", content_str);
+
+            // Attempt to parse content as JSON. If successful, keep it as JSON.
+            // Otherwise, treat as plain text and remove think tags.
+            if let Ok(json_value) = serde_json::from_str::<Value>(&content_str) {
+                Some(serde_json::to_string(&json_value).context("Failed to re-serialize JSON content")?)
+            } else {
+                Some(self.remove_think_tags(content_str).await?)
             }
-            warn!("Rate limit hit (429). Retrying in {:?}... (Retry {}/{})", delay, retries, max_retries);
-            sleep(delay).await;
-            delay *= 2; // Exponential backoff
         } else {
-            // Check for other HTTP errors and then deserialize
-            response.error_for_status_ref()?;
-            let response_body = response.json::<ChatCompletionResponse>().await?;
-            debug!("LLM API Response Body: {:?}", response_body);
-            return Ok(response_body);
+            None
+        };
+        */
+
+
+        let final_content = if let Some(content_str) = response_message.content.clone() {
+            println!("Content: {:?}", content_str);
+            // Attempt to parse content as JSON. If successful, handle Value::String separately
+            if let Ok(json_value) = serde_json::from_str::<Value>(&content_str) {
+                match json_value {
+                    Value::String(s) => Some(s), // If it's a JSON string, take the inner string
+                    _ => Some(serde_json::to_string(&json_value).context("Failed to re-serialize JSON content")?), // Otherwise, re-serialize
+                }
+            } else {
+                Some(self.remove_think_tags(content_str).await?)
+            }
+        } else {
+            None
+        };
+        
+
+        Ok(Some(Message {
+            role: response_message.role,
+            content: final_content,
+            tool_call_id: None, // This will be set on tool result messages, not assistant messages
+            tool_calls: response_message.tool_calls,
+        }))
+    }
+
+
+
+    /// for complex calls using tools, this is the api to use
+    pub async fn call_chat_completions_v2(
+        &self,
+        request_payload: &ChatCompletionRequest,
+    ) -> Result<ChatCompletionResponse, reqwest::Error> {
+        
+        let mut retries = 0;
+        let max_retries = 3; // You can adjust this
+        let mut delay = Duration::from_secs(1); // Starting delay
+
+        loop {
+            let response = self.client
+                .post(self.llm_url.clone())
+                .bearer_auth(self.llm_api_key.clone())
+                .header("Content-Type", "application/json; charset=utf-8")
+                .json(request_payload)
+                .send()
+                .await?;
+
+            debug!("LLM API Response : {:?}", response);
+
+            if response.status() == reqwest::StatusCode::TOO_MANY_REQUESTS {
+                retries += 1;
+                if retries > max_retries {
+                    return Err(response.error_for_status().unwrap_err()); // Return the last 429 error
+                }
+                warn!("Rate limit hit (429). Retrying in {:?}... (Retry {}/{})", delay, retries, max_retries);
+                sleep(delay).await;
+                delay *= 2; // Exponential backoff
+            } else {
+                // Check for other HTTP errors and then deserialize
+                response.error_for_status_ref()?;
+                let response_body = response.json::<ChatCompletionResponse>().await?;
+                debug!("LLM API Response Body: {:?}", response_body);
+                return Ok(response_body);
+            }
         }
     }
-}
-
-
-
-pub async fn call_api_message(
-    &self,
-    messages:  Vec<Message>,
-) -> anyhow::Result<Option<Message>> {
-
-    //let api_key = env::var("LLM_API_KEY").expect("LLM_API_KEY must be set");
-    
-
-    let llm_request_payload = ChatCompletionRequest {
-        model: self.model_id.clone(),
-        messages: messages.clone(),
-        // Add other parameters like temperature if needed
-        temperature: Some(0.7),
-        tool_choice: None,
-        max_tokens: None,
-        top_p: None,
-        stop: None,
-        stream: None,
-        tools: None,
-    };
-
-    let llm_response = self.call_chat_completions_v2( &llm_request_payload)
-    .await
-    .context("LLM API request failed during plan creation")?;
-
-    let response_content = llm_response
-        .choices
-        .get(0)
-        .ok_or_else(|| anyhow::anyhow!("LLM response missing choices"))?
-        .message
-        .content
-        .clone();
-
-     
-        // remove think tags from llm response
-        let response_content = Some(
-            self.remove_think_tags(response_content.clone().expect("REASON"))
-                .await?,
-        );
-
-        let response_message = Some(Message {
-            role: "assistant".to_string(),
-            content: Some(response_content.expect("Incorrect Answer")),
-            tool_call_id: None,
-            tool_calls:None
-        });
-    
-        Ok(response_message)
-}
-
-
-
-/// for very simple calls without tools, one can use this simpler api. Returns an Option<Message> for LLM
-pub async fn call_api_simple(
-    &self,
-    agent_role:String,
-    user_query:String,
-) -> anyhow::Result<Option<Message>> {
-
-    let messages_origin = vec![Message {
-        role: agent_role,
-        content: Some(user_query),
-        tool_call_id: None,
-        tool_calls:None
-    }];
-
-    self.call_api_message(messages_origin).await
-
-}
-
-/// for very simple calls without tools, one can use this simpler api. This api returns a String from llm instead of Option<Message>
-/// This one should be used preferabbly
-pub async fn call_api_simple_v2(
-    &self,
-    agent_role:String,
-    user_query:String,
-) ->  anyhow::Result<Option<String>> {
-
-    let messages = vec![Message {
-        role: agent_role,
-        content: Some(user_query.to_string()),
-        tool_call_id: None,
-        tool_calls:None
-    }];
-
-    let llm_request_payload = ChatCompletionRequest {
-        model: self.model_id.clone(),
-        messages: messages,
-        // Add other parameters like temperature if needed
-        temperature: Some(0.7),
-        tool_choice: None,
-        max_tokens: None,
-        top_p: None,
-        stop: None,
-        stream: None,
-        tools: None,
-    };
-
-    // we need to move part of this logic to llm_api
-    let llm_response = self.call_chat_completions_v2(&llm_request_payload)
-    .await
-    .context("LLM API request failed during plan creation")?;
-
-
-    debug!("LLM Response Call API V2: {:?}", llm_response);
-
-
-    let response_content = llm_response
-        .choices
-        .get(0)
-        .ok_or_else(|| anyhow::anyhow!("LLM response missing choices"))?
-        .message
-        .content
-        .clone();
-
-    
-    // remove think tags from llm response
-    let response_content = Some(
-        self.remove_think_tags(response_content.clone().expect("REASON"))
-            .await?,
-    );
-    
-    Ok(response_content)
-
-}
 
 
     // Helper function to extract text from a Message
@@ -352,6 +299,53 @@ pub async fn call_api_simple_v2(
             }
         }
         Ok(cleaned_result)
+    }
+
+
+    /********************************************/
+    // Below functions should be deprecated in future
+    /********************************************/
+
+    /// for very simple calls without tools, one can use this simpler api. Returns an Option<Message> for LLM
+    pub async fn call_api_message(
+        &self,
+        messages: Vec<Message>,
+    ) -> anyhow::Result<Option<Message>> {
+        self.call_api(messages, None, None).await
+    }
+
+    /// for very simple calls without tools, one can use this simpler api. This api returns a String from llm instead of Option<Message>
+    /// This one should be used preferabbly
+    pub async fn call_api_simple_v2(
+        &self,
+        agent_role: String,
+        user_query: String,
+    ) -> anyhow::Result<Option<String>> {
+        let messages = vec![Message {
+            role: agent_role,
+            content: Some(user_query),
+            tool_call_id: None,
+            tool_calls: None,
+        }];
+
+        let response_message = self.call_api(messages, None, None).await?;
+        Ok(response_message.and_then(|msg| msg.content))
+    }
+
+    pub async fn call_api_simple(
+        &self,
+        agent_role: String,
+        user_query: String,
+    ) -> anyhow::Result<Option<Message>> {
+
+        self.call_api_simple_v2(agent_role, user_query).await.and_then(|s| {
+            Ok(s.map(|content| Message {
+                role: "assistant".to_string(),
+                content: Some(content),
+                tool_call_id: None,
+                tool_calls: None,
+            }))
+        })
     }
 
 }

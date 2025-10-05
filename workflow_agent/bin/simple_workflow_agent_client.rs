@@ -142,6 +142,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .message_id(message_id_3)
             .build()
     };
+
+   
     
 
     // Send a task message
@@ -175,7 +177,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         },
                         Ok(Value::String(s)) => {
                             let cleaned_s = s.trim_matches('"');
-                            println!("  {}", cleaned_s);
+                            println!("{}", cleaned_s);
                         }
                         _ => println!("  {}", text), // Not a JSON object with text_response or a simple JSON string
                     }

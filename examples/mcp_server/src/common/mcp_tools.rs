@@ -46,24 +46,27 @@ impl McpTools {
         Parameters(StructRequestLocation { location, unit }): Parameters<StructRequestLocation>) -> Result<CallToolResult, McpError> {
         let _location = location;  
         let unit = unit.unwrap_or("Degree Celsius".to_string());
-        let result = json!({
+        let result_value = json!({
             "Temperature": "24",
             "unit": unit,
             "description": "Sunny"
-        }).to_string();
-        Ok(CallToolResult::success(vec![Content::text(result)]))
+        });
+        Ok(CallToolResult::success(vec![Content::text(result_value.to_string())]))
+        //Ok(CallToolResult::success(vec![Content::json(result_value)]))
     }
+
 
     #[tool(description = "Give customer details")]
     pub async fn get_customer_details(
         Parameters(StructRequestCustomerDetails { customer_id }): Parameters<StructRequestCustomerDetails>) 
             -> Result<CallToolResult, McpError> {
         let _customer_id = customer_id;
-        let result = json!({
+        let result_value = json!({
             "Full Name": "Company A",
             "address": "Sunny Street BOSTON"
-        }).to_string();
-        Ok(CallToolResult::success(vec![Content::text(result)]))
+        });
+        Ok(CallToolResult::success(vec![Content::text(result_value.to_string())]))
+        //Ok(CallToolResult::success(vec![Content::json(result_value)]))
     }
 
     #[tool(description = "Scrapes a given URL using Jina AI's web scraping service.")]

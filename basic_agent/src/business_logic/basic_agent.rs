@@ -5,10 +5,12 @@ use llm_api::chat::{ChatLlmInteraction};
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
+use tracing::debug;
+
 use serde_json::Map;
 use serde_json::Value;
 
-#[warn(unused)]
+#[allow(unused)]
 use anyhow::Context;
 
 // todo : change the prompt of mcp runtime , so that he tries to use internal knowledge if possible
@@ -23,7 +25,6 @@ use agent_core::business_logic::services::{EvaluationService, MemoryService, Dis
 
 use configuration::AgentConfig;
 
-//use agent_core::execution::execution_result::{ExecutionResult};
 use agent_models::execution::execution_result::{ExecutionResult};
 
 use agent_core::business_logic::services::WorkflowServiceApi;
@@ -96,12 +97,21 @@ impl Agent for BasicAgent {
                      .unwrap()
                  };
      
+                 let llm_content=response.expect("No Return from LLM").content.expect("Empty result from Llm");
+     
+                 let output_value = match serde_json::from_str::<Value>(&llm_content) {
+                    Ok(json_val) => json_val,
+                    Err(_) => Value::String(llm_content),
+                };
+
+                debug!("Output Value from Basic Agent: {:?}", output_value);
      
              Ok(ExecutionResult {
                  request_id,
                  conversation_id,
                  success: true, // Mark as not fully successful if summarization fails
-                 output: serde_json::Value::String(response.expect("No Return from LLM").content.expect("Empty result from Llm")), // Wrapped String in serde_json::Value::String
+                 output: output_value, // Wrapped String in serde_json::Value::String
+                 //output: serde_json::Value::String(response.expect("No Return from LLM").content.expect("Empty result from Llm")), // Wrapped String in serde_json::Value::String
              })
      
          }

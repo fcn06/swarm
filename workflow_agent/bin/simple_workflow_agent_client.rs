@@ -7,7 +7,7 @@ use a2a_rs::{
     services::AsyncA2AClient,
 };
 use clap::{Parser};
-use serde_json::Map;
+use serde_json::{Map, Value};
 
 
 use tracing::{ Level};
@@ -157,7 +157,29 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("\nAgent response:");
         for part in response_message_3.parts {
             match part {
-                Part::Text { text, .. } => println!("  {}", text),
+                Part::Text { text, .. } => {
+                    // Attempt to parse the text as JSON
+                    match serde_json::from_str::<Value>(&text) {
+                        Ok(Value::Object(map)) => {
+                            if let Some(text_value) = map.get("text_response") {
+                                if let Some(s) = text_value.as_str() {
+                                    // Remove any leading/trailing quotes that might be part of the string value itself
+                                    let cleaned_s = s.trim_matches('"');
+                                    println!("  {}", cleaned_s);
+                                } else {
+                                    println!("  [Non-string text_response value] {}", text_value);
+                                }
+                            } else {
+                                println!("  [JSON object without text_response] {}", text);
+                            }
+                        },
+                        Ok(Value::String(s)) => {
+                            let cleaned_s = s.trim_matches('"');
+                            println!("  {}", cleaned_s);
+                        }
+                        _ => println!("  {}", text), // Not a JSON object with text_response or a simple JSON string
+                    }
+                },
                 _ => println!("  [Non-text content]"),
             }
         }

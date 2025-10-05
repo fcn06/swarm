@@ -178,39 +178,24 @@ impl ChatLlmInteraction {
             .message
             .clone();
 
-        /* 
-        // If content is present, remove think tags
-        let final_content = if let Some(content_str) = response_message.content.clone() {
 
-            println!("Content: {:?}", content_str);
-
-            // Attempt to parse content as JSON. If successful, keep it as JSON.
-            // Otherwise, treat as plain text and remove think tags.
-            if let Ok(json_value) = serde_json::from_str::<Value>(&content_str) {
-                Some(serde_json::to_string(&json_value).context("Failed to re-serialize JSON content")?)
-            } else {
-                Some(self.remove_think_tags(content_str).await?)
-            }
-        } else {
-            None
-        };
-        */
-
-
-        let final_content = if let Some(content_str) = response_message.content.clone() {
-            println!("Content: {:?}", content_str);
-            // Attempt to parse content as JSON. If successful, handle Value::String separately
-            if let Ok(json_value) = serde_json::from_str::<Value>(&content_str) {
-                match json_value {
-                    Value::String(s) => Some(s), // If it's a JSON string, take the inner string
-                    _ => Some(serde_json::to_string(&json_value).context("Failed to re-serialize JSON content")?), // Otherwise, re-serialize
+            let final_content = if let Some(content_str) = response_message.content.clone() {
+                
+                // Attempt to parse content as JSON. If successful, handle Value::String separately
+                if let Ok(json_value) = serde_json::from_str::<Value>(&content_str) {
+                    match json_value {
+                        Value::String(s) => Some(s), // If it's a JSON string, take the inner string
+                        _ => Some(serde_json::to_string(&json_value).context("Failed to re-serialize JSON content")?), // Otherwise, re-serialize
+                    }
+                } else {
+                    Some(self.remove_think_tags(content_str).await?)
                 }
             } else {
-                Some(self.remove_think_tags(content_str).await?)
-            }
-        } else {
-            None
-        };
+                None
+            };
+    
+
+        debug!("Final Content: {}", final_content.clone().unwrap_or_default());
         
 
         Ok(Some(Message {

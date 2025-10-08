@@ -180,20 +180,20 @@ impl ChatLlmInteraction {
 
 
             let final_content = if let Some(content_str) = response_message.content.clone() {
+                let cleaned_content_str = self.remove_think_tags(content_str).await?;
                 
                 // Attempt to parse content as JSON. If successful, handle Value::String separately
-                if let Ok(json_value) = serde_json::from_str::<Value>(&content_str) {
+                if let Ok(json_value) = serde_json::from_str::<Value>(&cleaned_content_str) {
                     match json_value {
                         Value::String(s) => Some(s), // If it's a JSON string, take the inner string
                         _ => Some(serde_json::to_string(&json_value).context("Failed to re-serialize JSON content")?), // Otherwise, re-serialize
                     }
                 } else {
-                    Some(self.remove_think_tags(content_str).await?)
+                    Some(cleaned_content_str)
                 }
             } else {
                 None
             };
-    
 
         debug!("Final Content: {}", final_content.clone().unwrap_or_default());
         
@@ -332,5 +332,4 @@ impl ChatLlmInteraction {
             }))
         })
     }
-
 }

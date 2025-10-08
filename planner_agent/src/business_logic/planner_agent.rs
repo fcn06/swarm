@@ -1,7 +1,7 @@
 
 use std::sync::Arc;
 use async_trait::async_trait;
-use tracing::{info, debug};
+use tracing::{info, debug, error};
 use std::env;
 use anyhow::{Context, bail};
 use serde_json::{Map, Value};
@@ -10,10 +10,7 @@ use configuration::AgentConfig;
 use agent_core::business_logic::agent::Agent;
 use agent_core::business_logic::services::{DiscoveryService, MemoryService, EvaluationService};
 
-//use agent_core::graph::graph_definition::{Graph, WorkflowPlanInput};
 use agent_models::graph::graph_definition::{WorkflowPlanInput,Graph};
-
-//use agent_core::execution::execution_result::ExecutionResult;
 use agent_models::execution::execution_result::{ExecutionResult};
 
 use std::fs;
@@ -22,6 +19,7 @@ use uuid::Uuid;
 use a2a_rs::services::AsyncA2AClient;
 
 use super::workflow_registry::WorkFlowRegistry;
+use workflow_management::graph::config::load_graph_from_file; // Added import
 
 static DEFAULT_WORKFLOW_PROMPT_TEMPLATE: &str = "./configuration/prompts/detailed_workflow_agent_prompt.txt";
 static DEFAULT_HIGH_LEVEL_PLAN_PROMPT_TEMPLATE: &str = "./configuration/prompts/high_level_plan_workflow_agent_prompt.txt";
@@ -34,7 +32,7 @@ pub struct PlannerAgent {
     llm_interaction: ChatLlmInteraction,
     workflow_registry: Arc<WorkFlowRegistry>,
     discovery_service: Arc<dyn DiscoveryService>,
-    client: Arc<HttpClient>, // Changed from reqwest::Client to a2a_rs::HttpClient
+    client: Arc<HttpClient>,
 }
 
 #[async_trait]
@@ -68,99 +66,100 @@ impl Agent for PlannerAgent {
             llm_interaction,
             workflow_registry,
             discovery_service,
-            //client: Arc::new(HttpClient::new(EXECUTOR_AGENT_URL.to_string())), // Initialize a2a_rs::HttpClient with the constant URL
-            client: Arc::new(HttpClient::new(executor_url)), // Initialize a2a_rs::HttpClient with the executor url defined
+            client: Arc::new(HttpClient::new(executor_url)),
         })
     }
 
     async fn handle_request(&self, request: LlmMessage, metadata: Option<Map<String, Value>>) -> anyhow::Result<ExecutionResult> {
         let user_query = request.content.clone().unwrap_or_default();
         
-        if self.extract_high_level_plan_flag(metadata.clone()) {
+        let graph = if let Some(graph_file) = self.extract_workflow_filename(metadata.clone()) {
+            info!("PlannerAgent: Loading workflow from file: {}", graph_file);
+            load_graph_from_file(&graph_file)
+                .map_err(|e| {
+                    error!("PlannerAgent: Error loading workflow from file: {}", e);
+                    anyhow::anyhow!("Failed to load workflow from file: {}", e)
+                })?
+        } else if self.extract_high_level_plan_flag(metadata.clone()) {
             let plan = self.create_high_level_plan(user_query).await?;
-            Ok(ExecutionResult {
+            return Ok(ExecutionResult {
                 request_id: "".to_string(),
                 conversation_id: "".to_string(),
                 success: true,
-                output: serde_json::Value::String(plan), // FIX 1: Wrap String in Value::String
+                output: serde_json::Value::String(plan),
             })
         } else {
-            let graph = self.create_plan(user_query).await?;
-            let graph_json = serde_json::to_string(&graph)?;
-            
-            let task_id = format!("task-{}", Uuid::new_v4());
-            let message_id = Uuid::new_v4().to_string();
+            info!("PlannerAgent: No workflow file specified in metadata, creating workflow dynamically.");
+            self.create_plan(user_query).await?
+        };
 
-            let a2a_message = Message::builder()
-                .role(Role::User)
-                .parts(vec![Part::Text {
-                    text: graph_json,
-                    metadata: metadata,
-                }])
-                .message_id(message_id)
-                .build();
+        let graph_json = serde_json::to_string(&graph)?;
+        
+        let task_id = format!("task-{}", Uuid::new_v4());
+        let message_id = Uuid::new_v4().to_string();
 
-            debug!("Sending plan to executor agent at: {}. Task ID: {}", EXECUTOR_AGENT_URL, task_id);
-            
-            let task_response = self.client
-                .send_task_message(&task_id, &a2a_message, None, Some(50)) // Using A2A client
-                .await?;
-            
-            info!("Executor agent response status for task {}: {:?}", task_id, task_response.status.state);
+        let a2a_message = Message::builder()
+            .role(Role::User)
+            .parts(vec![Part::Text {
+                text: graph_json,
+                metadata: metadata,
+            }])
+            .message_id(message_id)
+            .build();
 
-            if task_response.status.state == TaskState::Completed {
-                if let Some(response_message) = task_response.status.message {
-                    if let Some(Part::Text { text, .. }) = response_message.parts.into_iter().next() {
-                        // The received 'text' is the already JSON-formatted output from the executor.
-                        // We now construct a new ExecutionResult for the PlannerAgent's return.
-                        Ok(ExecutionResult {
-                            request_id: Uuid::new_v4().to_string(), // Generate new UUID for request_id
-                            conversation_id: Uuid::new_v4().to_string(), // Generate new UUID for conversation_id
-                            success: true,
-                            output: serde_json::from_str(&text).context("Failed to parse executor agent response into serde_json::Value")?, // FIX 2: Parse JSON string to Value
-                        })
-                    } else {
-                        bail!("Executor agent responded with non-text content or empty message for task {}", task_id);
-                    }
+        debug!("Sending plan to executor agent at: {}. Task ID: {}", EXECUTOR_AGENT_URL, task_id);
+        
+        let task_response = self.client
+            .send_task_message(&task_id, &a2a_message, None, Some(50)) // Using A2A client
+            .await?;
+        
+        info!("Executor agent response status for task {}: {:?}", task_id, task_response.status.state);
+
+        if task_response.status.state == TaskState::Completed {
+            if let Some(response_message) = task_response.status.message {
+                if let Some(Part::Text { text, .. }) = response_message.parts.into_iter().next() {
+                    Ok(ExecutionResult {
+                        request_id: Uuid::new_v4().to_string(),
+                        conversation_id: Uuid::new_v4().to_string(),
+                        success: true,
+                        output: serde_json::from_str(&text).context("Failed to parse executor agent response into serde_json::Value")?,
+                    })
                 } else {
-                    bail!("Executor agent responded with no message for task {}", task_id);
+                    bail!("Executor agent responded with non-text content or empty message for task {}", task_id);
                 }
             } else {
-                // Handle other task states as errors
-                let error_detail = task_response.status.message.and_then(|msg| {
-                    msg.parts.into_iter().filter_map(|part| {
-                        if let Part::Text { text, .. } = part {
-                            Some(text)
-                        }
-                        else {
-                            None
-                        }
-                    }).next()
-                }).unwrap_or_else(|| "Unknown error".to_string());
-                bail!("Executor agent task {} failed with state: {:?} and error: {}", task_id, task_response.status.state, error_detail);
+                bail!("Executor agent responded with no message for task {}", task_id);
             }
+        } else {
+            let error_detail = task_response.status.message.and_then(|msg| {
+                msg.parts.into_iter().filter_map(|part| {
+                    if let Part::Text { text, .. } = part {
+                        Some(text)
+                    }
+                    else {
+                        None
+                    }
+                }).next()
+            }).unwrap_or_else(|| "Unknown error".to_string());
+            bail!("Executor agent task {} failed with state: {:?} and error: {}", task_id, task_response.status.state, error_detail);
         }
     }
 }
 
 impl PlannerAgent {
     async fn get_available_capabilities(&self) -> anyhow::Result<String> {
-        // The user_query parameter for discover_agents is not needed if we are listing all agents
         let discovered_agents = self.discovery_service.discover_agents().await?;
         
         let mut capabilities = String::new();
         
-        // Format discovered agents
         let agent_details: Vec<String> = discovered_agents.into_iter()
             .map(|agent| format!("- Agent: '{}', Purpose: '{}'", agent.name, agent.description))
             .collect();
 
         if !agent_details.is_empty() {
-            capabilities.push_str("Available Agents:\n");
+            capabilities.push_str("Available Agents: \n");
             capabilities.push_str(&agent_details.join("\n"));
         }
-
-        // TODO: Add tasks from the `common_tasks` crate here later and tools.
 
         debug!("Discovered Capabilities : {:#?}", capabilities);
 
@@ -169,12 +168,9 @@ impl PlannerAgent {
 
     pub async fn create_plan(&self, user_query: String) -> anyhow::Result<Graph> {
         
-        // 1. Get capabilities string from workflow_registries
         let capabilities = self.workflow_registry.list_available_resources();
-        // Future Use : Get data from discovery service
-        //let capabilities = self.get_available_capabilities().await?;
         
-        debug!("Capabilities for plan creation:\n{}", capabilities);
+        debug!("Capabilities for plan creation: \n {}", capabilities);
 
         let prompt_template = fs::read_to_string(DEFAULT_WORKFLOW_PROMPT_TEMPLATE)
                 .context("Failed to read workflow_agent_prompt.txt")?;
@@ -198,7 +194,7 @@ impl PlannerAgent {
 
     pub async fn create_high_level_plan(&self, user_query: String) -> anyhow::Result<String> {
         let capabilities = self.get_available_capabilities().await?;
-        debug!("Capabilities for high-level plan creation:\n{}", capabilities);
+        debug!("Capabilities for high-level plan creation: \n {}", capabilities);
 
         let prompt_template = fs::read_to_string(DEFAULT_HIGH_LEVEL_PLAN_PROMPT_TEMPLATE)
                 .context("Failed to read high_level_plan_agent_prompt.txt")?;
@@ -234,5 +230,17 @@ impl PlannerAgent {
             .and_then(|map| map.get("high_level_plan").cloned())
             .and_then(|value| value.as_bool())
             .unwrap_or(false)
+    }
+
+    // Added extract_workflow_filename function
+    fn extract_workflow_filename(&self, metadata: Option<Map<String, Value>>) -> Option<String> {
+        if let Some(map) = metadata {
+            if let Some(value) = map.get("workflow_url") {
+                if let Some(filename) = value.as_str() {
+                    return Some(filename.to_string());
+                }
+            }
+        }
+        None
     }
 }

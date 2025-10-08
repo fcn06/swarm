@@ -81,6 +81,8 @@ sh ./documentation/demo_workflow_management/terminate_all_agents_process.sh
 
 **Congratulations, you've just run your first swarm!**
 
+You can find other real world scenarios ( for example with planner) in [./documentation/Sample_Scenarios/scenario_1.txt](./documentation/Sample_Scenarios/scenario_1.txt)
+
 ---
 
 ## **💡 Core Components of Swarm**

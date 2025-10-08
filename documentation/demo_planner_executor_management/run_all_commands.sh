@@ -114,14 +114,44 @@ echo "Ask the questions to the orchestrator : He should answer to the whole set 
 echo $'\n'
 
 # Check for the --dynamic-generation or --high-level-plan flag
-if [[ "$1" == "--dynamic-generation" ]]; then
-    ./target/release/simple_workflow_agent_client --port 8280 --log-level "warn" --generation-type "dynamic_generation" 
-elif [[ "$1" == "--high-level-plan" ]]; then
-    ./target/release/simple_workflow_agent_client --port 8280 --log-level "warn" --generation-type "high_level_plan"
-else
+#
+#if [[ "$1" == "--dynamic-generation" ]]; then
+#    ./target/release/simple_workflow_agent_client --port 8280 --log-level "warn" --generation-type "dynamic_generation" 
+#elif [[ "$1" == "--high-level-plan" ]]; then
+#    ./target/release/simple_workflow_agent_client --port 8280 --log-level "warn" --generation-type "high_level_plan"
+#else
     # execution based on a pre defined workflow. good for automation
-    ./target/release/simple_workflow_agent_client --port 8280 --log-level "warn"
+#    ./target/release/simple_workflow_agent_client --port 8280 --log-level "warn"
+#fi
+
+
+# Base command for the simple_workflow_agent_client
+CLIENT_COMMAND="./target/release/simple_workflow_agent_client --port 8280 --log-level \"warn\""
+
+# Variable to hold additional arguments based on the first parameter
+GENERATION_TYPE_ARG=""
+
+# Check for the --dynamic-generation or --high-level-plan flag
+if [[ "$1" == "--dynamic-generation" ]]; then
+    GENERATION_TYPE_ARG="--generation-type \"dynamic_generation\""
+elif [[ "$1" == "--high-level-plan" ]]; then
+    GENERATION_TYPE_ARG="--generation-type \"high_level_plan\""
 fi
+
+# Variable to hold the --graph-file argument based on the second parameter
+GRAPH_FILE_ARG=""
+
+# Check if the second parameter (config file path) is provided
+# -n "$2" checks if the string stored in $2 is not empty
+if [[ -n "$2" ]]; then
+    GRAPH_FILE_ARG="--graph-file \"$2\""
+fi
+
+# Construct the final command
+# We use 'eval' to correctly handle the quoted arguments within the variables
+eval "$CLIENT_COMMAND $GENERATION_TYPE_ARG $GRAPH_FILE_ARG"
+
+
 
 echo $'\n'
 

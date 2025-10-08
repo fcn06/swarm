@@ -44,7 +44,11 @@
       "type": "content_creation",
       "agent": {
         "skill_to_use": null,
-        "assigned_agent_id_preference": "Basic_Agent"
+        "assigned_agent_id_preference": "Basic_Agent",
+        "agent_context": {
+          "weather_data": "{{fetch_weather_forecast.activity_output}}",
+          "customer_data": "{{fetch_customer_data.activity_output}}"
+        }
       },
       "tools": [],
       "tasks": [],

@@ -107,47 +107,13 @@ impl Agent for BasicAgent {
                 debug!("Output Value from Basic Agent: {:?}", output_value);
      
              Ok(ExecutionResult {
-                 request_id,
-                 conversation_id,
-                 success: true, // Mark as not fully successful if summarization fails
-                 output: output_value, // Wrapped String in serde_json::Value::String
-                 //output: serde_json::Value::String(response.expect("No Return from LLM").content.expect("Empty result from Llm")), // Wrapped String in serde_json::Value::String
-             })
+                    request_id,
+                    conversation_id,
+                    success: true, // Mark as not fully successful if summarization fails
+                    output: output_value, // Wrapped String in serde_json::Value::String
+                  })
      
          }
 
-
-    /* 
-    // WIP to remove issue with \" in output
-    
-    /// business logic for handling user request
-    async fn handle_request(&self, request: LlmMessage,_metadata:Option<Map<String, Value>>) ->anyhow::Result<ExecutionResult> {
-       
-       let request_id=uuid::Uuid::new_v4().to_string();
-       let conversation_id = Uuid::new_v4().to_string();
-
-        let llm_response_content = if self.mcp_agent.is_none() {
-                self.llm_interaction.call_api_simple("user".to_string(), request.content.expect("Empty Message")).await?.unwrap()
-            } else {
-                let mut locked_mcp_agent = self.mcp_agent.as_ref().unwrap().lock().await;
-                // Assuming run_agent_internal returns an Option<LlmMessage>
-                locked_mcp_agent.run_agent_internal(request.clone()).await?
-                .unwrap()
-            }.content.expect("No Basic Agent Response");
-
-        let output_value = match serde_json::from_str::<Value>(&llm_response_content) {
-            Ok(json_val) => json_val,
-            Err(_) => Value::String(llm_response_content),
-        };
-
-        Ok(ExecutionResult {
-            request_id,
-            conversation_id,
-            success: true,
-            output: output_value,
-        })
-
-    }
-    */
 
 }

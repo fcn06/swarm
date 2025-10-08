@@ -291,6 +291,7 @@ impl ChatLlmInteraction {
     // Below functions should be deprecated in future
     /********************************************/
 
+    /* 
     /// for very simple calls without tools, one can use this simpler api. Returns an Option<Message> for LLM
     pub async fn call_api_message(
         &self,
@@ -298,6 +299,7 @@ impl ChatLlmInteraction {
     ) -> anyhow::Result<Option<Message>> {
         self.call_api(messages, None, None).await
     }
+    */
 
     /// for very simple calls without tools, one can use this simpler api. This api returns a String from llm instead of Option<Message>
     /// This one should be used preferabbly

@@ -84,6 +84,7 @@ sh ./documentation/demo_planner_executor_management/terminate_all_agents_process
 **Congratulations, you've just run your first swarm!**
 
 You can find other real world scenarios in [./documentation/Sample_Scenarios/scenario_1.txt](./documentation/Sample_Scenarios/scenario_1.txt)
+You can find concrete example of workflow in [./documentation/Sample_Scenarios/mix_agent_tools_workflow.json](./documentation/Sample_Scenarios/mix_agent_tools_workflow.json)
 
 ---
 

@@ -15,6 +15,8 @@ use agent_models::registry::registry_models::{AgentDefinition, TaskDefinition, T
 
 // This is a sample and simple implementation
 
+// todo: we should add a notion of context, that would be used to segment resources for different context
+
 /// Application state holding configurations and in-memory data.
 #[derive(Clone)]
 pub struct AppState {

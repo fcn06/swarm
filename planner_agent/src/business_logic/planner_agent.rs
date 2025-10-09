@@ -23,7 +23,6 @@ use workflow_management::graph::config::load_graph_from_file; // Added import
 
 static DEFAULT_WORKFLOW_PROMPT_TEMPLATE: &str = "./configuration/prompts/detailed_workflow_agent_prompt.txt";
 static DEFAULT_HIGH_LEVEL_PLAN_PROMPT_TEMPLATE: &str = "./configuration/prompts/high_level_plan_workflow_agent_prompt.txt";
-static EXECUTOR_AGENT_URL: &str = "http://127.0.0.1:9580"; // Kept as constant, base URL for the A2A client
 
 #[allow(dead_code)]
 #[derive(Clone)]
@@ -107,7 +106,8 @@ impl Agent for PlannerAgent {
             .message_id(message_id)
             .build();
 
-        debug!("Sending plan to executor agent at: {}. Task ID: {}", EXECUTOR_AGENT_URL, task_id);
+        let executor_agent_url=self.agent_config.agent_executor_url().unwrap();
+        debug!("Sending plan to executor agent at: {}. Task ID: {}", executor_agent_url, task_id);
         
         let task_response = self.client
             .send_task_message(&task_id, &a2a_message, None, Some(50)) // Using A2A client
@@ -212,6 +212,7 @@ impl PlannerAgent {
         Ok(response_content)
     }
 
+    // todo:to simplify, since the control : '''json{JSON}'''  is done at the source (llm_api crate)
     fn extract_json_from_response(&self, response: &str) -> anyhow::Result<String> {
         if let (Some(start_idx), Some(end_idx)) = (response.find("```json"), response.rfind("```")) {
             let start = start_idx + "```json".len();

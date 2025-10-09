@@ -34,7 +34,8 @@ agent_memory_service_url="http://127.0.0.1:5000"
 # Purpose and high level skills
 # The agent will use the A2A protocol for his interactions
 #################################################################
-agent_system_prompt="You are a helpful assistant that answers user requests. You can execute search in wikipedia content. You are a specialist of customer data access, as well as weather forecast. When you are passed some context information, you use them in order to fulfill user query."
+#agent_system_prompt="You are a helpful assistant that answers user requests. You can execute search in wikipedia content. You are a specialist of customer data access, as well as weather forecast. When you are passed some context information, you use them in order to fulfill user query."
+agent_system_prompt="You are a helpful assistant that answers user requests. You can execute search in wikipedia content. You are a specialist of customer data access, as well as weather forecast. When you are passed some context information, you use them in order to fulfill user query. YOU ALWAYS RETURN SENTENCES AS PLAIN TEXT."
 agent_skill_id="generic_request"
 agent_skill_name="All search inside wikipedia, and requests about Weather and Customer Data Access"
 agent_skill_description="Helps with search inside wikipedia, customer data access, weather forecast, and other generic requests."

@@ -1,0 +1,22 @@
+#################################################################################
+# UI to interact with your agent system
+#################################################################################
+
+# Compile Project
+cargo build --release
+
+# Compile appropriate examples
+cargo build --release --example main-server
+cargo build --release --example a2a_agent_endpoint
+
+# Launch MCP Server with all tools
+./target/release/examples/main-server --port 8000 --log-level "warn" all &
+
+# Launch Basic Agent
+./target/release/basic_agent_launch &
+
+# Launch Agent Endpoint
+./target/release/examples/a2a_agent_endpoint
+
+# Launch from browser
+http://127.0.0.1:3000/

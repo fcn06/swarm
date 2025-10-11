@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A2A Agent Chat Interface</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -111,10 +112,46 @@
             padding: 10px;
             text-align: center;
         }
+        /* Markdown specific styling */
+        .message-bubble.agent table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        .message-bubble.agent th,
+        .message-bubble.agent td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .message-bubble.agent th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .message-bubble.agent strong {
+            font-weight: bold;
+        }
+        .message-bubble.agent em {
+            font-style: italic;
+        }
+        .message-bubble.agent blockquote {
+            border-left: 4px solid #ccc;
+            margin: 10px 0;
+            padding: 5px 15px;
+            color: #666;
+        }
+        .message-bubble.agent ul,
+        .message-bubble.agent ol {
+            margin-left: 20px;
+            padding-left: 0;
+        }
+        .message-bubble.agent li {
+            margin-bottom: 5px;
+        }
     </style>
 </head>
 <body>
-    <h1>Chat with A2A Agents</h1>
+    <h1>Chat with you Agents System</h1>
 
     <div class="container">
         <div class="chat-window" id="chat_window">
@@ -133,7 +170,7 @@
         const textQuery = document.getElementById("text_query");
         const postQueryBtn = document.getElementById("post_query");
         const resetAllBtn = document.getElementById("reset_all");
-        const urlLocalServer = 'http://127.0.0.1:3030/msg';
+        const urlLocalServer = 'http://127.0.0.1:3000/msg';
 
         postQueryBtn.onclick = async () => {
             await sendMessage();
@@ -207,8 +244,18 @@
 
         function appendMessage(content, type) {
             const messageDiv = document.createElement('div');
-            messageDiv.classList.add('message-bubble', type);
-            messageDiv.textContent = content;
+            // Split the type string by spaces and add each as a separate class
+            messageDiv.classList.add('message-bubble', ...type.split(' '));
+            
+            if (type.includes('agent')) {
+                // Explicitly replace the literal string "\n" with a true newline character
+                const formattedContent = content.replace(/\\n/g, '\n');
+                messageDiv.innerHTML = marked.parse(formattedContent);
+            } else {
+                // For other messages (e.g., user), set textContent directly
+                messageDiv.textContent = content;
+            }
+            
             chatWindow.appendChild(messageDiv);
             chatWindow.scrollTop = chatWindow.scrollHeight; // Auto-scroll to bottom
             return messageDiv; // Return the created element for potential removal (e.g., loading indicator)

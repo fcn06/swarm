@@ -54,11 +54,12 @@ pub async fn run_endpoint(app_state: AppState, uri: String) -> Result<(), Box<dy
 
 
 // basic handler that responds with a static string
-async fn root() -> Result<impl IntoResponse, ApiError> {
+async fn root() -> Result<Html<String>, ApiError> {
     // retrieves root html page. to be improved
-    let index_text= fs::read_to_string("./site/index.html").unwrap();
-    Ok(index_text)
+    let index_text= fs::read_to_string("./site/index.html").unwrap();    
+    Ok(Html(index_text))
 }
+
 
 
 // Updated handler to accept AppState

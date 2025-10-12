@@ -12,12 +12,12 @@ use serde_json::Value;
 use llm_api::chat::{ChatLlmInteraction};
 use llm_api::chat::Message as LlmMessage;
 
-use crate::business_logic::workflow_runners::WorkFlowRunners;
+use crate::business_logic::workflow_invokers::WorkFlowInvokers;
 
 use configuration::AgentConfig;
 
 use agent_core::business_logic::services::EvaluationService;
-//use agent_evaluation_service::evaluation_server::judge_agent::{AgentEvaluationLogData};
+
 use agent_models::evaluation::evaluation_models::{AgentEvaluationLogData};
 
 
@@ -28,12 +28,10 @@ use agent_core::business_logic::services::WorkflowServiceApi;
 use workflow_management::graph::config::load_graph_from_file;
 use workflow_management::graph::{ graph_orchestrator::PlanExecutor};
 
-//use agent_core::execution::execution_result::ExecutionResult;
 use agent_models::execution::execution_result::{ExecutionResult};
 
 use std::fs;
 
-//use agent_core::graph::graph_definition::{WorkflowPlanInput,Graph};
 use agent_models::graph::graph_definition::{WorkflowPlanInput,Graph};
 
 
@@ -50,7 +48,7 @@ const TRIGGER_RETRY: u8 = 3;
 pub struct WorkFlowAgent {
     agent_config: Arc<AgentConfig>,
     llm_interaction: ChatLlmInteraction,
-    workflow_runners: Arc<WorkFlowRunners>,
+    workflow_invokers: Arc<WorkFlowInvokers>,
     discovery_service: Arc<dyn DiscoveryService>,
     evaluation_service: Option<Arc<dyn EvaluationService>>,
 }
@@ -73,9 +71,9 @@ impl Agent for WorkFlowAgent {
             llm_workflow_api_key,
         );
 
-        let workflow_runners = workflow_service
-            .and_then(|ws| ws.as_any().downcast_ref::<WorkFlowRunners>().map(|wr| Arc::new(wr.clone())))
-            .ok_or_else(|| anyhow::anyhow!("WorkFlowRunnerss not provided or invalid type"))?;
+        let workflow_invokers = workflow_service
+            .and_then(|ws| ws.as_any().downcast_ref::<WorkFlowInvokers>().map(|wr| Arc::new(wr.clone())))
+            .ok_or_else(|| anyhow::anyhow!("WorkFlowInvokers not provided or invalid type"))?;
 
         let discovery_service = discovery_service
             .ok_or_else(|| anyhow::anyhow!("DiscoveryService not provided"))?;
@@ -83,7 +81,7 @@ impl Agent for WorkFlowAgent {
         Ok(Self {
             agent_config: Arc::new(agent_config),
             llm_interaction,
-            workflow_runners,
+            workflow_invokers,
             discovery_service,
             evaluation_service,
         })
@@ -99,7 +97,7 @@ impl Agent for WorkFlowAgent {
         let original_user_query = user_query.clone();
         let mut retry_count = 0;
 
-        debug!("---WorkflowAgent: Starting to handle user request -- Query: '{}'---", user_query);
+        debug!("---WorkflowAgent: Starting to handle user request -- Query: \'{}\'---", user_query);
 
         if self.extract_high_level_plan_flag(metadata.clone()) {
             return self.handle_high_level_plan_request(user_query, request_id, conversation_id).await;
@@ -140,18 +138,16 @@ impl WorkFlowAgent {
         let mut executor =
             PlanExecutor::new(
                 graph,
-                self.workflow_runners.task_runner.clone(),
-                self.workflow_runners.agent_runner.clone(),
-                self.workflow_runners.tool_runner.clone(),
+                self.workflow_invokers.task_invoker.clone(),
+                self.workflow_invokers.agent_invoker.clone(),
+                self.workflow_invokers.tool_invoker.clone(),
                 original_user_query.to_string(),
             );
         
         match executor.execute_plan().await {
             Ok((execution_outcome, activities_outcome)) => {
-                // `execution_outcome` is a String containing JSON from the executor agent
                 debug!("\nWorkflow execution completed successfully. Outcome : {}\n", execution_outcome);
 
-                // Parse the execution_outcome string into a serde_json::Value
                 let parsed_output: Value = serde_json::from_str(&execution_outcome)
                     .context("Failed to parse execution_outcome into serde_json::Value")?;
 
@@ -160,20 +156,20 @@ impl WorkFlowAgent {
                     conversation_id,
                     original_user_query,
                     user_query.clone(),
-                    execution_outcome.clone(), // This is fine, handle_evaluation_and_retry expects String
+                    execution_outcome.clone(), 
                     activities_outcome,
                     retry_count,
                 ).await? {
                     Some(new_user_query) => {
                         *user_query = new_user_query;
-                        Ok(None) // Indicate retry needed
+                        Ok(None) 
                     },
                     None => {
                         Ok(Some(ExecutionResult {
                             request_id: request_id.to_string(),
                             conversation_id: conversation_id.to_string(),
                             success: true,
-                            output: parsed_output, // Assign the parsed Value here
+                            output: parsed_output, 
                         }))
                     }
                 }
@@ -188,12 +184,12 @@ impl WorkFlowAgent {
                     original_user_query,
                     user_query.clone(),
                     error_message.clone(),
-                    HashMap::new(), // Pass an empty HashMap on error
+                    HashMap::new(), 
                     retry_count,
                 ).await? {
                     Some(new_user_query) => {
                         *user_query = new_user_query;
-                        Ok(None) // Indicate retry needed
+                        Ok(None) 
                     },
                     None => {
                         Err(anyhow::anyhow!("{}", error_message))
@@ -212,14 +208,8 @@ impl WorkFlowAgent {
         agent_output: String,
         activities_outcome: HashMap<String, String>,
         retry_count: &mut u8,
-    ) -> anyhow::Result<Option<String>> { // Returns Some(new_user_query) if retry, None if done
+    ) -> anyhow::Result<Option<String>> { 
         if let Some(eval_service) = &self.evaluation_service {
-
-            /* 
-            let context_snapshot_json = serde_json::to_string(&activities_outcome)
-                .context("Failed to serialize activities_outcome to JSON for context_snapshot")?;
-            */
-
             let data = AgentEvaluationLogData {
                 agent_id: self.agent_config.agent_name.clone(),
                 request_id: request_id.to_string(),
@@ -230,7 +220,6 @@ impl WorkFlowAgent {
                 activities_outcome,
                 agent_output: agent_output.clone(),
                 context_snapshot: None,
-                //context_snapshot: Some(context_snapshot_json),
                 success_criteria: None,
             };
             let evaluation = eval_service.log_evaluation(data).await;
@@ -251,8 +240,6 @@ impl WorkFlowAgent {
                 },
                 Err(e) => {
                     error!("Error during evaluation logging: {}", e);
-                    // If evaluation itself fails, we still might want to proceed or abort based on other factors
-                    // For now, let\'s just proceed without retry based on evaluation if evaluation itself failed.
                     Ok(None)
                 }
             }
@@ -274,7 +261,7 @@ impl WorkFlowAgent {
                 step_id:None,
                 original_user_query:user_query.clone(),
                 agent_input:user_query.clone(),
-                activities_outcome: HashMap::new(), // Still an empty HashMap for this path
+                activities_outcome: HashMap::new(), 
                 agent_output:high_level_plan.clone(),
                 context_snapshot:None,
                 success_criteria:None,
@@ -287,7 +274,7 @@ impl WorkFlowAgent {
             request_id,
             conversation_id,
             success: true,
-            output: serde_json::Value::String(high_level_plan), // Wrap as serde_json::Value::String
+            output: serde_json::Value::String(high_level_plan), 
         })
     }
 
@@ -314,11 +301,10 @@ impl WorkFlowAgent {
         user_query: String,
     ) -> anyhow::Result<Graph>  {
 
-        // 1. Get capabilities string from workflow_runners
-        let capabilities = self.workflow_runners.list_available_resources();
 
-        // 2. Format the prompt with dynamic data
-        // Read the prompt template from the file
+        let capabilities = self.discovery_service.list_available_resources().await?;
+        debug!("Capabilities for plan creation: \n {}", capabilities);
+
         let prompt_template = fs::read_to_string(DEFAULT_WORKFLOW_PROMPT_TEMPLATE)
                 .context("Failed to read workflow_agent_prompt.txt")?;
 
@@ -328,39 +314,66 @@ impl WorkFlowAgent {
 
         debug!("Prompt for Plan creation : {}", prompt);
 
-        // 3. Call the LLM API
-        // This api returns raw text from llm
         let response_content = self.llm_interaction.call_api_simple_v2("user".to_string(),prompt.to_string()).await?;
         let response_content=response_content.expect("No plan created from LLM");
         info!("WorkflowAgent: LLM responded with plan content:{:?}", response_content);
 
-
-        // 4. Extract JSON from the LLM\'s response (in case it\'s wrapped in markdown code block)
         let json_string = if let (Some(start_idx), Some(end_idx)) = (response_content.find("```json"), response_content.rfind("```")) {
             let start = start_idx + "```json".len();
             if start < end_idx {
                 response_content[start..end_idx].trim().to_string()
             } else {
-                // to be improved
                 bail!("Failed to extract JSON: malformed markdown block or empty content.");
             }
         } else {
-            // If no markdown block, assume the entire response is the JSON string
             response_content.trim().to_string()
         };
 
         debug!("WorkFlow Generated: {}", json_string);
 
-        // 5. Parse the LLM\'s JSON response into the Workflow struct
         let workflow: WorkflowPlanInput = serde_json::from_str(&json_string)?;
-
         
         Ok(workflow.into())
     }
-}
 
+    pub async fn create_high_level_plan(&self, user_query: String) -> anyhow::Result<String> {
+        let capabilities = self.get_available_capabilities().await?;
+        debug!("Capabilities for high-level plan creation: \n {}", capabilities);
 
-impl WorkFlowAgent {
+        let prompt_template = fs::read_to_string(DEFAULT_HIGH_LEVEL_PLAN_PROMPT_TEMPLATE)
+                .context("Failed to read high_level_plan_agent_prompt.txt")?;
+
+        let prompt = prompt_template
+            .replacen("{}", &user_query, 1)
+            .replacen("{}", &capabilities, 1);
+
+        debug!("Prompt for high-level plan creation: {}", prompt);
+
+        let response_content = self.llm_interaction.call_api_simple_v2("user".to_string(), prompt.to_string()).await?
+            .context("LLM returned no content")?;
+        info!("LLM responded with high level plan content: {:?}", response_content);
+        
+        Ok(response_content)
+    }
+
+    async fn get_available_capabilities(&self) -> anyhow::Result<String> {
+        let discovered_agents = self.discovery_service.discover_agents().await?;
+        
+        let agent_details: Vec<String> = discovered_agents.into_iter()
+            .map(|agent| format!("- Agent: \'{}\', Purpose: \'{}\'", agent.name, agent.description))
+            .collect();
+
+        let capabilities = if !agent_details.is_empty() {
+            format!("Available Agents: \n{}", agent_details.join("\n"))
+        } else {
+            String::new()
+        };
+
+        debug!("Discovered Capabilities : {:#?}", capabilities);
+
+        Ok(capabilities)
+    }
+
     fn extract_workflow_filename(&self, metadata: Option<Map<String, Value>>) -> Option<String> {
         if let Some(map) = metadata {
             if let Some(value) = map.get("workflow_url") {
@@ -381,35 +394,3 @@ impl WorkFlowAgent {
         false
     }
 }
-
-
-impl WorkFlowAgent {
-    
-        pub async fn create_high_level_plan(
-            &self,
-            user_query: String,
-        ) -> anyhow::Result<String>  {
-    
-            // 1. Get capabilities string from workflow_runners
-            let capabilities = self.workflow_runners.list_available_resources();
-    
-            // 2. Format the prompt with dynamic data
-            // Read the prompt template from the file
-            let prompt_template = fs::read_to_string(DEFAULT_HIGH_LEVEL_PLAN_PROMPT_TEMPLATE)
-                    .context("Failed to read high_level_plan_agent_prompt.txt")?;
-    
-            let prompt = prompt_template
-                .replacen("{}", &user_query, 1)
-                .replacen("{}", &capabilities, 1);
-    
-            debug!("Prompt for Plan creation : {}", prompt);
-    
-            // 3. Call the LLM API
-            // This api returns raw text from llm
-            let response_content = self.llm_interaction.call_api_simple_v2("user".to_string(),prompt.to_string()).await?;
-            let response_content=response_content.expect("No plan created from LLM");
-            info!("WorkflowAgent: LLM responded with high level plan content:{:?}", response_content);
-            
-            Ok(response_content)
-        }
-    }

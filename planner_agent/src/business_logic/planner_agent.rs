@@ -10,12 +10,10 @@ use agent_core::business_logic::agent::Agent;
 use agent_core::business_logic::services::{DiscoveryService, MemoryService, EvaluationService, WorkflowServiceApi};
 use agent_models::graph::graph_definition::{WorkflowPlanInput, Graph};
 use agent_models::execution::execution_result::ExecutionResult;
-//use std::fs;
 use a2a_rs::{HttpClient, domain::{Message, Part, Role, TaskState}};
 use uuid::Uuid;
 use a2a_rs::services::AsyncA2AClient;
 use tokio::fs as async_fs;
-
 
 use workflow_management::graph::config::load_graph_from_file;
 
@@ -150,24 +148,6 @@ impl PlannerAgent {
         }
     }
 
-    async fn get_available_capabilities(&self) -> Result<String> {
-        let discovered_agents = self.discovery_service.discover_agents().await?;
-        
-        let agent_details: Vec<String> = discovered_agents.into_iter()
-            .map(|agent| format!("- Agent: '{}', Purpose: '{}'", agent.name, agent.description))
-            .collect();
-
-        let capabilities = if !agent_details.is_empty() {
-            format!("Available Agents: \n{}", agent_details.join("\n"))
-        } else {
-            String::new()
-        };
-
-        debug!("Discovered Capabilities : {:#?}", capabilities);
-
-        Ok(capabilities)
-    }
-
     pub async fn create_plan(&self, user_query: &str) -> Result<Graph> {
         let capabilities = self.discovery_service.list_available_resources().await?;
         debug!("Capabilities for plan creation: \n {}", capabilities);
@@ -211,6 +191,24 @@ impl PlannerAgent {
         info!("LLM responded with high level plan content: {:?}", response_content);
         
         Ok(response_content)
+    }
+
+    async fn get_available_capabilities(&self) -> Result<String> {
+        let discovered_agents = self.discovery_service.discover_agents().await?;
+        
+        let agent_details: Vec<String> = discovered_agents.into_iter()
+            .map(|agent| format!("- Agent: '{}', Purpose: '{}'", agent.name, agent.description))
+            .collect();
+
+        let capabilities = if !agent_details.is_empty() {
+            format!("Available Agents: \n{}", agent_details.join("\n"))
+        } else {
+            String::new()
+        };
+
+        debug!("Discovered Capabilities : {:#?}", capabilities);
+
+        Ok(capabilities)
     }
 
     fn extract_json_from_response(&self, response: &str) -> Result<String> {

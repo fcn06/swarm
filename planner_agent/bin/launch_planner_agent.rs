@@ -8,7 +8,7 @@ use configuration::{setup_logging, AgentConfig};
 
 use serde_json::json;
 
-use crate::tools::mcp_runtime_tool_invoker::McpRuntimeToolInvoker;
+use crate::tools::mcp_runtime_tools::McpRuntimeTools;
 
 use planner_agent::business_logic::planner_agent::PlannerAgent;
 
@@ -104,11 +104,11 @@ async fn register_agents(discovery_service: Arc<dyn DiscoveryService>) -> anyhow
 /// Register Agents in Discovery Service
 async fn register_tools(mcp_config_path: String,discovery_service: Arc<dyn DiscoveryService>) -> anyhow::Result<()> {
 
-    let mcp_tool_runner_invoker = McpRuntimeToolInvoker::new(mcp_config_path).await?;
-    let mcp_tool_runner_invoker = Arc::new(mcp_tool_runner_invoker);
+    let mcp_tools = McpRuntimeTools::new(mcp_config_path).await?;
+    let mcp_tools = Arc::new(mcp_tools);
 
     // Register tools
-        let list_tools= mcp_tool_runner_invoker.get_tools_list_v2().await?;
+        let list_tools= mcp_tools.get_tools_list_v2().await?;
         for tool in list_tools {
             let tool_definition=ToolDefinition {
                 id:tool.function.name.clone(),

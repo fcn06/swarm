@@ -2,7 +2,6 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use tracing::{ debug, warn};
 
-//use std::collections::HashMap;
 use serde_json::{Map, Value, json};
 use uuid::Uuid;
 
@@ -12,41 +11,39 @@ use configuration::AgentConfig;
 use agent_core::business_logic::agent::Agent;
 use agent_core::business_logic::services::{DiscoveryService, MemoryService, EvaluationService, WorkflowServiceApi};
 
-//use agent_core::graph::graph_definition::Graph;
 use agent_models::graph::graph_definition::{Graph};
 
-//use agent_core::execution::execution_result::ExecutionResult;
 use agent_models::execution::execution_result::{ExecutionResult};
 
 use workflow_management::graph::graph_orchestrator::PlanExecutor;
-use workflow_management::agent_communication::agent_runner::AgentRunner;
-use workflow_management::tasks::task_runner::TaskRunner;
-use workflow_management::tools::tool_runner::ToolRunner;
+use workflow_management::agent_communication::agent_invoker::AgentInvoker;
+use workflow_management::tasks::task_invoker::TaskInvoker;
+use workflow_management::tools::tool_invoker::ToolInvoker;
 use std::any::Any;
 
 // TODO: Move this to a separate file if it grows
 #[derive(Clone)]
-pub struct WorkFlowRunners {
-    pub task_runner: Arc<TaskRunner>,
-    pub agent_runner: Arc<AgentRunner>,
-    pub tool_runner: Arc<ToolRunner>,
+pub struct WorkFlowInvokers {
+    pub task_invoker: Arc<dyn TaskInvoker>,
+    pub agent_invoker: Arc<dyn AgentInvoker>,
+    pub tool_invoker: Arc<dyn ToolInvoker>,
 }
 
-impl WorkFlowRunners {
+impl WorkFlowInvokers {
     pub async fn init(
-        task_runner: Arc<TaskRunner>,
-        agent_runner: Arc<AgentRunner>,
-        tool_runner: Arc<ToolRunner>,
+        task_invoker: Arc<dyn TaskInvoker>,
+        agent_invoker: Arc<dyn AgentInvoker>,
+        tool_invoker: Arc<dyn ToolInvoker>,
     ) -> anyhow::Result<Self> {
         Ok(Self {
-            task_runner,
-            agent_runner,
-            tool_runner,
+            task_invoker,
+            agent_invoker,
+            tool_invoker,
         })
     }
 }
 
-impl WorkflowServiceApi for WorkFlowRunners {
+impl WorkflowServiceApi for WorkFlowInvokers {
     fn as_any(&self) -> &dyn Any { self }
     fn as_any_mut(&mut self) -> &mut dyn Any { self }
 }
@@ -55,7 +52,7 @@ impl WorkflowServiceApi for WorkFlowRunners {
 #[derive(Clone)]
 pub struct ExecutorAgent {
     agent_config: Arc<AgentConfig>,
-    workflow_runners: Arc<WorkFlowRunners>,
+    workflow_invokers: Arc<WorkFlowInvokers>,
     evaluation_service: Option<Arc<dyn EvaluationService>>,
 }
 
@@ -69,13 +66,13 @@ impl Agent for ExecutorAgent {
         workflow_service: Option<Arc<dyn WorkflowServiceApi>>,
     ) -> anyhow::Result<Self> {
         
-        let workflow_runners = workflow_service
-            .and_then(|ws| ws.as_any().downcast_ref::<WorkFlowRunners>().map(|wr| Arc::new(wr.clone())))
-            .ok_or_else(|| anyhow::anyhow!("WorkFlowRunners not provided or invalid type"))?;
+        let workflow_invokers = workflow_service
+            .and_then(|ws| ws.as_any().downcast_ref::<WorkFlowInvokers>().map(|wr| Arc::new(wr.clone())))
+            .ok_or_else(|| anyhow::anyhow!("WorkFlowInvokers not provided or invalid type"))?;
 
         Ok(Self {
             agent_config: Arc::new(agent_config),
-            workflow_runners,
+            workflow_invokers,
             evaluation_service,
         })
     }
@@ -89,9 +86,9 @@ impl Agent for ExecutorAgent {
 
         let mut executor = PlanExecutor::new(
             graph,
-            self.workflow_runners.task_runner.clone(),
-            self.workflow_runners.agent_runner.clone(),
-            self.workflow_runners.tool_runner.clone(),
+            self.workflow_invokers.task_invoker.clone(),
+            self.workflow_invokers.agent_invoker.clone(),
+            self.workflow_invokers.tool_invoker.clone(),
             "User query not available in executor".to_string(), // TODO: Pass user query through
         );
 

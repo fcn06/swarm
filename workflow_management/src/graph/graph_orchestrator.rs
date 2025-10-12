@@ -2,10 +2,10 @@
 use agent_models::graph::graph_definition::{Activity, ActivityType, Graph, NodeType, PlanContext, PlanState};
 
 
-use crate::agent_communication::agent_runner::AgentRunner;
+use crate::agent_communication::agent_invoker::AgentInvoker;
 use crate::tasks::condition_evaluator::evaluate_condition;
-use crate::tasks::task_runner::TaskRunner;
-use crate::tools::tool_runner::ToolRunner;
+use crate::tasks::task_invoker::TaskInvoker;
+use crate::tools::tool_invoker::ToolInvoker;
 use regex::Regex;
 use serde_json::Value;
 use std::collections::{HashMap, HashSet, VecDeque};
@@ -21,11 +21,11 @@ pub enum PlanExecutorError {
     ExecutionFailed(String),
     #[error("Invalid state transition")]
     InvalidState,
-    #[error("Task runner not found for skill: {0}")]
+    #[error("Task invoker not found for skill: {0}")]
     TaskRunnerNotFound(String),
-    #[error("Agent runner not found: {0}")]
+    #[error("Agent invoker not found: {0}")]
     AgentRunnerNotFound(String),
-    #[error("Tool runner not found: {0}")]
+    #[error("Tool invoker not found: {0}")]
     ToolRunnerNotFound(String),
     #[error("Cyclic dependency detected")]
     CyclicDependency,
@@ -41,9 +41,9 @@ pub enum PlanExecutorError {
 
 pub struct PlanExecutor {
     context: PlanContext,
-    task_runner: Arc<TaskRunner>,
-    agent_runner: Arc<AgentRunner>,
-    tool_runner: Arc<ToolRunner>,
+    task_invoker: Arc<dyn TaskInvoker>,
+    agent_invoker: Arc<dyn AgentInvoker>,
+    tool_invoker: Arc<dyn ToolInvoker>,
     execution_queue: VecDeque<String>,
     dependency_tracker: HashMap<String, usize>,
 }
@@ -51,9 +51,9 @@ pub struct PlanExecutor {
 impl PlanExecutor {
     pub fn new(
         graph: Graph,
-        task_runner: Arc<TaskRunner>,
-        agent_runner: Arc<AgentRunner>,
-        tool_runner: Arc<ToolRunner>,
+        task_invoker: Arc<dyn TaskInvoker>,
+        agent_invoker: Arc<dyn AgentInvoker>,
+        tool_invoker: Arc<dyn ToolInvoker>,
         user_query: String,
     ) -> Self {
         Self {
@@ -65,9 +65,9 @@ impl PlanExecutor {
                 final_outcome: String::new(),
                 user_query,
             },
-            task_runner,
-            agent_runner,
-            tool_runner,
+            task_invoker,
+            agent_invoker,
+            tool_invoker,
             execution_queue: VecDeque::new(),
             dependency_tracker: HashMap::new(),
         }
@@ -181,7 +181,7 @@ impl PlanExecutor {
 
                 let skill = activity.skill_to_use.clone().unwrap_or_default();
 
-                self.agent_runner
+                self.agent_invoker
                     .interact(agent_id, message, skill)
                     .await
                     .map_err(|e| PlanExecutorError::ExecutionFailed(e.to_string()))?
@@ -195,8 +195,8 @@ impl PlanExecutor {
                     .clone();
                 let params = activity.tool_parameters.unwrap_or_else(|| Value::Null);
 
-                self.tool_runner
-                    .run(tool_id, params)
+                self.tool_invoker
+                    .invoke(tool_id, &params)
                     .await
                     .map_err(|e| PlanExecutorError::ExecutionFailed(e.to_string()))?
                     .to_string()
@@ -213,8 +213,8 @@ impl PlanExecutor {
                 let task_id = task_config.task_to_use.as_ref().cloned().unwrap_or_default();
                 let params = task_config.task_parameters.clone();
 
-                self.task_runner
-                    .run(task_id, params)
+                self.task_invoker
+                    .invoke(task_id, &params)
                     .await
                     .map_err(|e| PlanExecutorError::ExecutionFailed(e.to_string()))?
                     .to_string()

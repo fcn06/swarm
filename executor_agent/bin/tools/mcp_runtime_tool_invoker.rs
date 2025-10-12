@@ -2,13 +2,13 @@ use async_trait::async_trait;
 use std::sync::Arc;
 
 
-use rmcp::model::{ListToolsResult, Tool as RmcpTool,CallToolRequestParam}; // Alias for clarity
+use rmcp::model::{CallToolRequestParam}; // Alias for clarity
 
-use llm_api::tools::{FunctionDefinition, FunctionParameters, Tool};
+//use llm_api::tools::{FunctionDefinition, FunctionParameters, Tool};
 
 use configuration::AgentMcpConfig;
 
-use serde_json::{Map,Value, from_value};
+use serde_json::{Value, from_value};
 use anyhow::{Context};
 
 use mcp_runtime::runtime::mcp_runtime::{McpRuntime};
@@ -34,6 +34,7 @@ impl McpRuntimeToolInvoker  {
         Ok(mcp_runtime)
     }
 
+    /* 
     pub async fn get_tools_list_v2(&self) -> anyhow::Result<Vec<Tool>> {
         let list_tools: ListToolsResult = self.mcp_runtime.get_client()?.list_tools(Default::default()).await?;
         let list_tools:Vec<RmcpTool> = list_tools.tools;
@@ -77,6 +78,7 @@ impl McpRuntimeToolInvoker  {
             .collect::<anyhow::Result<Vec<Tool>>>()
             .with_context(|| "Failed to define tools from rmcp::model::Tool vector")
     }
+    */
 
 
 }

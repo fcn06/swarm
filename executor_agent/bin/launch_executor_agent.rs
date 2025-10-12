@@ -8,26 +8,18 @@ use tracing::{ info, warn};
 
 use configuration::{setup_logging, AgentReference,AgentConfig};
 
-use serde_json::json;
 
 use crate::tasks::tasks_invoker::{GreetTask};
 use crate::tools::mcp_runtime_tool_invoker::McpRuntimeToolInvoker;
 use crate::agents::a2a_agent_invoker::A2AAgentInvoker;
 
 
-use executor_agent::business_logic::executor_agent::{ExecutorAgent, WorkFlowRunners};
+use executor_agent::business_logic::executor_agent::{ExecutorAgent, WorkFlowInvokers};
 
+use workflow_management::agent_communication::agent_invoker::AgentInvoker;
+use workflow_management::tasks::task_invoker::TaskInvoker;
+use workflow_management::tools::tool_invoker::ToolInvoker;
 
-use workflow_management::agent_communication::agent_runner::AgentRunner;
-use workflow_management::agent_communication::agent_registry::AgentDefinition;
-use workflow_management::tasks::task_runner::TaskRunner;
-use workflow_management::tasks::task_registry::TaskDefinition;
-use workflow_management::tools::tool_runner::ToolRunner;
-use workflow_management::tools::tool_registry::ToolDefinition;
-
-use workflow_management::agent_communication::{agent_registry::AgentRegistry,};
-use workflow_management::tasks::task_registry::TaskRegistry;
-use workflow_management::tools::tool_registry::ToolRegistry;
 
 
 use agent_core::business_logic::agent::Agent;
@@ -80,50 +72,27 @@ async fn setup_discovery_service(discovery_url: String) -> Option<Arc<dyn Discov
     Some(Arc::new(adapter))
 }
 
-async fn setup_task_runner() -> anyhow::Result<Arc<TaskRunner>> {
+
+
+async fn setup_task_invoker() -> anyhow::Result<Arc<dyn TaskInvoker>> {
     let greet_task_invoker = GreetTask::new()?;
     let greet_task_invoker = Arc::new(greet_task_invoker);
 
-    let mut task_registry = TaskRegistry::new();
-    task_registry.register_task(TaskDefinition {
-        id: "greeting".to_string(),
-        name: "Say Hello".to_string(),
-        description: "Say hello to somebody".to_string(),
-        input_schema: json!({}),
-        output_schema: json!({}),
-    });
-    let task_registry = Arc::new(task_registry);
-
-    Ok(Arc::new(TaskRunner::new(task_registry, greet_task_invoker)))
+    Ok(greet_task_invoker)
 }
 
-async fn setup_tool_runner(mcp_config_path: String) -> anyhow::Result<Arc<ToolRunner>> {
-    let mcp_tool_runner_invoker = McpRuntimeToolInvoker::new(mcp_config_path).await?;
-    let mcp_tool_runner_invoker = Arc::new(mcp_tool_runner_invoker);
+async fn setup_tool_invoker(mcp_config_path: String) -> anyhow::Result<Arc<dyn ToolInvoker>> {
+    let mcp_tool_invoker = McpRuntimeToolInvoker::new(mcp_config_path).await?;
+    let mcp_tool_invoker = Arc::new(mcp_tool_invoker);
 
-    // Register tools
-        let mut tool_registry = ToolRegistry::new();
-        let list_tools= mcp_tool_runner_invoker.get_tools_list_v2().await?;
-        for tool in list_tools {
-            let tool_definition=ToolDefinition {
-                id:tool.function.name.clone(),
-                name: tool.function.name.clone(),
-                description: tool.function.description.clone(),
-                input_schema: serde_json::Value::String(serde_json::to_string(&tool.function.parameters).unwrap_or_else(|_| "{}".to_string())),
-                output_schema: json!({}),
-        };    
-        tool_registry.register_tool(tool_definition);
-        }
-        let tool_registry = Arc::new(tool_registry);
-    // End tools Registration
-
-    Ok(Arc::new(ToolRunner::new(tool_registry, mcp_tool_runner_invoker)))
+    Ok(mcp_tool_invoker)
 }
 
-async fn setup_agent_runner(executor_agent_config: &AgentConfig) -> anyhow::Result<Arc<AgentRunner>> {
+async fn setup_agent_invoker(executor_agent_config: &AgentConfig) -> anyhow::Result<Arc<dyn AgentInvoker>> {
     let discovery_service_adapter = Arc::new(AgentDiscoveryServiceAdapter::new(
         &executor_agent_config.agent_discovery_url.clone().expect("Discovery URL not configured")
     ));
+
     let a2a_agent_invoker = A2AAgentInvoker::new(vec![AgentReference {
         name: "Basic_Agent".to_string(),
         url: "http://127.0.0.1:8080".to_string(),
@@ -131,16 +100,7 @@ async fn setup_agent_runner(executor_agent_config: &AgentConfig) -> anyhow::Resu
     }], None, None, discovery_service_adapter.clone()).await?;
     let a2a_agent_invoker = Arc::new(a2a_agent_invoker);
 
-    let mut agent_registry = AgentRegistry::new();
-    agent_registry.register_agent(AgentDefinition {
-        id: "Basic_Agent".to_string(),
-        name: "Basic Agent for weather requests, customer requests and other general topics".to_string(),
-        description: "Retrieve Weather in a Location, Get customer details and other General Requests".to_string(),
-        skills: Vec::new(),
-    });
-    let agent_registry = Arc::new(agent_registry);
-
-    Ok(Arc::new(AgentRunner::new(agent_registry, a2a_agent_invoker)))
+    Ok(a2a_agent_invoker)
 }
 
 
@@ -168,29 +128,29 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
 
 
     /************************************************/
-    /* Set Up Runners                               */
+    /* Set Up Invokers                               */
     /************************************************/ 
-    let task_runner = setup_task_runner().await?;
-    let tool_runner = setup_tool_runner(args.mcp_config_path).await?;
-    let agent_runner = setup_agent_runner(&executor_agent_config).await?;
+    let task_invoker= setup_task_invoker().await?;
+    let tool_invoker = setup_tool_invoker(args.mcp_config_path).await?;
+    let agent_invoker= setup_agent_invoker(&executor_agent_config).await?;
 
     /************************************************/
-    /* Get a Workflow Registries Instance           */
+    /* Get a Workflow Invokers Instance           */
     /************************************************/ 
-    let workflow_runners = WorkFlowRunners::init(
-        task_runner.clone(),
-        agent_runner.clone(),
-        tool_runner.clone(),
+    let workflow_invokers = WorkFlowInvokers::init(
+        task_invoker.clone(),
+        agent_invoker.clone(),
+        tool_invoker.clone(),
     ).await?;
 
-   // debug!("{}",workflow_runners.list_available_resources());
+   // debug!("{}",workflow_invokers.list_available_resources());
 
-    let workflow_runners: Option<Arc<dyn WorkflowServiceApi>> = Some(Arc::new(workflow_runners));
+    let workflow_invokers: Option<Arc<dyn WorkflowServiceApi>> = Some(Arc::new(workflow_invokers));
 
     /************************************************/
     /* Launch Workflow Agent                        */
     /************************************************/ 
-    let agent = ExecutorAgent::new(executor_agent_config.clone(), evaluation_service, memory_service, discovery_service.clone(), workflow_runners).await?;
+    let agent = ExecutorAgent::new(executor_agent_config.clone(), evaluation_service, memory_service, discovery_service.clone(), workflow_invokers).await?;
 
     /************************************************/
     /* Launch Workflow Agent Server                 */

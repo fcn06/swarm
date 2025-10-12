@@ -14,7 +14,8 @@ members = [ "configuration","llm_api",
                 "executor_agent",
                 "examples/*",
                 "agent_models",
-                "agent_service_adapters"]
+                "agent_service_adapters",
+                "resource_invoker"]
 
 [workspace.dependencies]
 configuration = { path = "./configuration" }

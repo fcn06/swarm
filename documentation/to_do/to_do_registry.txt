@@ -3,6 +3,6 @@ executor agent
 workflow agent
 workflow management
 
-Replace when needed runners with invokers
+Replace when needed runners with invokers. Done
 
-
+Implement a notion of context

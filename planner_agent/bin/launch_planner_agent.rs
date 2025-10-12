@@ -11,23 +11,16 @@ use serde_json::json;
 use crate::tools::mcp_runtime_tool_invoker::McpRuntimeToolInvoker;
 
 use planner_agent::business_logic::planner_agent::PlannerAgent;
-use planner_agent::business_logic::workflow_registry::WorkFlowRegistry;
 
-use workflow_management::agent_communication::agent_registry::AgentDefinition;
-use workflow_management::tasks::task_registry::TaskDefinition;
-use workflow_management::tools::tool_registry::ToolDefinition;
 
-use workflow_management::agent_communication::{agent_registry::AgentRegistry,};
-use workflow_management::tasks::task_registry::TaskRegistry;
-use workflow_management::tools::tool_registry::ToolRegistry;
 
-// Future Use
-use agent_models::registry::registry_models::{TaskDefinition as Td,AgentDefinition as Ad,ToolDefinition as Tld};
+// Registration via discovery service
+use agent_models::registry::registry_models::{TaskDefinition,AgentDefinition,ToolDefinition};
 
 
 use agent_core::business_logic::agent::Agent;
 use agent_core::server::agent_server::AgentServer;
-use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService,WorkflowServiceApi};
+use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService};
 
 
 use agent_service_adapters::{AgentEvaluationServiceAdapter, AgentMemoryServiceAdapter,AgentDiscoveryServiceAdapter};
@@ -75,66 +68,15 @@ async fn setup_discovery_service(discovery_url: String) -> Option<Arc<dyn Discov
     Some(Arc::new(adapter))
 }
 
-async fn setup_task_registry() -> anyhow::Result<Arc<TaskRegistry>> {
-
-
-    let mut task_registry = TaskRegistry::new();
-    task_registry.register_task(TaskDefinition {
-        id: "greeting".to_string(),
-        name: "Say Hello".to_string(),
-        description: "Say hello to somebody".to_string(),
-        input_schema: json!({}),
-        output_schema: json!({}),
-    });
-
-    Ok(Arc::new(task_registry))
-}
-
-
-async fn setup_tool_registry(mcp_config_path: String) -> anyhow::Result<Arc<ToolRegistry>> {
-    let mcp_tool_runner_invoker = McpRuntimeToolInvoker::new(mcp_config_path).await?;
-    let mcp_tool_runner_invoker = Arc::new(mcp_tool_runner_invoker);
-
-    // Register tools
-        let mut tool_registry = ToolRegistry::new();
-        let list_tools= mcp_tool_runner_invoker.get_tools_list_v2().await?;
-        for tool in list_tools {
-            let tool_definition=ToolDefinition {
-                id:tool.function.name.clone(),
-                name: tool.function.name.clone(),
-                description: tool.function.description.clone(),
-                input_schema: serde_json::to_value(&tool.function.parameters).unwrap_or_else(|_| json!({})),
-                output_schema: json!({}),
-        };    
-        tool_registry.register_tool(tool_definition);
-        }
-    // End tools Registration
-
-    Ok(Arc::new(tool_registry))
-}
-
-#[allow(unused_variables)]
-async fn setup_agent_registry(planner_agent_config: &AgentConfig) -> anyhow::Result<Arc<AgentRegistry>> {
-
-    let mut agent_registry = AgentRegistry::new();
-    agent_registry.register_agent(AgentDefinition {
-        id: "Basic_Agent".to_string(),
-        name: "Basic Agent for weather requests, customer requests and other general topics".to_string(),
-        description: "Retrieve Weather in a Location, Get customer details and other General Requests".to_string(),
-        skills: Vec::new(),
-    });
-
-    Ok(Arc::new(agent_registry))
-}
-
-
-// Future Use : Registration using discovery Service
-
+/********************************************************************/
+// Registration via discovery Service of the resources 
+// that we will make available
+/********************************************************************/
 
 /// Register Tasks in Discovery Service
 async fn register_tasks(discovery_service: Arc<dyn DiscoveryService>) -> anyhow::Result<()> {
 
-    let task_definition=Td {
+    let task_definition=TaskDefinition {
         id: "greeting".to_string(),
         name: "Say Hello".to_string(),
         description: "Say hello to somebody".to_string(),
@@ -148,7 +90,7 @@ async fn register_tasks(discovery_service: Arc<dyn DiscoveryService>) -> anyhow:
 /// Register Agents in Discovery Service
 async fn register_agents(discovery_service: Arc<dyn DiscoveryService>) -> anyhow::Result<()> {
 
-    let agent_definition=Ad {
+    let agent_definition=AgentDefinition {
         id: "Basic_Agent".to_string(),
         name: "Basic Agent for weather requests, customer requests and other general topics".to_string(),
         description: "Retrieve Weather in a Location, Get customer details and other General Requests".to_string(),
@@ -168,7 +110,7 @@ async fn register_tools(mcp_config_path: String,discovery_service: Arc<dyn Disco
     // Register tools
         let list_tools= mcp_tool_runner_invoker.get_tools_list_v2().await?;
         for tool in list_tools {
-            let tool_definition=Tld {
+            let tool_definition=ToolDefinition {
                 id:tool.function.name.clone(),
                 name: tool.function.name.clone(),
                 description: tool.function.description.clone(),
@@ -206,36 +148,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
 
 
     /************************************************/
-    /* Future Use : Set Up Registrations            */
+    /* Set Up Registrations via discovery service           */
     /************************************************/ 
     register_tasks(discovery_service.clone().unwrap()).await?;
     register_agents(discovery_service.clone().unwrap()).await?;
     register_tools(args.mcp_config_path.clone(),discovery_service.clone().unwrap()).await?;
 
     /************************************************/
-    /* Set Up Registries                            */
-    /************************************************/ 
-    let task_registry = setup_task_registry().await?;
-    let tool_registry = setup_tool_registry(args.mcp_config_path).await?;
-    let agent_registry = setup_agent_registry(&planner_agent_config).await?;
-
-    /************************************************/
-    /* Get a Workflow Registries Instance           */
-    /************************************************/ 
-    let workflow_registry = WorkFlowRegistry::init(
-        task_registry.clone(),
-        agent_registry.clone(),
-        tool_registry.clone(),
-    ).await?;
-
-   // debug!("{}",workflow_runners.list_available_resources());
-
-    let workflow_registry: Option<Arc<dyn WorkflowServiceApi>> = Some(Arc::new(workflow_registry));
-
-    /************************************************/
     /* Launch Workflow Agent                        */
     /************************************************/ 
-    let agent = PlannerAgent::new(planner_agent_config.clone(), evaluation_service, memory_service, discovery_service.clone(), workflow_registry).await?;
+    // no more need of workflow registry
+    let agent = PlannerAgent::new(planner_agent_config.clone(), evaluation_service, memory_service, discovery_service.clone(), None).await?;
 
     /************************************************/
     /* Launch Workflow Agent Server                 */

@@ -16,7 +16,7 @@ use uuid::Uuid;
 use a2a_rs::services::AsyncA2AClient;
 use tokio::fs as async_fs;
 
-use super::workflow_registry::WorkFlowRegistry;
+
 use workflow_management::graph::config::load_graph_from_file;
 
 const DEFAULT_WORKFLOW_PROMPT_TEMPLATE: &str = "./configuration/prompts/detailed_workflow_agent_prompt.txt";
@@ -27,7 +27,6 @@ const A2A_TIMEOUT_SECONDS: u32 = 50;
 pub struct PlannerAgent {
     agent_config: Arc<AgentConfig>,
     llm_interaction: ChatLlmInteraction,
-    workflow_registry: Arc<WorkFlowRegistry>,
     discovery_service: Arc<dyn DiscoveryService>,
     client: Arc<HttpClient>,
 }
@@ -39,7 +38,7 @@ impl Agent for PlannerAgent {
         _evaluation_service: Option<Arc<dyn EvaluationService>>,
         _memory_service: Option<Arc<dyn MemoryService>>,
         discovery_service: Option<Arc<dyn DiscoveryService>>,
-        workflow_service: Option<Arc<dyn WorkflowServiceApi>>,
+        _workflow_service: Option<Arc<dyn WorkflowServiceApi>>,
     ) -> Result<Self> {
         let llm_planner_api_key = env::var("LLM_PLANNER_API_KEY")
             .context("LLM_PLANNER_API_KEY must be set")?;
@@ -53,17 +52,12 @@ impl Agent for PlannerAgent {
         let discovery_service = discovery_service
             .ok_or_else(|| anyhow::anyhow!("DiscoveryService not provided"))?;
 
-        let workflow_registry = workflow_service
-            .and_then(|ws| ws.as_any().downcast_ref::<WorkFlowRegistry>().map(|wr| Arc::new(wr.clone())))
-            .ok_or_else(|| anyhow::anyhow!("WorkFlowRegistry not provided or invalid type"))?;
-
         let executor_url = agent_config.agent_executor_url()
             .context("agent_executor_url not found in configuration")?;
 
         Ok(Self {
             agent_config: Arc::new(agent_config),
             llm_interaction,
-            workflow_registry,
             discovery_service,
             client: Arc::new(HttpClient::new(executor_url)),
         })
@@ -175,7 +169,7 @@ impl PlannerAgent {
     }
 
     pub async fn create_plan(&self, user_query: &str) -> Result<Graph> {
-        let capabilities = self.workflow_registry.list_available_resources();
+        let capabilities = self.discovery_service.list_available_resources().await?;
         debug!("Capabilities for plan creation: \n {}", capabilities);
 
         let prompt_template = async_fs::read_to_string(DEFAULT_WORKFLOW_PROMPT_TEMPLATE).await

@@ -66,6 +66,8 @@ impl DiscoveryServer {
             // Tool Definition Routes
             .route("/tools/register", post(register_tool_definition))
             .route("/tools", get(list_tool_definitions))
+            // All resources
+            .route("/resources", get(list_available_resources))
             .with_state(app_state);
 
         Ok(Self { uri, app })
@@ -204,4 +206,41 @@ async fn register_tool_definition(
 async fn list_tool_definitions(State(state): State<AppState>) -> Json<Vec<ToolDefinition>> {
     let list_tools: Vec<ToolDefinition> = state.db_tools.iter().map(|e| e.value().clone()).collect();
     Json(list_tools)
+}
+
+async fn list_available_resources(State(state): State<AppState>) -> impl IntoResponse {
+    let mut available_resources = String::new();
+
+    let list_agents: Vec<AgentDefinition> = state.db_agents.iter().map(|e| e.value().clone()).collect();
+    let list_tools: Vec<ToolDefinition> = state.db_tools.iter().map(|e| e.value().clone()).collect();
+    let list_tasks: Vec<TaskDefinition> = state.db_tasks.iter().map(|e| e.value().clone()).collect();
+
+    if !list_tools.is_empty() {
+        let tool_details = list_tools.iter()
+            .map(|tool| format!("* tool_id : {} -- description : {} -- arguments : {}", tool.id, tool.description,tool.input_schema))
+            .collect::<Vec<String>>()
+            .join("\n");
+        available_resources.push_str(&tool_details);
+        available_resources.push('\n');
+    }
+
+    if !list_tasks.is_empty() {
+        let task_details = list_tasks.iter()
+            .map(|task| format!("* task_id :  {} -- description : {}", task.id, task.description))
+            .collect::<Vec<String>>()
+            .join("\n");
+        available_resources.push_str(&task_details);
+        available_resources.push('\n');
+    }
+
+    if !list_agents.is_empty() {
+        let agent_details = list_agents.iter()
+            .map(|agent| format!("* agent_id : {} -- description :{} -- ", agent.id, agent.description))
+            .collect::<Vec<String>>()
+            .join("\n");
+        available_resources.push_str(&agent_details);
+        available_resources.push('\n');
+    }
+
+    (StatusCode::OK, Json(available_resources))
 }

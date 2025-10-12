@@ -5,13 +5,13 @@ use agent_models::registry::registry_models::{AgentDefinition, TaskDefinition, T
 
 
 /*
-agent_discovery_client.rs 
+agent_discovery_client.rs
 is concerned with how to communicate with the discovery service over the network.
 
-agent_discovery_client.rs: 
-This file contains the concrete client implementation for interacting directly 
-with the Agent Discovery Service's HTTP API. 
-It handles the low-level details of making network requests (using reqwest) to register, deregister, 
+agent_discovery_client.rs:
+This file contains the concrete client implementation for interacting directly
+with the Agent Discovery Service's HTTP API.
+It handles the low-level details of making network requests (using reqwest) to register, deregister,
 list, and search for agents, tasks, and tools. It knows the specific endpoints and data formats of the discovery service.
 */
 
@@ -103,5 +103,12 @@ impl AgentDiscoveryServiceClient {
         let url = format!("{}/tools", self.discovery_service_url);
         let response = self.client.get(&url).send().await?;
         response.json::<Vec<ToolDefinition>>().await
+    }
+    
+    /// Lists all available resources (agents, tools, and tasks).
+    pub async fn list_available_resources(&self) -> Result<String, Error> {
+        let url = format!("{}/resources", self.discovery_service_url);
+        let response = self.client.get(&url).send().await?;
+        response.text().await
     }
 }

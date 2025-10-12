@@ -125,4 +125,9 @@ impl DiscoveryService for AgentDiscoveryServiceAdapter {
     async fn list_tools(&self) -> Result<Vec<ToolDefinition>> {
         Ok(self.client.list_tool_definitions().await?)
     }
+
+    async fn list_available_resources(&self) -> Result<String> {
+        Ok(self.client.list_available_resources().await?)
+    }
+
 }

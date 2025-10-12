@@ -33,6 +33,7 @@ pub trait DiscoveryService: Send + Sync {
     async fn list_tasks(&self) -> Result<Vec<TaskDefinition>>; 
     async fn register_tool(&self, tool_def: &ToolDefinition) -> Result<()>;
     async fn list_tools(&self) -> Result<Vec<ToolDefinition>>; 
+    async fn list_available_resources(&self) -> Result<String>;
 }
 
 // New trait for workflow related services

@@ -1,0 +1,8 @@
+remove tool,agent, task registry from
+executor agent
+workflow agent
+workflow management
+
+Replace when needed runners with invokers
+
+

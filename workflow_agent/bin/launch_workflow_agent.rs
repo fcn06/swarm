@@ -1,11 +1,3 @@
-//mod tasks;
-//mod tools;
-//mod agents;
-
-//use crate::tasks::tasks_invoker::{GreetTask};
-//use crate::tools::mcp_runtime_tool_invoker::McpRuntimeToolInvoker;
-//use crate::agents::a2a_agent_invoker::A2AAgentInvoker;
-
 use resource_invoker::McpRuntimeToolInvoker;
 use resource_invoker::GreetTask;
 use resource_invoker::A2AAgentInvoker;

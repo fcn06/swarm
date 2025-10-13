@@ -1,4 +1,8 @@
-mod tools;
+//mod tools;
+//use crate::tools::mcp_runtime_tools::McpRuntimeTools;
+
+use resource_invoker::McpRuntimeToolInvoker as McpRuntimeTools;
+
 
 use clap::Parser;
 use std::sync::Arc;
@@ -8,20 +12,14 @@ use configuration::{setup_logging, AgentConfig};
 
 use serde_json::json;
 
-use crate::tools::mcp_runtime_tools::McpRuntimeTools;
-
 use planner_agent::business_logic::planner_agent::PlannerAgent;
-
-
 
 // Registration via discovery service
 use agent_models::registry::registry_models::{TaskDefinition,AgentDefinition,ToolDefinition};
 
-
 use agent_core::business_logic::agent::Agent;
 use agent_core::server::agent_server::AgentServer;
 use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService};
-
 
 use agent_service_adapters::{AgentEvaluationServiceAdapter, AgentMemoryServiceAdapter,AgentDiscoveryServiceAdapter};
 

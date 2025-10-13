@@ -1,6 +1,17 @@
-mod tasks;
-mod tools;
-mod agents;
+//mod tasks;
+//mod tools;
+//mod agents;
+
+//use crate::tasks::tasks_invoker::{GreetTask};
+//use crate::tools::mcp_runtime_tool_invoker::McpRuntimeToolInvoker;
+//use crate::agents::a2a_agent_invoker::A2AAgentInvoker;
+
+// todo : use resource_invoker crate
+
+use resource_invoker::McpRuntimeToolInvoker;
+use resource_invoker::GreetTask;
+use resource_invoker::A2AAgentInvoker;
+
 
 use clap::Parser;
 use std::sync::Arc;
@@ -8,10 +19,6 @@ use tracing::{ info, warn};
 
 use configuration::{setup_logging, AgentReference,AgentConfig};
 
-
-use crate::tasks::tasks_invoker::{GreetTask};
-use crate::tools::mcp_runtime_tool_invoker::McpRuntimeToolInvoker;
-use crate::agents::a2a_agent_invoker::A2AAgentInvoker;
 
 
 use executor_agent::business_logic::executor_agent::{ExecutorAgent, WorkFlowInvokers};

@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use tracing::{debug, warn, info};
-use serde_json::{Value, json, from_value};
+use serde_json::{Map,Value, json, from_value};
 use anyhow::{anyhow, Context};
 
 use agent_core::agent_interaction_protocol::agent_interaction::AgentInteraction;
@@ -19,6 +19,11 @@ use mcp_runtime::runtime::mcp_runtime::{McpRuntime};
 pub use workflow_management::agent_communication::agent_invoker::AgentInvoker;
 pub use workflow_management::tasks::task_invoker::TaskInvoker;
 pub use workflow_management::tools::tool_invoker::ToolInvoker;
+
+
+use rmcp::model::{ListToolsResult, Tool as RmcpTool}; // Alias for clarity
+use llm_api::tools::{FunctionDefinition, FunctionParameters, Tool};
+
 
 /// An AgentInvoker that communicates using the A2A protocol over HTTP.
 #[allow(dead_code)]
@@ -186,6 +191,50 @@ impl McpRuntimeToolInvoker  {
             .context("Error loading MCP config for planner")?;
         let mcp_runtime = McpRuntime::initialize_mcp_client_v2(agent_mcp_config).await?;
         Ok(mcp_runtime)
+    }
+
+    pub async fn get_tools_list_v2(&self) -> anyhow::Result<Vec<Tool>> {
+        let list_tools: ListToolsResult = self.mcp_runtime.get_client()?.list_tools(Default::default()).await?;
+        let list_tools:Vec<RmcpTool> = list_tools.tools;
+        let tools=McpRuntimeToolInvoker::transcode_tools(list_tools);
+        Ok(tools?)
+    }
+
+    pub fn transcode_tools(rmcp_tools: Vec<RmcpTool>) -> anyhow::Result<Vec<Tool>> {
+        rmcp_tools
+            .into_iter()
+            .map(|tool| {
+                let tool_name = tool.name.to_string(); // Get name early for potential error context
+                let description = tool
+                    .description
+                    .ok_or_else(|| {
+                        anyhow::anyhow!("Tool description is missing for tool '{}'", tool_name)
+                    })?
+                    .to_string(); // Convert Arc<str> to String
+    
+                // Clone the input schema map directly
+                let properties_map: Map<String, Value> = tool.input_schema.as_ref().clone();
+    
+                let properties = properties_map.get("properties");
+                //println!("Properties : {:#?}", properties);
+    
+                Ok(Tool {
+                    r#type: "function".to_string(),
+                    function: FunctionDefinition {
+                        name: tool_name, // Use owned name
+                        description,
+                        parameters: FunctionParameters {
+                            r#type: "object".to_string(),
+                            properties: properties
+                                .cloned()
+                                .unwrap_or_else(|| serde_json::Value::Object(serde_json::Map::new())),
+                            required: None, // Keep as None for now
+                        },
+                    },
+                })
+            })
+            .collect::<anyhow::Result<Vec<Tool>>>()
+            .with_context(|| "Failed to define tools from rmcp::model::Tool vector")
     }
 }
 

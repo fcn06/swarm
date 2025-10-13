@@ -1,6 +1,14 @@
-mod tasks;
-mod tools;
-mod agents;
+//mod tasks;
+//mod tools;
+//mod agents;
+
+//use crate::tasks::tasks_invoker::{GreetTask};
+//use crate::tools::mcp_runtime_tool_invoker::McpRuntimeToolInvoker;
+//use crate::agents::a2a_agent_invoker::A2AAgentInvoker;
+
+use resource_invoker::McpRuntimeToolInvoker;
+use resource_invoker::GreetTask;
+use resource_invoker::A2AAgentInvoker;
 
 use clap::Parser;
 use std::sync::Arc;
@@ -10,9 +18,6 @@ use configuration::{setup_logging, AgentReference,AgentConfig};
 
 use serde_json::json;
 
-use crate::tasks::tasks_invoker::{GreetTask};
-use crate::tools::mcp_runtime_tool_invoker::McpRuntimeToolInvoker;
-use crate::agents::a2a_agent_invoker::A2AAgentInvoker;
 
 
 use agent_models::registry::registry_models::{TaskDefinition,AgentDefinition,ToolDefinition};

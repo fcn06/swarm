@@ -16,4 +16,4 @@ agent_core = { workspace = true }
 configuration = { workspace = true }
 mcp_runtime = { workspace = true }
 workflow_management = { workspace = true }
-
+llm_api = { workspace = true }

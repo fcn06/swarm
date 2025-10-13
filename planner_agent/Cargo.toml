@@ -12,6 +12,7 @@ llm_api = { workspace = true }
 agent_core = { workspace = true }
 mcp_runtime={ workspace = true }
 workflow_management = { workspace = true }
+resource_invoker={ workspace = true }
 
 # Network dependencies
 tokio= { workspace = true }

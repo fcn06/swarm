@@ -80,22 +80,22 @@ echo $'\n'
 echo "##############################################################"
 echo $'\n'
 
-echo "F) Launch Executor Management Agent listening on port 8180, connected to one individual domain agent"
+echo "G) Launch Planner Management Agent listening on port 8180, connected to one individual domain agent"
 echo $'\n'
-echo "Executor Agent"
+echo "Planner Agent"
 echo $'\n'
-./target/release/launch_executor_agent --config-file "documentation/demo_planner_executor_management/agent_executor_config.toml"  --log-level "warn"  &
+./target/release/launch_planner_agent --config-file "documentation/demo_planner_executor_management/agent_planner_config.toml"  --log-level "warn"  &
 sleep 5
 echo $'\n'
 
 echo "##############################################################"
 echo $'\n'
 
-echo "G) Launch Planner Management Agent listening on port 8180, connected to one individual domain agent"
+echo "F) Launch Executor Management Agent listening on port 8180, connected to one individual domain agent"
 echo $'\n'
-echo "Planner Agent"
+echo "Executor Agent"
 echo $'\n'
-./target/release/launch_planner_agent --config-file "documentation/demo_planner_executor_management/agent_planner_config.toml"  --log-level "warn"  &
+./target/release/launch_executor_agent --config-file "documentation/demo_planner_executor_management/agent_executor_config.toml"  --log-level "warn"  &
 sleep 5
 echo $'\n'
 

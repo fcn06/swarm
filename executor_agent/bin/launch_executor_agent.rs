@@ -8,7 +8,11 @@ use clap::Parser;
 use std::sync::Arc;
 use tracing::{ info, warn};
 
-use configuration::{setup_logging, AgentReference,AgentConfig};
+use configuration::{setup_logging,AgentConfig};
+
+// not needed with v2
+#[allow(unused_imports)]
+use configuration::{AgentReference};
 
 
 
@@ -91,11 +95,8 @@ async fn setup_agent_invoker(executor_agent_config: &AgentConfig) -> anyhow::Res
         &executor_agent_config.agent_discovery_url.clone().expect("Discovery URL not configured")
     ));
 
-    let a2a_agent_invoker = A2AAgentInvoker::new(vec![AgentReference {
-        name: "Basic_Agent".to_string(),
-        url: "http://127.0.0.1:8080".to_string(),
-        is_default: Some(true),
-    }], None, None, discovery_service_adapter.clone()).await?;
+    let a2a_agent_invoker = A2AAgentInvoker::new_with_discovery(None, None, discovery_service_adapter.clone()).await?;
+
     let a2a_agent_invoker = Arc::new(a2a_agent_invoker);
 
     Ok(a2a_agent_invoker)

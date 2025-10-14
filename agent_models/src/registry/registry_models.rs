@@ -13,7 +13,7 @@ pub struct AgentDefinition {
     pub id: String,
     pub name: String,
     pub description: String,
-    // to add : pub agent_url:String, 
+    pub agent_endpoint:String, 
     pub skills: Vec<AgentSkillDefinition>,
 }
 

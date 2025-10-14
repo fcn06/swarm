@@ -75,6 +75,45 @@ impl A2AAgentInvoker {
         })
     }
 
+     /// Instantiates an A2AAgentInvoker by dynamically discovering agents.
+    /// This version fetches agent definitions from the `discovery_service_client`
+    /// and uses the `agent_endpoint` directly from the `AgentDefinition`.
+    pub async fn new_with_discovery(
+        evaluation_service: Option<Arc<dyn EvaluationService>>,
+        memory_service: Option<Arc<dyn MemoryService>>,
+        discovery_service_client: Arc<dyn DiscoveryService>,
+    ) -> anyhow::Result<Self> {
+
+        // 1. Discover agent definitions using the DiscoveryService trait method
+        let agent_definitions = discovery_service_client.discover_agents().await?;
+        info!("Discovered {} agent definitions.", agent_definitions.len());
+
+        // 2. Convert AgentDefinition to AgentReference
+        let mut agents_references: Vec<AgentReference> = Vec::new();
+        for agent_def in agent_definitions {
+            info!("Found agent '{}' at {}", agent_def.name, agent_def.agent_endpoint);
+            agents_references.push(AgentReference {
+                //name: agent_def.name.clone(),
+                name: agent_def.id.clone(),
+                url: agent_def.agent_endpoint.clone(),
+                is_default: None, // AgentDefinition does not provide 'is_default'
+            });
+        }
+
+        info!("Converted to {} agent references.", agents_references.len());
+
+        // 3. Connect to the A2A agents using the dynamically created references
+        let client_agents = Self::connect_to_a2a_agents(&agents_references).await?;
+
+        Ok(Self {
+            agents_references,
+            client_agents,
+            evaluation_service,
+            memory_service,
+            discovery_service_client,
+        })
+    }
+
     /// This function retrieves a list of clients agents , the list of agents that are referenced
     async fn connect_to_a2a_agents(
         agents_references: &[AgentReference],

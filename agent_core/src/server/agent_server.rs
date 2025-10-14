@@ -90,9 +90,12 @@ impl<T:Agent> AgentServer<T> {
             storage,
         );
 
+        let agent_endpoint= format!("http://{}:{}", self.config.agent_host(), self.config.agent_http_port());
+
         let agent_info = SimpleAgentInfo::new(
             self.config.agent_name(),
-            format!("http://{}:{}", self.config.agent_host(), self.config.agent_http_port()),
+            agent_endpoint.clone(),
+            //format!("http://{}:{}", self.config.agent_host(), self.config.agent_http_port()),
         )
         .with_description(self.config.agent_description())
         .with_documentation_url(self.config.agent_doc_url().expect("NO DOC URL PROVIDED IN CONFIG"))
@@ -111,6 +114,7 @@ impl<T:Agent> AgentServer<T> {
             id:Uuid::new_v4().to_string(),
             name:self.config.agent_name(),
             description:self.config.agent_description(),
+            agent_endpoint:  agent_endpoint,
             skills:vec![AgentSkillDefinition{
                 name:self.config.agent_skill_name(),
                 description:self.config.agent_skill_description(),

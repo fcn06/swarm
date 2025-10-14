@@ -105,6 +105,7 @@ async fn register_agents(discovery_service: Arc<dyn DiscoveryService>) -> anyhow
         id: "Basic_Agent".to_string(),
         name: "Basic Agent for weather requests, customer requests and other general topics".to_string(),
         description: "Retrieve Weather in a Location, Get customer details and other General Requests".to_string(),
+        agent_endpoint: "http://localhost:8080".to_string(),
         skills: Vec::new(),
     };
 

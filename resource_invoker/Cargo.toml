@@ -8,12 +8,11 @@ async-trait = { workspace = true }
 tracing = { workspace = true }
 serde_json = { workspace = true }
 anyhow = { workspace = true }
-
-a2a-rs = { workspace = true }
-rmcp = { workspace = true }
-
 agent_core = { workspace = true }
 configuration = { workspace = true }
+a2a-rs = { workspace = true }
+rmcp = { workspace = true }
 mcp_runtime = { workspace = true }
 workflow_management = { workspace = true }
+agent_models = { workspace = true }
 llm_api = { workspace = true }

@@ -90,18 +90,15 @@ async fn setup_tool_invoker(mcp_config_path: String) -> anyhow::Result<Arc<dyn T
     Ok(mcp_tool_invoker)
 }
 
-async fn setup_agent_invoker(executor_agent_config: &AgentConfig) -> anyhow::Result<Arc<dyn AgentInvoker>> {
-    let discovery_service_adapter = Arc::new(AgentDiscoveryServiceAdapter::new(
-        &executor_agent_config.agent_discovery_url.clone().expect("Discovery URL not configured")
-    ));
 
-    let a2a_agent_invoker = A2AAgentInvoker::new_with_discovery(None, None, discovery_service_adapter.clone()).await?;
+async fn setup_agent_invoker_v2( discovery_service_adapter: Arc<dyn DiscoveryService>) -> anyhow::Result<Arc<dyn AgentInvoker>> {
+
+    let a2a_agent_invoker = A2AAgentInvoker::new_with_discovery(None, None, discovery_service_adapter).await?;
 
     let a2a_agent_invoker = Arc::new(a2a_agent_invoker);
 
     Ok(a2a_agent_invoker)
 }
-
 
 
 #[tokio::main]
@@ -131,7 +128,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     /************************************************/ 
     let task_invoker= setup_task_invoker().await?;
     let tool_invoker = setup_tool_invoker(args.mcp_config_path).await?;
-    let agent_invoker= setup_agent_invoker(&executor_agent_config).await?;
+    let agent_invoker= setup_agent_invoker_v2(discovery_service.clone().expect("No Discovery Service")).await?;
 
     /************************************************/
     /* Get a Workflow Invokers Instance           */

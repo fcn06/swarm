@@ -3,7 +3,7 @@
 > **Swarm** is a Rust framework for creating and managing a network of specialized, intelligent agents that collaborate through flexible workflows. It acts as a central nervous system for your digital workforce, allowing you to orchestrate complex tasks, either by executing predefined plans or by generating them dynamically.
 
 <p align="center" width="60%">
-    <img width="60%" src="./documentation/illustrations/Simple_Representation_Architecture.png">
+    <img width="60%" src="./documentation/illustrations/Simple_Representation_Architecture_v2.png">
 </p>
 
 ## **Why Swarm?**

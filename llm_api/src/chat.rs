@@ -9,6 +9,8 @@ use anyhow::{Result,Context};
 
 use tokio::time::{sleep, Duration};
 
+use regex::Regex;
+
 
 #[derive(Clone)]
 pub struct ChatLlmInteraction {
@@ -250,40 +252,22 @@ impl ChatLlmInteraction {
 
     // Helper function to extract text from a Message
     pub async fn remove_think_tags( &self,result: String) -> anyhow::Result<String> {
-        let mut cleaned_result = String::new();
-        let mut in_think_tag = false;
+        let mut cleaned_result = result;
 
-        
-        // Qwen sends back Json between ```json and ``` 
-        let result_clean= if result.contains("```json") {
-            let result_1=result.replace("```json", "");
-            result_1.replace("```", "")
-        } else {result};
-        let result=result_clean;
+        // Remove ```json ... ``` blocks
+        let re_json = Regex::new(r"```json\s*([\s\S]*?)\s*```").unwrap();
+        cleaned_result = re_json.replace_all(&cleaned_result, "$1").to_string();
 
+        // Remove general ``` ... ``` blocks
+        let re_code = Regex::new(r"```\s*([\s\S]*?)\s*```").unwrap();
+        cleaned_result = re_code.replace_all(&cleaned_result, "$1").to_string();
 
-        // LLama sends back Json between ```
-        let result_clean= if result.contains("```") {
-            let result_1=result.replace("```", "");
-            result_1.replace("```", "")
-        } else {result};
-        let result=result_clean;
+        // Remove <think> ... </think> blocks
+        let re_think = Regex::new(r"<think>([\s\S]*?)</think>").unwrap();
+        cleaned_result = re_think.replace_all(&cleaned_result, "").to_string();
 
-
-        // Gemini put Think tags regularly , including when you ask to return a simple Json 
-        for line in result.lines() {
-            if line.contains("<think>") {
-                in_think_tag = true;
-            }
-            if line.contains("</think>") {
-                in_think_tag = false;
-                continue;
-            } // Continue to avoid adding the </think> line itself
-            if !in_think_tag {
-                cleaned_result.push_str(line);
-            }
-        }
-        Ok(cleaned_result)
+        // Trim any leading/trailing whitespace that might be left after removals
+        Ok(cleaned_result.trim().to_string())
     }
 
 

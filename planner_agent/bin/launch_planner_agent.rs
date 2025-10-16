@@ -153,8 +153,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     /************************************************/
     /* Launch Workflow Agent                        */
     /************************************************/ 
-    // no more need of workflow registry
-    let agent = PlannerAgent::new(planner_agent_config.clone(), evaluation_service, memory_service, discovery_service.clone(), None).await?;
+    //let agent = PlannerAgent::new(planner_agent_config.clone(), evaluation_service, memory_service, discovery_service.clone(), None).await?;
+    let agent = PlannerAgent::new(planner_agent_config.clone(), None, memory_service, discovery_service.clone(), None).await?;
 
     /************************************************/
     /* Launch Workflow Agent Server                 */

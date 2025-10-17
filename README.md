@@ -24,10 +24,9 @@ Swarm's architecture is designed around a collaborative "conductor" and "special
         *   Dynamically generate a new plan ("dynamic workflow") by evaluating the capabilities of available **Domain Agents**.
     *   Once a plan is established, it is passed to the **Executor Agent**.
 
-2.  **Execution & Evaluation (Executor Agent - The Conductor, Part 2):**
-    *   The **Executor Agent** receives the plan from the Planner Agent and meticulously executes each step. This involves coordinating with **Domain Agents** and utilizing various tools through the **MCP Runtime**.
-    *   An integrated **LLM-as-a-Judge** system continuously evaluates the outcome of the execution.
-    *   If the evaluation score is unsatisfactory, the Executor Agent can leverage recommendations from the **Evaluation Service** (part of the LLM-as-a-Judge system) to initiate a refined planning phase, potentially regenerating and re-executing an improved workflow via the Planner Agent. This creates a powerful feedback loop for continuous improvement.
+2.  **Execution & Evaluation (Executor Agent - The Doer; Planner Agent - The Conductor, Part 2):**
+    *   The **Executor Agent** receives the plan from the Planner Agent and meticulously executes each step. This involves coordinating with **Domain Agents** and utilizing various tools through the **MCP Runtime**. The Executor Agent reports the outcome of the execution back to the Planner Agent.
+    *   For **dynamic plans**, the **Planner Agent** then takes this outcome and, using an integrated **LLM-as-a-Judge** system via the **Evaluation Service**, critically assesses the execution's success. If the evaluation score is unsatisfactory, the Planner Agent can leverage this feedback to refine the plan, potentially regenerating and re-executing an improved workflow. This creates a powerful feedback loop for continuous improvement in dynamic scenarios.
 
 3.  **Specialized Task Handling (Domain Agents - The Specialists):**
     *   **Domain Agents** are the core "workers," each specializing in a particular domain (e.g., customer care, weather forecasting, data analysis).
@@ -108,7 +107,7 @@ sh ./documentation/demo_planner_executor_management/terminate_all_agents_process
 You can interact with your agent system through a UI , and will find examples in [./documentation/Sample_Scenarios/scenario_ui.txt](./documentation/Sample_Scenarios/scenario_ui.txt)
 
 <p align="center" width="60%">
-    <img width="60%" src="./documentation/Sample_Scenarios/UI_Chat_Agent_System.png">
+    <img width="60%" src="./documentation/illustrations/Simple_Representation_Architecture_v2.png">
 </p>
 
 You can find other real world scenarios in [./documentation/Sample_Scenarios/scenario_1.txt](./documentation/Sample_Scenarios/scenario_1.txt)
@@ -128,28 +127,12 @@ Swarm is composed of several modular and interconnected components that work tog
 *   **🛠️ MCP Runtime (Model Context Protocol) (The Bridge):** This component facilitates seamless agent interaction with external services, tools, and diverse data sources, effectively extending the agents' capabilities to the outside world.
 *   **⚖️ LLM as a Judge (The Evaluator):** An autonomous Large Language Model-based service that critically assesses the performance and outcomes of both individual agent actions and complete workflow executions, providing essential feedback for iterative improvement.
 *   **🔌 Agent Service Adapters (The Communicators):** These client-side implementations provide the necessary interfaces for agents to interact with core Swarm services like discovery, memory, and evaluation, ensuring robust inter-agent and inter-service communication.
-
----
-
-## **🔬 Under the Hood: Crate Breakdown**
-
-The Swarm project is organized into several specialized Rust crates:
-
-*   `agent_core`: Provides foundational traits, and shared logic for all agent types within Swarm.
-*   `agent_models`: Defines the shared data structures, suchs as payloads and configurations, used for communication between agents and services.
-*   `basic_agent`: Implements the business logic for a general-purpose "specialist" Domain Agent.
-*   `planner_agent`: Implements the "architect" agent, which specializes in generating detailed execution plans from a user request. Together with the Executor Agent, it forms the "Conductor" for orchestrating complex operations.
-*   `executor_agent`: Implements the "doer" agent, which executes tasks defined in a plan from the Planner Agent. It also integrates with the LLM-as-a-Judge system for evaluation, completing the "Conductor" role by ensuring execution and monitoring.
-*   `workflow_management`: The core library for defining, parsing, and executing multi-agent workflows and plans.
-*   `mcp_runtime`: Manages interactions with external tools and services via the Model Context Protocol (MCP).
-*   `llm_api`: Offers a standardized interface for seamless integration with various Large Language Models.
-*   `agent_service_adapters`: Provides client-side implementations (adapters) for interacting with the core agent services (discovery, memory, evaluation). Ensures proper dependency injection of discovery, evaluation and memory services.
-*   `agent_discovery_service`: An HTTP service enabling agents to register themselves and discover other available agents.
-*   `agent_memory_service`: A service designed to manage and share conversational history and contextual information among agents.
-*   `agent_evaluation_service`: Implements the "LLM as a Judge" functionality to evaluate agent and workflow execution outcomes.
-*   `configuration`: Stores default configuration files, prompts, and agent definitions.
-*   `documentation`: Contains example configuration files, guides, and architectural illustrations.
-*   `examples`: Provides illustrative code examples, including a test MCP server with web scraping and Wikipedia search capabilities.
+*   **🗳️ Agent Discovery Service:** An HTTP service enabling agents to register themselves and discover other available agents.
+*   **🧠 Agent Memory Service:** A service designed to manage and share conversational history and contextual information among agents.
+*   **📊 Agent Evaluation Service:** Implements the "LLM as a Judge" functionality to evaluate agent and workflow execution outcomes.
+*   **⚙️ Configuration:** Stores default configuration files, prompts, and agent definitions.
+*   **📚 Documentation:** Contains example configuration files, guides, and architectural illustrations.
+*   **💡 Examples:** Provides illustrative code examples, including a test MCP server with web scraping and Wikipedia search capabilities.
 
 ---
 

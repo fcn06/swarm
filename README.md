@@ -107,7 +107,7 @@ sh ./documentation/demo_planner_executor_management/terminate_all_agents_process
 You can interact with your agent system through a UI , and will find examples in [./documentation/Sample_Scenarios/scenario_ui.txt](./documentation/Sample_Scenarios/scenario_ui.txt)
 
 <p align="center" width="60%">
-    <img width="60%" src="./documentation/illustrations/Simple_Representation_Architecture_v2.png">
+    <img width="60%" src="./documentation/Sample_Scenarios/UI_Chat_Agent_System.png">
 </p>
 
 You can find other real world scenarios in [./documentation/Sample_Scenarios/scenario_1.txt](./documentation/Sample_Scenarios/scenario_1.txt)

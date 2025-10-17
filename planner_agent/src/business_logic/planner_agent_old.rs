@@ -127,6 +127,7 @@ impl PlannerAgent {
             if let Part::Text { text, .. } = response_part {
                 let output = serde_json::from_str(&text)
                     .context("Failed to parse executor agent response into serde_json::Value")?;
+                
                 Ok(ExecutionResult {
                     request_id: Uuid::new_v4().to_string(),
                     conversation_id: Uuid::new_v4().to_string(),

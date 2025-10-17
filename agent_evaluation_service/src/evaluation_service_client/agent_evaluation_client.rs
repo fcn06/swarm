@@ -1,5 +1,6 @@
-use reqwest::{Client};
-//use crate::evaluation_server::judge_agent::{AgentEvaluationLogData, JudgeEvaluation};
+use reqwest::Client;
+use anyhow::{Context, Result};
+use tracing::{error};
 use agent_models::evaluation::evaluation_models::{AgentEvaluationLogData,JudgeEvaluation};
 
 
@@ -17,15 +18,25 @@ impl AgentEvaluationServiceClient {
         }
     }
 
-    pub async fn log_evaluation(&self, log_data: AgentEvaluationLogData) -> anyhow::Result<JudgeEvaluation> {
+    pub async fn log_evaluation(&self, log_data: AgentEvaluationLogData) -> Result<JudgeEvaluation> {
         let url = format!("{}/log", self.evaluation_service_url);
         
         let response = self.client.post(&url)
             .json(&log_data)
             .send()
-            .await?;
+            .await
+            .context(format!("Failed to send evaluation request to {}", url))?;
 
-        Ok(response.json::<JudgeEvaluation>().await?)
+        let status = response.status();
+        if !status.is_success() {
+            let text_body = response.text().await
+                .context("Failed to read error response body as text")?;
+            error!("Evaluation service returned an error status: {}. Body: {}", status, text_body);
+            anyhow::bail!("Evaluation service returned an error status: {} with body: {}", status, text_body)
+        }
+
+        response.json::<JudgeEvaluation>().await
+            .context("Failed to decode evaluation service JSON response")
     }
 
       

@@ -72,7 +72,6 @@ impl Agent for PlannerAgent {
         let original_user_query = user_query.clone();
         let request_id = Uuid::new_v4().to_string();
         let conversation_id = Uuid::new_v4().to_string();
-        let mut retry_count = 0;
 
         debug!("---PlannerAgent: Starting to handle user request -- Query: \'{}\'---", user_query);
 
@@ -80,18 +79,12 @@ impl Agent for PlannerAgent {
 
         match planning_strategy {
             PlanningStrategy::FromFile(file_path) => {
-                loop {
-                    match self.execute_from_file_loop_iteration(
-                        &file_path,
-                        &original_user_query,
-                        &request_id,
-                        &conversation_id,
-                        &mut retry_count,
-                    ).await? {
-                        Some(result) => return Ok(result),
-                        None => { /* continue loop for retry */ },
-                    }
-                }
+                self.execute_from_file(
+                    &file_path,
+                    &original_user_query,
+                    &request_id,
+                    &conversation_id,
+                ).await
             },
             PlanningStrategy::HighLevel => {
                 let plan = self.create_high_level_plan(&user_query).await?;
@@ -103,6 +96,7 @@ impl Agent for PlannerAgent {
                 })
             },
             PlanningStrategy::Dynamic => {
+                let mut retry_count = 0;
                 loop {
                     match self.execute_dynamic_plan_loop_iteration(
                         &mut user_query,
@@ -121,14 +115,13 @@ impl Agent for PlannerAgent {
 }
 
 impl PlannerAgent {
-    async fn execute_from_file_loop_iteration(
+    async fn execute_from_file(
         &self,
         file_path: &str,
         original_user_query: &str,
         request_id: &str,
         conversation_id: &str,
-        retry_count: &mut u8,
-    ) -> anyhow::Result<Option<ExecutionResult>> {
+    ) -> anyhow::Result<ExecutionResult> {
         info!("PlannerAgent: Loading workflow from file: {}", file_path);
         let graph = load_graph_from_file(file_path)
             .with_context(|| format!("Failed to load workflow from file: {}", file_path))?;
@@ -148,43 +141,33 @@ impl PlannerAgent {
 
         match execution_result {
             Ok(result) => {
-                match self.handle_evaluation_and_retry(
+                // We still call the evaluation service to log the outcome, but we ignore the retry suggestion.
+                let _ = self.handle_evaluation_and_retry(
                     request_id,
                     conversation_id,
                     original_user_query,
                     original_user_query.to_string(), // agent_input
                     agent_output_string, // agent_output
                     HashMap::new(), // activities_outcome
-                    retry_count,
-                ).await? {
-                    Some(new_user_query) => {
-                        // For file-based plans, retrying means re-executing the same plan.
-                        // We\'ll update the original_user_query for logging purposes in handle_evaluation_and_retry
-                        warn!("Retrying plan loaded from file based on evaluation feedback.");
-                        Ok(None)
-                    },
-                    None => Ok(Some(result)),
-                }
+                    &mut 0, // retry_count is not used here
+                ).await;
+                Ok(result)
             },
             Err(e) => {
                 warn!("Error executing plan from file: {}", e);
                 let error_message = format!("Plan execution from file failed: {}", e);
 
-                match self.handle_evaluation_and_retry(
+                // Log the error outcome
+                let _ = self.handle_evaluation_and_retry(
                     request_id,
                     conversation_id,
                     original_user_query,
                     original_user_query.to_string(), // agent_input
                     error_message.clone(), // agent_output
                     HashMap::new(), // activities_outcome
-                    retry_count,
-                ).await? {
-                    Some(_new_user_query) => {
-                        warn!("Retrying plan loaded from file after execution error.");
-                        Ok(None)
-                    },
-                    None => Err(anyhow::anyhow!("{}", error_message)),
-                }
+                    &mut 0, // retry_count is not used here
+                ).await;
+                Err(anyhow::anyhow!("{}", error_message))
             }
         }
     }

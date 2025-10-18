@@ -12,7 +12,8 @@ members = [ "configuration","llm_api",
                 "workflow_agent",
                 "planner_agent",
                 "executor_agent",
-                "examples/*",
+                "examples/a2a_agent_endpoint","examples/mcp_runtime_endpoint","examples/mcp_server",
+                #"examples/*",
                 "agent_models",
                 "agent_service_adapters",
                 "resource_invoker"]
@@ -35,8 +36,8 @@ agent_service_adapters = { path = "./agent_service_adapters" }
 resource_invoker={ path = "./resource_invoker" }
 
 # For rmcp and a2a-rs, in the future, I have to pin a revision number because this crate is evolving rapidly with significant number of breaking changes
-# Update to the latest revision of rmcp on 2025, September the 26th. Pinning specific release of rmcp and a2a-rs ensure stability of swarm
-rmcp= { git = "https://github.com/modelcontextprotocol/rust-sdk.git", features = ["client","transport-sse-client", "transport-child-process","reqwest","transport-sse-client-reqwest"] ,rev="a4def1100de6a737c5f0f9922f846ce94a232619" }
+# Update to the latest revision of rmcp on 2025, October the 18th. Pinning specific release of rmcp and a2a-rs ensure stability of swarm
+rmcp= { git = "https://github.com/modelcontextprotocol/rust-sdk.git", features = ["client","transport-sse-client", "transport-child-process","reqwest","transport-sse-client-reqwest","auth"] ,rev="11093bc830d77717b8f24813d888238a12d7eefe" }
 
 a2a-rs= { git = "https://github.com/EmilLindfors/a2a-rs.git" , features=["server","http-server","client","http-client","tracing"] , rev="2cf954129de8b4cc3b3146780877e508fa34c00c" }
 

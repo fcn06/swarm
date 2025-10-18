@@ -272,6 +272,7 @@ impl PlannerAgent {
             if let Part::Text { text, .. } = response_part {
                 let output = serde_json::from_str(&text)
                     .context("Failed to parse executor agent response into serde_json::Value")?;
+
                 Ok(ExecutionResult {
                     request_id: request_id.to_string(),
                     conversation_id: conversation_id.to_string(),
@@ -387,6 +388,7 @@ impl PlannerAgent {
         Ok(response_content)
     }
 
+    //todo: to remove
     async fn get_available_capabilities(&self) -> Result<String> {
         let discovered_agents = self.discovery_service.discover_agents().await?;
         

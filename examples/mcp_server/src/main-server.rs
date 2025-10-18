@@ -1,4 +1,6 @@
+//#[cfg(feature = "transport-sse-server")]
 use rmcp::transport::sse_server::SseServer;
+
 use tracing_subscriber::{
     layer::SubscriberExt,
     {self},

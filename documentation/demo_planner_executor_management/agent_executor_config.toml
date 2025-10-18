@@ -44,8 +44,8 @@ agent_examples=["execute this plan"]
 # These set of parameters declares the LLM that the agent will connect to
 #agent_model_id="gemini-2.0-flash"
 #agent_llm_url="https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
-#agent_model_id="qwen/qwen3-32b"
-agent_model_id="openai/gpt-oss-20b"
+agent_model_id="qwen/qwen3-32b"
+#agent_model_id="openai/gpt-oss-20b"
 #agent_model_id="deepseek-r1-distill-llama-70b"
 #agent_model_id="meta-llama/llama-4-scout-17b-16e-instruct"
 agent_llm_url="https://api.groq.com/openai/v1/chat/completions"

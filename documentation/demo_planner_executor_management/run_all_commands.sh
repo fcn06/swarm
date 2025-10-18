@@ -60,6 +60,7 @@ echo $'\n'
 
 echo "D) Launch three MCP server, each with individual tool on three different ports"
 ./target/release/examples/main-server --port 8000 --log-level "warn" all &
+#./target/release/examples/main-server --port 8000 --log-level "info" all &
 sleep 4
 echo $'\n'
 

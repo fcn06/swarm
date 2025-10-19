@@ -1,0 +1,38 @@
+[package]
+name = "mcp_client"
+version = "0.1.0"
+edition = "2024"
+
+# https://github.com/modelcontextprotocol/rust-sdk/blob/main/examples/clients/src/auth/oauth_client.rs
+
+[dependencies]
+rmcp = { workspace = true }
+
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+tracing-appender = "0.2"
+futures = { workspace = true }
+axum = { workspace = true }
+tokio-util = { version = "0.7", features = ["io", "codec"]}
+rand = { workspace = true }
+clap = { workspace = true }
+reqwest = { workspace = true }
+
+# for Oauth Version
+uuid = { version = "1.6", features = ["v4", "serde"] }
+chrono={ workspace = true }
+serde_urlencoded = "0.7"
+#askama = { version = "0.14" }
+#tower-http = { version = "0.6", features = ["cors"] }
+#hyper = { version = "1" }
+#hyper-util = { version = "0", features = ["server"] }
+
+
+
+[[example]]
+name = "oauth-main-client"
+path = "src/oauth-main-client.rs"

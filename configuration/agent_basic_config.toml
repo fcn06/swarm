@@ -38,14 +38,16 @@ agent_examples=["What is the weather like in Boston?","What is address of custom
 # Define her the url of openai compatible endpoint 
 # as well as the model to use
 #################################################################
-# These set of parameters declares the LLM that the agent will connect to
+# Use this if you use a model from Google
 #agent_model_id="gemini-2.0-flash"
 #agent_llm_url="https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+# Use this if you use a model from Groq
 #agent_model_id="qwen/qwen3-32b"
 agent_model_id="openai/gpt-oss-20b"
-#agent_model_id="deepseek-r1-distill-llama-70b"
-#agent_model_id="meta-llama/llama-4-scout-17b-16e-instruct"
 agent_llm_url="https://api.groq.com/openai/v1/chat/completions"
+# Use this if you use a local model run for example from llama.cpp on port 2000
+#agent_model_id="LFM2-350M-Math"
+#agent_llm_url="http://localhost:2000/v1/chat/completions"
 
 #################################################################
 # You can say the agent to include a MCP runtime agent

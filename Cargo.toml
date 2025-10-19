@@ -13,7 +13,7 @@ members = [ "configuration","llm_api",
                 "planner_agent",
                 "executor_agent",
                 "examples/a2a_agent_endpoint","examples/mcp_runtime_endpoint","examples/mcp_server",
-                #"examples/*",
+#                "examples/*",
                 "agent_models",
                 "agent_service_adapters",
                 "resource_invoker"]

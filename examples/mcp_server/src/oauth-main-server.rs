@@ -50,7 +50,6 @@ use tokio::sync::RwLock;
 use tokio_util::sync::CancellationToken;
 use tower_http::cors::{Any, CorsLayer};
 use tracing::{debug, error, info, warn};
-use tracing_subscriber::{ util::SubscriberInitExt};
 use uuid::Uuid;
 
 
@@ -86,9 +85,6 @@ enum Commands {
     All,
 }
 
-
-const BIND_ADDRESS: &str = "127.0.0.1:3000";
-const INDEX_HTML: &str = include_str!("html/mcp_oauth_index.html");
 
 // A easy way to manage MCP OAuth Store for managing tokens and sessions
 #[derive(Clone, Debug)]
@@ -272,6 +268,7 @@ fn generate_random_string(length: usize) -> String {
 
 // Root path handler
 async fn index() -> Html<&'static str> {
+    const INDEX_HTML: &str = include_str!("html/mcp_oauth_index.html");
     Html(INDEX_HTML)
 }
 
@@ -288,10 +285,10 @@ struct OAuthAuthorizeTemplate {
 // Initial OAuth authorize endpoint
 async fn oauth_authorize(
     Query(params): Query<AuthorizeQuery>,
-    State(state): State<Arc<McpOAuthStore>>,
+    State(app_state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     debug!("doing oauth_authorize");
-    if let Some(_client) = state
+    if let Some(_client) = app_state.oauth_store
         .validate_client(&params.client_id, &params.redirect_uri)
         .await
     {
@@ -330,7 +327,7 @@ struct ApprovalForm {
 }
 
 async fn oauth_approve(
-    State(state): State<Arc<McpOAuthStore>>,
+    State(app_state): State<Arc<AppState>>,
     Form(form): Form<ApprovalForm>,
 ) -> impl IntoResponse {
     if form.approved != "true" {
@@ -353,7 +350,7 @@ async fn oauth_approve(
     let auth_code = format!("mcp-code-{}", session_id);
 
     // create new session record authorization information
-    let session_id = state
+    let session_id = app_state.oauth_store
         .create_auth_session(
             form.client_id.clone(),
             Some(form.scope.clone()),
@@ -372,7 +369,7 @@ async fn oauth_approve(
     };
 
     // update session token
-    if let Err(e) = state
+    if let Err(e) = app_state.oauth_store
         .update_auth_session_token(&session_id, created_token)
         .await
     {
@@ -397,7 +394,7 @@ async fn oauth_approve(
 
 // Handle token request from the MCP client
 async fn oauth_token(
-    State(state): State<Arc<McpOAuthStore>>,
+    State(app_state): State<Arc<AppState>>,
     request: axum::http::Request<Body>,
 ) -> impl IntoResponse {
     info!("Received token request");
@@ -481,7 +478,7 @@ async fn oauth_token(
     };
 
     // validate client
-    match state
+    match app_state.oauth_store
         .validate_client(&client_id, &token_req.redirect_uri)
         .await
     {
@@ -490,7 +487,7 @@ async fn oauth_token(
             info!("got session id: {}", session_id);
 
             // create mcp access token
-            match state.create_mcp_token(&session_id).await {
+            match app_state.oauth_store.create_mcp_token(&session_id).await {
                 Ok(token) => {
                     info!("successfully created access token");
                     (
@@ -537,7 +534,7 @@ async fn oauth_token(
 
 // Auth middleware for SSE connections
 async fn validate_token_middleware(
-    State(token_store): State<Arc<McpOAuthStore>>,
+    State(app_state): State<Arc<AppState>>,
     request: Request<axum::body::Body>,
     next: Next,
 ) -> Response {
@@ -559,14 +556,14 @@ async fn validate_token_middleware(
     };
 
     // Validate the token
-    match token_store.validate_token(&token).await {
+    match app_state.oauth_store.validate_token(&token).await {
         Some(_) => next.run(request).await,
         None => StatusCode::UNAUTHORIZED.into_response(),
     }
 }
 
 // handle oauth server metadata request
-async fn oauth_authorization_server() -> impl IntoResponse {
+async fn oauth_authorization_server(State(app_state): State<Arc<AppState>>) -> impl IntoResponse {
     let mut additional_fields = HashMap::new();
     additional_fields.insert(
         "response_types_supported".into(),
@@ -577,12 +574,12 @@ async fn oauth_authorization_server() -> impl IntoResponse {
         Value::Array(vec![Value::String("S256".into())]),
     );
     let metadata = AuthorizationMetadata {
-        authorization_endpoint: format!("http://{}/oauth/authorize", BIND_ADDRESS),
-        token_endpoint: format!("http://{}/oauth/token", BIND_ADDRESS),
+        authorization_endpoint: format!("http://{}/oauth/authorize", &app_state.bind_address),
+        token_endpoint: format!("http://{}/oauth/token", &app_state.bind_address),
         scopes_supported: Some(vec!["profile".to_string(), "email".to_string()]),
-        registration_endpoint: Some(format!("http://{}/oauth/register", BIND_ADDRESS)),
-        issuer: Some(BIND_ADDRESS.to_string()),
-        jwks_uri: Some(format!("http://{}/oauth/jwks", BIND_ADDRESS)),
+        registration_endpoint: Some(format!("http://{}/oauth/register", &app_state.bind_address)),
+        issuer: Some(app_state.bind_address.to_string()),
+        jwks_uri: Some(format!("http://{}/oauth/jwks", &app_state.bind_address)),
         additional_fields,
     };
     debug!("metadata: {:?}", metadata);
@@ -591,7 +588,7 @@ async fn oauth_authorization_server() -> impl IntoResponse {
 
 // handle client registration request
 async fn oauth_register(
-    State(state): State<Arc<McpOAuthStore>>,
+    State(app_state): State<Arc<AppState>>,
     Json(req): Json<ClientRegistrationRequest>,
 ) -> impl IntoResponse {
     debug!("register request: {:?}", req);
@@ -617,7 +614,7 @@ async fn oauth_register(
         scopes: vec![],
     };
 
-    state
+    app_state.oauth_store
         .clients
         .write()
         .await
@@ -679,6 +676,11 @@ async fn log_request(request: Request<Body>, next: Next) -> Response {
 }
 
 
+#[derive(Clone, Debug)]
+struct AppState {
+    oauth_store: Arc<McpOAuthStore>,
+    bind_address: Arc<String>,
+}
 
 
 #[tokio::main]
@@ -717,39 +719,124 @@ async fn main() -> anyhow::Result<()> {
 
 
     /************************************************/
-    /* Defining on each port to listen to           */
+    /* Beginning of oauth adjustments               */
     /************************************************/ 
 
-    let bind_address = format!("{}:{}", args.host, args.port);
-    println!("MCP Server listening on: {} with command: {:?}", bind_address, args.command);
+    let bind_address_str = Arc::new(format!("{}:{}", args.host, args.port));
+
+    // Create the OAuth store
+    let oauth_store = Arc::new(McpOAuthStore::new());
+
+    // Create AppState
+    let app_state = Arc::new(AppState {
+        oauth_store: oauth_store.clone(),
+        bind_address: bind_address_str.clone(),
+    });
+
+    let addr = bind_address_str.parse::<SocketAddr>()?;
+    println!("MCP Server listening on: {} with command: {:?}", bind_address_str, args.command);
+
+    // Create SSE server configuration for MCP
+    let sse_config = SseServerConfig {
+        bind: addr,
+        sse_path: "/mcp/sse".to_string(),
+        post_path: "/mcp/message".to_string(),
+        ct: CancellationToken::new(),
+        sse_keep_alive: Some(Duration::from_secs(15)),
+    };
+
+      // Create SSE server
+      let (sse_server, sse_router) = SseServer::new(sse_config);
+
+      // Create protected SSE routes (require authorization)
+      let protected_sse_router = sse_router.layer(middleware::from_fn_with_state(
+          app_state.clone(),
+          validate_token_middleware,
+      ));
+  
+      // Create CORS layer for the oauth authorization server endpoint
+      let cors_layer = CorsLayer::new()
+          .allow_origin(Any)
+          .allow_methods(Any)
+          .allow_headers(Any);
+  
+      // Create a sub-router for the oauth authorization server endpoint with CORS
+      let oauth_server_router = Router::new()
+          .route(
+              "/.well-known/oauth-authorization-server",
+              get(oauth_authorization_server).options(oauth_authorization_server),
+          )
+          .route("/oauth/token", post(oauth_token).options(oauth_token))
+          .route(
+              "/oauth/register",
+              post(oauth_register).options(oauth_register),
+          )
+          .layer(cors_layer)
+          .with_state(app_state.clone());
+  
+      // Create HTTP router with request logging middleware
+      let app = Router::new()
+          .route("/", get(index))
+          .route("/mcp", get(index))
+          .route("/oauth/authorize", get(oauth_authorize))
+          .route("/oauth/approve", post(oauth_approve))
+          .merge(oauth_server_router) // Merge the CORS-enabled oauth server router
+          // .merge(protected_sse_router)
+          .with_state(app_state.clone())
+          .layer(middleware::from_fn(log_request));
+  
+      let app = app.merge(protected_sse_router);
+
+      // Register token validation middleware for SSE
+      let cancel_token = sse_server.config.ct.clone();
+
+      // Handle Ctrl+C
+      let cancel_token2 = sse_server.config.ct.clone();
+
 
     /************************************************/
-    /*  Defining which tools to enable , and launch */
+    /*  Select appropriate service                  */
     /************************************************/ 
 
-    let ct = match args.command {
-        Commands::Weather => SseServer::serve(bind_address.parse()?)
-            .await?
-            .with_service(WeatherMcpService::new),
-        Commands::Customer => SseServer::serve(bind_address.parse()?)
-            .await?
-            .with_service(CustomerMcpService::new),
-        Commands::Scrape => SseServer::serve(bind_address.parse()?)
-            .await?
-            .with_service(ScrapeMcpService::new),
-        Commands::Search => SseServer::serve(bind_address.parse()?)
-            .await?
-            .with_service(SearchMcpService::new),
-        Commands::All => SseServer::serve(bind_address.parse()?)
-            .await?
-            .with_service(GeneralMcpService::new),
+    // Start SSE server with appropriate service
+    let _ct = match args.command {
+        Commands::Weather => sse_server.with_service(WeatherMcpService::new),
+        Commands::Customer => sse_server.with_service(CustomerMcpService::new),
+        Commands::Scrape => sse_server.with_service(ScrapeMcpService::new),
+        Commands::Search => sse_server.with_service(SearchMcpService::new),
+        Commands::All => sse_server.with_service(GeneralMcpService::new),
     };
-    
+
+    /************************************************/
+    /*  Launch                                      */
+    /************************************************/ 
+
+    // Start HTTP server
+    info!("MCP OAuth Server started on {}", addr);
+    let listener = tokio::net::TcpListener::bind(addr).await?;
+    let server = axum::serve(listener, app).with_graceful_shutdown(async move {
+        cancel_token.cancelled().await;
+        info!("Server is shutting down");
+    });
+
     /************************************************/
     /*  Server launched                             */
-    /************************************************/ 
+    /************************************************/
 
-    tokio::signal::ctrl_c().await?;
-    ct.cancel();
+    tokio::spawn(async move {
+        match tokio::signal::ctrl_c().await {
+            Ok(()) => {
+                info!("Received Ctrl+C, shutting down");
+                cancel_token2.cancel();
+            }
+            Err(e) => error!("Failed to listen for Ctrl+C: {}", e),
+        }
+    });
+
+    if let Err(e) = server.await {
+        error!("Server error: {}", e);
+    }
+
     Ok(())
+    
 }

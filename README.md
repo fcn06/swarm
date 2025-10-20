@@ -6,6 +6,17 @@
     <img width="60%" src="./documentation/illustrations/Simple_Representation_Architecture_v2.png">
 </p>
 
+<div style="display: flex; justify-content: center; gap: 20px;">
+    <div style="width: 60%; text-align: center;">
+        <img style="width: 100%; height: auto;" src="./documentation/illustrations/Simple_Representation_Architecture_v2.png" alt="Simple Architecture Diagram">
+    </div>
+    
+    <div style="width: 20%; text-align: center;">
+        <img style="width: 100%; height: auto;" src="./documentation/graph_visualizer/Graphical_Workflow_Representation.png" alt="Graphical Workflow Representation">
+    </div>
+</div>
+
+
 ## **Why Swarm?**
 
 Building multi-agent systems is complex. You need to manage communication, sequence tasks, and integrate external tools. Swarm simplifies this by providing the backbone for agents to collaborate seamlessly, allowing you to focus on building intelligent solutions, not on the plumbing.

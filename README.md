@@ -82,8 +82,8 @@ Our primary demo showcases Swarm's workflow management capabilities, integrating
     ```
 As an illustration, here is what a static workflow can do :
 
-<p align="center" width="40%">
-    <img width="40%" src="./documentation/graph_visualizer/Graphical_Workflow_Representation.png">
+<p align="center" width="20%">
+    <img width="20%" src="./documentation/graph_visualizer/Graphical_Workflow_Representation.png">
 </p>
 
 

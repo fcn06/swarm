@@ -2,8 +2,7 @@
 use serde::{Serialize,Deserialize};
 use std::fs; // Assuming you might want logging here too
 
-use tracing::{Level};
-use tracing_subscriber::{prelude::*, fmt, layer::Layer, Registry, filter};
+use tracing_subscriber::{prelude::*, fmt, layer::Layer, Registry};
 use tracing_subscriber::EnvFilter;
 
 //////////////////////////////////////////////////////////////////////
@@ -81,6 +80,10 @@ impl AgentConfig {
         Ok(config)
     }
 
+    pub fn builder() -> AgentConfigBuilder {
+        AgentConfigBuilder::new()
+    }
+
     pub fn agent_name(&self) -> String { self.agent_name.clone() }
     pub fn agent_host(&self) -> String { self.agent_host.clone() }
     pub fn agent_http_port(&self) -> u16 { self.agent_http_port.parse().unwrap_or_default() }
@@ -105,6 +108,198 @@ impl AgentConfig {
     pub fn agent_memory_service_url(&self) -> Option<String> { self.agent_memory_service_url.clone() }
 
 }
+
+pub struct AgentConfigBuilder {
+    pub agent_name: Option<String>,
+    pub agent_host: Option<String>,
+    pub agent_http_port: Option<String>,
+    pub agent_ws_port: Option<String>,
+    pub agent_discovery_url: Option<String>,
+    pub agent_discoverable: Option<bool>,
+    pub agent_executor_url: Option<String>,
+    pub agent_system_prompt: Option<String>,
+    pub agent_version: Option<String>,
+    pub agent_description: Option<String>,
+    pub agent_skill_id: Option<String>,
+    pub agent_skill_name: Option<String>,
+    pub agent_skill_description: Option<String>,
+    pub agent_model_id: Option<String>,
+    pub agent_llm_url: Option<String>,
+    pub agent_mcp_config_path: Option<String>,
+    pub agent_doc_url: Option<String>,
+    pub agent_tags: Option<Vec<String>>,
+    pub agent_examples: Option<Vec<String>>,
+    pub agent_agents_references: Option<Vec<AgentReference>>,
+    pub agent_evaluation_service_url: Option<String>,
+    pub agent_memory_service_url: Option<String>,
+}
+
+impl AgentConfigBuilder {
+    pub fn new() -> Self {
+        AgentConfigBuilder {
+            agent_name: None,
+            agent_host: None,
+            agent_http_port: None,
+            agent_ws_port: None,
+            agent_discovery_url: None,
+            agent_discoverable: None,
+            agent_executor_url: None,
+            agent_system_prompt: None,
+            agent_version: None,
+            agent_description: None,
+            agent_skill_id: None,
+            agent_skill_name: None,
+            agent_skill_description: None,
+            agent_model_id: None,
+            agent_llm_url: None,
+            agent_mcp_config_path: None,
+            agent_doc_url: None,
+            agent_tags: None,
+            agent_examples: None,
+            agent_agents_references: None,
+            agent_evaluation_service_url: None,
+            agent_memory_service_url: None,
+        }
+    }
+
+    pub fn agent_name(mut self, agent_name: String) -> Self {
+        self.agent_name = Some(agent_name);
+        self
+    }
+
+    pub fn agent_host(mut self, agent_host: String) -> Self {
+        self.agent_host = Some(agent_host);
+        self
+    }
+
+    pub fn agent_http_port(mut self, agent_http_port: String) -> Self {
+        self.agent_http_port = Some(agent_http_port);
+        self
+    }
+
+    pub fn agent_ws_port(mut self, agent_ws_port: String) -> Self {
+        self.agent_ws_port = Some(agent_ws_port);
+        self
+    }
+
+    pub fn agent_discovery_url(mut self, agent_discovery_url: String) -> Self {
+        self.agent_discovery_url = Some(agent_discovery_url);
+        self
+    }
+
+    pub fn agent_discoverable(mut self, agent_discoverable: bool) -> Self {
+        self.agent_discoverable = Some(agent_discoverable);
+        self
+    }
+
+    pub fn agent_executor_url(mut self, agent_executor_url: String) -> Self {
+        self.agent_executor_url = Some(agent_executor_url);
+        self
+    }
+
+    pub fn agent_system_prompt(mut self, agent_system_prompt: String) -> Self {
+        self.agent_system_prompt = Some(agent_system_prompt);
+        self
+    }
+
+    pub fn agent_version(mut self, agent_version: String) -> Self {
+        self.agent_version = Some(agent_version);
+        self
+    }
+
+    pub fn agent_description(mut self, agent_description: String) -> Self {
+        self.agent_description = Some(agent_description);
+        self
+    }
+
+    pub fn agent_skill_id(mut self, agent_skill_id: String) -> Self {
+        self.agent_skill_id = Some(agent_skill_id);
+        self
+    }
+
+    pub fn agent_skill_name(mut self, agent_skill_name: String) -> Self {
+        self.agent_skill_name = Some(agent_skill_name);
+        self
+    }
+
+    pub fn agent_skill_description(mut self, agent_skill_description: String) -> Self {
+        self.agent_skill_description = Some(agent_skill_description);
+        self
+    }
+
+    pub fn agent_model_id(mut self, agent_model_id: String) -> Self {
+        self.agent_model_id = Some(agent_model_id);
+        self
+    }
+
+    pub fn agent_llm_url(mut self, agent_llm_url: String) -> Self {
+        self.agent_llm_url = Some(agent_llm_url);
+        self
+    }
+
+    pub fn agent_mcp_config_path(mut self, agent_mcp_config_path: String) -> Self {
+        self.agent_mcp_config_path = Some(agent_mcp_config_path);
+        self
+    }
+
+    pub fn agent_doc_url(mut self, agent_doc_url: String) -> Self {
+        self.agent_doc_url = Some(agent_doc_url);
+        self
+    }
+
+    pub fn agent_tags(mut self, agent_tags: Vec<String>) -> Self {
+        self.agent_tags = Some(agent_tags);
+        self
+    }
+
+    pub fn agent_examples(mut self, agent_examples: Vec<String>) -> Self {
+        self.agent_examples = Some(agent_examples);
+        self
+    }
+
+    pub fn agent_agents_references(mut self, agent_agents_references: Vec<AgentReference>) -> Self {
+        self.agent_agents_references = Some(agent_agents_references);
+        self
+    }
+
+    pub fn agent_evaluation_service_url(mut self, agent_evaluation_service_url: String) -> Self {
+        self.agent_evaluation_service_url = Some(agent_evaluation_service_url);
+        self
+    }
+
+    pub fn agent_memory_service_url(mut self, agent_memory_service_url: String) -> Self {
+        self.agent_memory_service_url = Some(agent_memory_service_url);
+        self
+    }
+
+    pub fn build(self) -> anyhow::Result<AgentConfig> {
+        Ok(AgentConfig {
+            agent_name: self.agent_name.ok_or_else(|| anyhow::anyhow!("agent_name is required"))?,
+            agent_host: self.agent_host.ok_or_else(|| anyhow::anyhow!("agent_host is required"))?,
+            agent_http_port: self.agent_http_port.ok_or_else(|| anyhow::anyhow!("agent_http_port is required"))?,
+            agent_ws_port: self.agent_ws_port.ok_or_else(|| anyhow::anyhow!("agent_ws_port is required"))?,
+            agent_discovery_url: self.agent_discovery_url,
+            agent_discoverable: self.agent_discoverable,
+            agent_executor_url: self.agent_executor_url,
+            agent_system_prompt: self.agent_system_prompt,
+            agent_version: self.agent_version.ok_or_else(|| anyhow::anyhow!("agent_version is required"))?,
+            agent_description: self.agent_description.ok_or_else(|| anyhow::anyhow!("agent_description is required"))?,
+            agent_skill_id: self.agent_skill_id.ok_or_else(|| anyhow::anyhow!("agent_skill_id is required"))?,
+            agent_skill_name: self.agent_skill_name.ok_or_else(|| anyhow::anyhow!("agent_skill_name is required"))?,
+            agent_skill_description: self.agent_skill_description.ok_or_else(|| anyhow::anyhow!("agent_skill_description is required"))?,
+            agent_model_id: self.agent_model_id.ok_or_else(|| anyhow::anyhow!("agent_model_id is required"))?,
+            agent_llm_url: self.agent_llm_url.ok_or_else(|| anyhow::anyhow!("agent_llm_url is required"))?,
+            agent_mcp_config_path: self.agent_mcp_config_path,
+            agent_doc_url: self.agent_doc_url,
+            agent_tags: self.agent_tags.unwrap_or_default(),
+            agent_examples: self.agent_examples.unwrap_or_default(),
+            agent_agents_references: self.agent_agents_references,
+            agent_evaluation_service_url: self.agent_evaluation_service_url,
+            agent_memory_service_url: self.agent_memory_service_url,
+        })
+    }
+}
+
 
 ///////////////////////////////////////////////////////////////
 // SIMPLE AGENT REFERENCE IMPLEMENTATION
@@ -139,7 +334,7 @@ impl AgentReference {
 ///////////////////////////////////////////////////////////////
 // SETUP LOGGING LEVEL
 ///////////////////////////////////////////////////////////////
-
+/* 
 pub fn setup_logging_old(log_level: &str) {
     let level = match log_level {
         "trace" => Level::TRACE,
@@ -159,6 +354,7 @@ pub fn setup_logging_old(log_level: &str) {
 
     tracing::subscriber::set_global_default(subscriber).unwrap();
 }
+    */
 
 pub fn setup_logging(log_level: &str) {
 

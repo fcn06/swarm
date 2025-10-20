@@ -80,6 +80,12 @@ Our primary demo showcases Swarm's workflow management capabilities, integrating
     # This command must be run from the root of the swarm project
     sh ./documentation/demo_planner_executor_management/run_all_commands.sh
     ```
+As an illustration, here is what a static workflow can do :
+
+<p align="center" width="40%">
+    <img width="40%" src="./documentation/graph_visualizer/Graphical_Workflow_Representation.png">
+</p>
+
 
 **Important: Stopping the Demo Services**
 After running any of the above demos, it's crucial to stop all active agent processes to prevent resource consumption and conflicts.

@@ -46,7 +46,7 @@ This modular and iterative structure enables the creation of sophisticated multi
 ### Step 1: Clone and Build the Project
 
 ```bash
-git clone https://github.com/fcn06/swarm.git # Replace with your actual repository URL
+git clone https://github.com/fcn06/swarm.git
 cd swarm
 cargo build --release
 ```
@@ -79,12 +79,6 @@ Our primary demo showcases Swarm's workflow management capabilities, integrating
     ```bash
     # This command must be run from the root of the swarm project
     sh ./documentation/demo_planner_executor_management/run_all_commands.sh
-    ```
-
-*   **High-Level Plan Generation:** This option only generates a high-level plan without executing it. It's useful for evaluating the planning logic of your LLM.
-    ```bash
-    # This command must be run from the root of the swarm project
-    sh ./documentation/demo_planner_executor_management/run_all_commands.sh --high-level-plan
     ```
 
 **Important: Stopping the Demo Services**
@@ -140,8 +134,7 @@ Swarm is composed of several modular and interconnected components that work tog
 
 Swarm is an active project, and we are constantly working on improvements. Our roadmap includes:
 
-*   **Enhanced Workflow Features:** More advanced conditional logic, error handling, and parallel execution.
-*   **Advanced Dynamic Discovery:** Better ways for agents to find and use the tools they need.
+*   **Enhanced Workflow Features:** More advanced conditional logic.
 *   **Improved Observability:** Better logging, tracing, and monitoring.
 *   **Broader LLM Integration:** Compatibility with a wider range of LLMs.
 

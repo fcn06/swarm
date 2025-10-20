@@ -4,6 +4,8 @@
 
 <p align="center" width="60%">
     <img width="60%" src="./documentation/illustrations/Simple_Representation_Architecture_v2.png">
+    
+    <img width="20%" src="./documentation/graph_visualizer/Graphical_Workflow_Representation.png">
 </p>
 
 ## **Why Swarm?**

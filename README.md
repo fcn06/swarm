@@ -21,7 +21,7 @@ Swarm's architecture is designed around a collaborative "conductor" and "special
     *   A user initiates a request, which is received by the **Planner Agent**.
     *   The Planner Agent, acting as the primary orchestrator, determines the optimal course of action. It can:
         *   Load a predefined plan ("static workflow") from a JSON file.
-        *   Dynamically generate a new plan ("dynamic workflow") by evaluating the capabilities of available **Domain Agents**.
+        *   Dynamically generate a new plan ("dynamic workflow") by evaluating the capabilities of available **Domain Agents, Tools, or Tasks**.
     *   Once a plan is established, it is passed to the **Executor Agent**.
 
 2.  **Execution & Evaluation (Executor Agent - The Doer; Planner Agent - The Conductor, Part 2):**

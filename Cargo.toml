@@ -77,6 +77,7 @@ url = { version = "2.4", features = ["serde"] }
 bon = "3"
 schemars = { version = "1.0",  features = ["chrono04"] }
 
+redb="3.1"
 
 [profile.dev]
 opt-level = 0

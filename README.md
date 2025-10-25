@@ -3,7 +3,7 @@
 > **Swarm** is a Rust framework for creating and managing a network of specialized, intelligent agents that collaborate through flexible workflows. It acts as a central nervous system for your digital workforce, allowing you to orchestrate complex tasks, either by executing predefined plans or by generating them dynamically.
 
 <p align="center" width="60%">
-    <img width="60%" src="./documentation/illustrations/Simple_Representation_Architecture_v2.png">
+    <img width="60%" src="./documentation/illustrations/Simple_Representation_Architecture_v3.png">
 </p>
 
 ## **Why Swarm?**
@@ -80,7 +80,7 @@ Our primary demo showcases Swarm's workflow management capabilities, integrating
     # This command must be run from the root of the swarm project
     sh ./documentation/demo_planner_executor_management/run_all_commands.sh
     ```
-As an illustration, here is what a static workflow can do :
+As an illustration, here is what we can define in a JSON workflow :
 
 <p align="center" width="20%">
     <img width="20%" src="./documentation/graph_visualizer/Graphical_Workflow_Representation.png">

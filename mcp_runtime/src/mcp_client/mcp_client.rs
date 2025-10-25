@@ -28,7 +28,8 @@ use configuration::AgentMcpConfig;
 
 pub type McpClient = RunningService<RoleClient, InitializeRequestParam>;
 
-
+// todo: implement client for oauth2 protoected mcp server
+// see example mcp_client
 
 pub async fn start_with_default_headers(
         uri: impl Into<Arc<str>>,
@@ -45,8 +46,6 @@ pub async fn start_with_default_headers(
     
     auth_value.set_sensitive(true);
     headers.insert(header::AUTHORIZATION, auth_value);
-
-    //println!("Headers :{:?}",headers);
 
     let client = reqwest::Client::builder()
         .default_headers(headers)

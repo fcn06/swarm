@@ -50,7 +50,7 @@ pub struct AgentConfig {
     pub agent_host: String,
     pub agent_http_port: String,
     pub agent_ws_port: String,
-    pub agent_discovery_url: Option<String>,
+    pub agent_discovery_url: Option<String>, // to remove from config and make it runtime
     pub agent_discoverable: Option<bool>,
     pub agent_executor_url: Option<String>,
     pub agent_system_prompt: Option<String>,
@@ -66,8 +66,8 @@ pub struct AgentConfig {
     pub agent_tags: Vec<String>,
     pub agent_examples: Vec<String>,
     pub agent_agents_references: Option<Vec<AgentReference>>,
-    pub agent_evaluation_service_url: Option<String>,
-    pub agent_memory_service_url: Option<String>,
+    pub agent_evaluation_service_url: Option<String>, // to remove from config and make it runtime
+    pub agent_memory_service_url: Option<String>, // to remove from config and make it runtime
 }
 
 impl AgentConfig {

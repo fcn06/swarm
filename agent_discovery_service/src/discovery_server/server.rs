@@ -87,6 +87,8 @@ async fn root() -> &'static str {
     "Hello, Swarm Discovery Service!"
 }
 
+// Align agent registration from AgentServer and registration
+
 /// Registers an AgentDefinition and indexes its skills.
 async fn register_agent_definition(
     State(state): State<AppState>,

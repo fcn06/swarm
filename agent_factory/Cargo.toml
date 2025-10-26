@@ -1,0 +1,13 @@
+[package]
+name = "agent_factory"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+agent_models = { path = "../agent_models" }
+configuration = { path = "../configuration" }
+anyhow = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+toml = { workspace = true }
+tracing = { workspace = true }

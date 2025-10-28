@@ -50,9 +50,9 @@ pub struct AgentConfig {
     pub agent_host: String,
     pub agent_http_port: String,
     pub agent_ws_port: String,
-    pub agent_discovery_url: Option<String>, // to remove from config and make it runtime
+    //pub agent_discovery_url: Option<String>, // to remove from config and make it runtime
     pub agent_discoverable: Option<bool>,
-    pub agent_executor_url: Option<String>,
+    pub agent_executor_url: Option<String>, // todo: to remove from config and make it runtime
     pub agent_system_prompt: Option<String>,
     pub agent_version: String,
     pub agent_description: String,
@@ -66,8 +66,8 @@ pub struct AgentConfig {
     pub agent_tags: Vec<String>,
     pub agent_examples: Vec<String>,
     pub agent_agents_references: Option<Vec<AgentReference>>,
-    pub agent_evaluation_service_url: Option<String>, // to remove from config and make it runtime
-    pub agent_memory_service_url: Option<String>, // to remove from config and make it runtime
+    //pub agent_evaluation_service_url: Option<String>, // to remove from config and make it runtime
+    //pub agent_memory_service_url: Option<String>, // to remove from config and make it runtime
 }
 
 impl AgentConfig {
@@ -88,7 +88,7 @@ impl AgentConfig {
     pub fn agent_host(&self) -> String { self.agent_host.clone() }
     pub fn agent_http_port(&self) -> u16 { self.agent_http_port.parse().unwrap_or_default() }
     pub fn agent_ws_port(&self) -> u16 { self.agent_ws_port.parse().unwrap_or_default() }
-    pub fn agent_discovery_url(&self) -> Option<String> { self.agent_discovery_url.clone() }
+    //pub fn agent_discovery_url(&self) -> Option<String> { self.agent_discovery_url.clone() }
     pub fn agent_discoverable(&self) -> Option<bool> { self.agent_discoverable.or(Some(true)) } // true by defaul except when explicitly set to false
     pub fn agent_executor_url(&self) -> Option<String> { self.agent_executor_url.clone() }
     pub fn agent_system_prompt(&self) -> Option<String> { self.agent_system_prompt.clone() }
@@ -104,8 +104,8 @@ impl AgentConfig {
     pub fn agent_tags(&self) -> Vec<String> { self.agent_tags.clone() }
     pub fn agent_examples(&self) -> Vec<String> { self.agent_examples.clone() }
     pub fn agent_agents_references(&self) -> Option<Vec<AgentReference>> { self.agent_agents_references.clone() }
-    pub fn agent_evaluation_service_url(&self) -> Option<String> { self.agent_evaluation_service_url.clone() }
-    pub fn agent_memory_service_url(&self) -> Option<String> { self.agent_memory_service_url.clone() }
+    //pub fn agent_evaluation_service_url(&self) -> Option<String> { self.agent_evaluation_service_url.clone() }
+    //pub fn agent_memory_service_url(&self) -> Option<String> { self.agent_memory_service_url.clone() }
 
 }
 
@@ -114,7 +114,7 @@ pub struct AgentConfigBuilder {
     pub agent_host: Option<String>,
     pub agent_http_port: Option<String>,
     pub agent_ws_port: Option<String>,
-    pub agent_discovery_url: Option<String>,
+    //pub agent_discovery_url: Option<String>,
     pub agent_discoverable: Option<bool>,
     pub agent_executor_url: Option<String>,
     pub agent_system_prompt: Option<String>,
@@ -130,8 +130,8 @@ pub struct AgentConfigBuilder {
     pub agent_tags: Option<Vec<String>>,
     pub agent_examples: Option<Vec<String>>,
     pub agent_agents_references: Option<Vec<AgentReference>>,
-    pub agent_evaluation_service_url: Option<String>,
-    pub agent_memory_service_url: Option<String>,
+    //pub agent_evaluation_service_url: Option<String>,
+    //pub agent_memory_service_url: Option<String>,
 }
 
 impl AgentConfigBuilder {
@@ -141,7 +141,7 @@ impl AgentConfigBuilder {
             agent_host: None,
             agent_http_port: None,
             agent_ws_port: None,
-            agent_discovery_url: None,
+            //agent_discovery_url: None,
             agent_discoverable: None,
             agent_executor_url: None,
             agent_system_prompt: None,
@@ -157,8 +157,8 @@ impl AgentConfigBuilder {
             agent_tags: None,
             agent_examples: None,
             agent_agents_references: None,
-            agent_evaluation_service_url: None,
-            agent_memory_service_url: None,
+            //agent_evaluation_service_url: None,
+            //agent_memory_service_url: None,
         }
     }
 
@@ -182,10 +182,12 @@ impl AgentConfigBuilder {
         self
     }
 
+    /* 
     pub fn agent_discovery_url(mut self, agent_discovery_url: String) -> Self {
         self.agent_discovery_url = Some(agent_discovery_url);
         self
     }
+    */
 
     pub fn agent_discoverable(mut self, agent_discoverable: bool) -> Self {
         self.agent_discoverable = Some(agent_discoverable);
@@ -262,6 +264,7 @@ impl AgentConfigBuilder {
         self
     }
 
+    /* 
     pub fn agent_evaluation_service_url(mut self, agent_evaluation_service_url: String) -> Self {
         self.agent_evaluation_service_url = Some(agent_evaluation_service_url);
         self
@@ -271,6 +274,7 @@ impl AgentConfigBuilder {
         self.agent_memory_service_url = Some(agent_memory_service_url);
         self
     }
+    */
 
     pub fn build(self) -> anyhow::Result<AgentConfig> {
         Ok(AgentConfig {
@@ -278,7 +282,7 @@ impl AgentConfigBuilder {
             agent_host: self.agent_host.ok_or_else(|| anyhow::anyhow!("agent_host is required"))?,
             agent_http_port: self.agent_http_port.ok_or_else(|| anyhow::anyhow!("agent_http_port is required"))?,
             agent_ws_port: self.agent_ws_port.ok_or_else(|| anyhow::anyhow!("agent_ws_port is required"))?,
-            agent_discovery_url: self.agent_discovery_url,
+            //agent_discovery_url: self.agent_discovery_url,
             agent_discoverable: self.agent_discoverable,
             agent_executor_url: self.agent_executor_url,
             agent_system_prompt: self.agent_system_prompt,
@@ -294,8 +298,8 @@ impl AgentConfigBuilder {
             agent_tags: self.agent_tags.unwrap_or_default(),
             agent_examples: self.agent_examples.unwrap_or_default(),
             agent_agents_references: self.agent_agents_references,
-            agent_evaluation_service_url: self.agent_evaluation_service_url,
-            agent_memory_service_url: self.agent_memory_service_url,
+            //agent_evaluation_service_url: self.agent_evaluation_service_url,
+            //agent_memory_service_url: self.agent_memory_service_url,
         })
     }
 }

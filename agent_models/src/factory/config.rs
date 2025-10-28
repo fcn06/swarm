@@ -13,10 +13,6 @@ pub struct FactoryConfig {
     pub factory_discovery_url: Option<String>,
     pub factory_evaluation_service_url: Option<String>, // to remove from config and make it runtime
     pub factory_memory_service_url: Option<String>, // to remove from config and make it runtime
-    pub factory_host: Option<String>,
-    pub factory_http_port: Option<String>,
-    pub factory_ws_port: Option<String>,
-
 }
 
 impl FactoryConfig {
@@ -32,6 +28,7 @@ impl FactoryConfig {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FactoryAgentConfig {
+    pub factory_agent_url:String,
     pub factory_agent_type:AgentType,
     pub factory_agent_domains:Option<AgentDomain>, // Apply only if agent is domain specialist
     pub factory_agent_name:String,

@@ -32,6 +32,7 @@ pub struct PlannerAgent {
     discovery_service: Arc<dyn DiscoveryService>,
     evaluation_service: Option<Arc<dyn EvaluationService>>,
     client: Arc<HttpClient>,
+    // add dynamically executor.url
 }
 
 #[async_trait]

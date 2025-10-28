@@ -42,3 +42,7 @@ tracing-subscriber = { workspace = true }
 [[bin]]
 name = "launch_planner_agent"
 path = "bin/launch_planner_agent.rs"
+
+[[bin]]
+name = "simple_workflow_agent_client"
+path = "bin/simple_workflow_agent_client.rs"

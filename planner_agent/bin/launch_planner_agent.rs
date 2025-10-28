@@ -3,7 +3,7 @@ use resource_invoker::McpRuntimeToolInvoker as McpRuntimeTools;
 
 use clap::Parser;
 use std::sync::Arc;
-use tracing::{ info, warn};
+use tracing::{ info};
 
 use configuration::{setup_logging, AgentConfig};
 
@@ -33,33 +33,30 @@ struct Args {
     /// MCP Config
     #[clap(long, default_value = "./configuration/mcp_runtime_config.toml")]
     mcp_config_path: String,
+    #[clap(long, default_value = "http://127.0.0.1:4000")]
+    discovery_service_url: String,
+    #[clap(long, default_value = "http://127.0.0.1:5000")]
+    memory_service_url: String,
+    #[clap(long, default_value = "http://127.0.0.1:7000")]
+    evaluation_service_url: String,
 }
 
-async fn setup_evaluation_service(planner_agent_config: &AgentConfig) -> Option<Arc<dyn EvaluationService>> {
-    if let Some(url) = planner_agent_config.agent_evaluation_service_url() {
-        info!("Evaluation service configured at: {}", url);
-        let adapter = AgentEvaluationServiceAdapter::new(&url);
+async fn setup_evaluation_service(evaluation_service_url:String) -> Option<Arc<dyn EvaluationService>> {
+        info!("Evaluation service configured at: {}", evaluation_service_url);
+        let adapter = AgentEvaluationServiceAdapter::new(&evaluation_service_url);
         Some(Arc::new(adapter))
-    } else {
-        warn!("Evaluation service URL not configured. No evaluations will be logged.");
-        None
-    }
+   
 }
 
-async fn setup_memory_service(planner_agent_config: &AgentConfig) -> Option<Arc<dyn MemoryService>> {
-    if let Some(url) = planner_agent_config.agent_memory_service_url() {
-        info!("Memory service configured at: {}", url);
-        let adapter = AgentMemoryServiceAdapter::new(&url);
+async fn setup_memory_service(memory_service_url:String) -> Option<Arc<dyn MemoryService>> {
+        info!("Memory service configured at: {}", memory_service_url);
+        let adapter = AgentMemoryServiceAdapter::new(&memory_service_url);
         Some(Arc::new(adapter))
-    } else {
-        warn!("Memory service URL not configured. No memory will be used.");
-        None
-    }
 }
 
-async fn setup_discovery_service(discovery_url: String) -> Option<Arc<dyn DiscoveryService>> {
-    info!("Discovery service configured at: {}", discovery_url);
-    let adapter = AgentDiscoveryServiceAdapter::new(&discovery_url);
+async fn setup_discovery_service(discovery_service_url: String) -> Option<Arc<dyn DiscoveryService>> {
+    info!("Discovery service configured at: {}", discovery_service_url);
+    let adapter = AgentDiscoveryServiceAdapter::new(&discovery_service_url);
     Some(Arc::new(adapter))
 }
 
@@ -138,9 +135,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     /************************************************/
     /* Instantiate Memory, Evaluation and Discovery Services  */
     /************************************************/ 
-    let evaluation_service = setup_evaluation_service(&planner_agent_config).await;
-    let memory_service = setup_memory_service(&planner_agent_config).await;
-    let discovery_service = setup_discovery_service(planner_agent_config.agent_discovery_url.clone().expect("Discovery URL not configured")).await;
+    let evaluation_service = setup_evaluation_service(args.evaluation_service_url).await;
+    let memory_service = setup_memory_service(args.memory_service_url).await;
+    let discovery_service = setup_discovery_service(args.discovery_service_url).await;
 
 
     /************************************************/

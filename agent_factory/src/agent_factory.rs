@@ -1,7 +1,45 @@
 use anyhow::Result;
-use configuration::{AgentConfig, AgentConfigBuilder, AgentMcpConfig};
-use agent_models::factory::{AgentDomain, AgentType, FactoryAgentConfig, FactoryConfig, LlmProviderUrl};
+use configuration::{AgentConfig, AgentMcpConfig};
+use agent_models::factory::config::{AgentDomain, AgentType, FactoryAgentConfig, FactoryConfig, LlmProviderUrl};
 use tracing::{info, debug};
+
+
+/*
+
+
+async fn setup_evaluation_service(planner_agent_config: &AgentConfig) -> Option<Arc<dyn EvaluationService>> {
+    if let Some(url) = planner_agent_config.agent_evaluation_service_url() {
+        info!("Evaluation service configured at: {}", url);
+        let adapter = AgentEvaluationServiceAdapter::new(&url);
+        Some(Arc::new(adapter))
+    } else {
+        warn!("Evaluation service URL not configured. No evaluations will be logged.");
+        None
+    }
+}
+
+async fn setup_memory_service(planner_agent_config: &AgentConfig) -> Option<Arc<dyn MemoryService>> {
+    if let Some(url) = planner_agent_config.agent_memory_service_url() {
+        info!("Memory service configured at: {}", url);
+        let adapter = AgentMemoryServiceAdapter::new(&url);
+        Some(Arc::new(adapter))
+    } else {
+        warn!("Memory service URL not configured. No memory will be used.");
+        None
+    }
+}
+
+async fn setup_discovery_service(discovery_url: String) -> Option<Arc<dyn DiscoveryService>> {
+    info!("Discovery service configured at: {}", discovery_url);
+    let adapter = AgentDiscoveryServiceAdapter::new(&discovery_url);
+    Some(Arc::new(adapter))
+}
+
+*/
+
+
+
+
 
 pub struct AgentFactory {
     factory_config: FactoryConfig,
@@ -14,7 +52,7 @@ impl AgentFactory {
         }
     }
 
-    pub fn create_agent_config(&self, factory_agent_config: &FactoryAgentConfig) -> Result<AgentConfig> {
+    pub fn create_agent_config(&self, factory_agent_config: &FactoryAgentConfig, host:String,http_port:String,ws_port:String) -> Result<AgentConfig> {
         info!("Creating AgentConfig for agent: {}", factory_agent_config.factory_agent_name);
 
         let mut builder = AgentConfig::builder()
@@ -31,10 +69,10 @@ impl AgentFactory {
         builder = builder.agent_llm_url(llm_url);
 
         // Set common defaults or values from factory_config
-        builder = builder.agent_host(self.factory_config.factory_host.clone().unwrap_or("127.0.0.1".to_string()))
-                         .agent_http_port(self.factory_config.factory_http_port.clone().unwrap_or("8080".to_string()))
-                         .agent_ws_port(self.factory_config.factory_ws_port.clone().unwrap_or("8081".to_string()))
-                         .agent_discovery_url(self.factory_config.factory_discovery_url.clone().unwrap_or_default());
+        builder = builder.agent_host(host)
+                         .agent_http_port(http_port)
+                         .agent_ws_port(ws_port);
+                        // .agent_discovery_url(self.factory_config.factory_discovery_url.clone().unwrap_or_default());
 
         // Set agent-type specific defaults or logic
         match factory_agent_config.factory_agent_type {
@@ -44,7 +82,7 @@ impl AgentFactory {
                                  .agent_skill_name("Generic Skill".to_string())
                                  .agent_skill_description("A generic skill for various tasks.".to_string())
                                  .agent_version("1.0.0".to_string())
-                                 .agent_doc_url(None)
+                                 .agent_doc_url("/docs".to_string())
                                  .agent_tags(vec!["general".to_string()])
                                  .agent_examples(vec!["Hello".to_string()]);
 
@@ -81,7 +119,7 @@ impl AgentFactory {
                                  .agent_skill_name("Planning Skill".to_string())
                                  .agent_skill_description("Creates multi-step plans for complex tasks.".to_string())
                                  .agent_version("1.0.0".to_string())
-                                 .agent_doc_url(None)
+                                 .agent_doc_url("/docs".to_string())
                                  .agent_tags(vec!["plan".to_string(), "orchestration".to_string()]);
             },
             AgentType::Executor => {
@@ -90,7 +128,7 @@ impl AgentFactory {
                                  .agent_skill_name("Execute Strictly Defined Workflow".to_string())
                                  .agent_skill_description("Receives a workflow definition as an input and execute it".to_string())
                                  .agent_version("1.0.0".to_string())
-                                 .agent_doc_url(None)
+                                 .agent_doc_url("/docs".to_string())
                                  .agent_tags(vec!["execute plan".to_string()]);
             },
         }

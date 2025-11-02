@@ -28,13 +28,107 @@ impl FactoryConfig {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FactoryAgentConfig {
-    pub factory_agent_url:String,
-    pub factory_agent_type:AgentType,
-    pub factory_agent_domains:Option<AgentDomain>, // Apply only if agent is domain specialist
-    pub factory_agent_name:String,
-    pub factory_agent_description:String,
-    pub factory_agent_llm_provider_url:LlmProviderUrl,
-    pub factory_agent_llm_model_id:String,
+    pub factory_agent_url: String,
+    pub factory_agent_type: AgentType,
+    pub factory_agent_domains: Option<AgentDomain>, // Apply only if agent is domain specialist
+    pub factory_agent_name: String,
+    pub factory_agent_description: String,
+    pub factory_agent_llm_provider_url: LlmProviderUrl,
+    pub factory_agent_llm_provider_api_key: String, // to be injected at runtime
+    pub factory_agent_llm_model_id: String,
+}
+
+impl FactoryAgentConfig {
+    pub fn builder() -> FactoryAgentConfigBuilder {
+        FactoryAgentConfigBuilder::new()
+    }
+}
+
+pub struct FactoryAgentConfigBuilder {
+    factory_agent_url: Option<String>,
+    factory_agent_type: Option<AgentType>,
+    factory_agent_domains: Option<AgentDomain>,
+    factory_agent_name: Option<String>,
+    factory_agent_description: Option<String>,
+    factory_agent_llm_provider_url: Option<LlmProviderUrl>,
+    factory_agent_llm_provider_api_key: Option<String>,
+    factory_agent_llm_model_id: Option<String>,
+}
+
+impl FactoryAgentConfigBuilder {
+    pub fn new() -> Self {
+        FactoryAgentConfigBuilder {
+            factory_agent_url: None,
+            factory_agent_type: None,
+            factory_agent_domains: None,
+            factory_agent_name: None,
+            factory_agent_description: None,
+            factory_agent_llm_provider_url: None,
+            factory_agent_llm_provider_api_key: None,
+            factory_agent_llm_model_id: None,
+        }
+    }
+
+    pub fn with_factory_agent_url(mut self, factory_agent_url: String) -> Self {
+        self.factory_agent_url = Some(factory_agent_url);
+        self
+    }
+
+    pub fn with_factory_agent_type(mut self, factory_agent_type: AgentType) -> Self {
+        self.factory_agent_type = Some(factory_agent_type);
+        self
+    }
+
+    pub fn with_factory_agent_domains(mut self, factory_agent_domains: AgentDomain) -> Self {
+        self.factory_agent_domains = Some(factory_agent_domains);
+        self
+    }
+
+    pub fn with_factory_agent_name(mut self, factory_agent_name: String) -> Self {
+        self.factory_agent_name = Some(factory_agent_name);
+        self
+    }
+
+    pub fn with_factory_agent_description(mut self, factory_agent_description: String) -> Self {
+        self.factory_agent_description = Some(factory_agent_description);
+        self
+    }
+
+    pub fn with_factory_agent_llm_provider_url(mut self, factory_agent_llm_provider_url: LlmProviderUrl) -> Self {
+        self.factory_agent_llm_provider_url = Some(factory_agent_llm_provider_url);
+        self
+    }
+
+    pub fn with_factory_agent_llm_provider_api_key(mut self, factory_agent_llm_provider_api_key: String) -> Self {
+        self.factory_agent_llm_provider_api_key = Some(factory_agent_llm_provider_api_key);
+        self
+    }
+
+    pub fn with_factory_agent_llm_model_id(mut self, factory_agent_llm_model_id: String) -> Self {
+        self.factory_agent_llm_model_id = Some(factory_agent_llm_model_id);
+        self
+    }
+
+    pub fn build(self) -> Result<FactoryAgentConfig, String> {
+        let factory_agent_url = self.factory_agent_url.ok_or_else(|| "factory_agent_url is not set".to_string())?;
+        let factory_agent_type = self.factory_agent_type.ok_or_else(|| "factory_agent_type is not set".to_string())?;
+        let factory_agent_name = self.factory_agent_name.ok_or_else(|| "factory_agent_name is not set".to_string())?;
+        let factory_agent_description = self.factory_agent_description.ok_or_else(|| "factory_agent_description is not set".to_string())?;
+        let factory_agent_llm_provider_url = self.factory_agent_llm_provider_url.ok_or_else(|| "factory_agent_llm_provider_url is not set".to_string())?;
+        let factory_agent_llm_provider_api_key = self.factory_agent_llm_provider_api_key.ok_or_else(|| "factory_agent_llm_provider_api_key is not set".to_string())?;
+        let factory_agent_llm_model_id = self.factory_agent_llm_model_id.ok_or_else(|| "factory_agent_llm_model_id is not set".to_string())?;
+
+        Ok(FactoryAgentConfig {
+            factory_agent_url,
+            factory_agent_type,
+            factory_agent_domains: self.factory_agent_domains,
+            factory_agent_name,
+            factory_agent_description,
+            factory_agent_llm_provider_url,
+            factory_agent_llm_provider_api_key,
+            factory_agent_llm_model_id,
+        })
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

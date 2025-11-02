@@ -37,7 +37,8 @@ async fn setup_discovery_service(discovery_url: String) -> Option<Arc<dyn Discov
 
 */
 
-
+// launch services
+// Create and launch agent with factory agentbuilder
 
 
 
@@ -151,6 +152,9 @@ impl AgentFactory {
         let mcp_max_loops = 5; // Sensible default
         let mcp_system_prompt = "You are a helpful assistant that can use tools.".to_string();
 
+        let agent_mcp_llm_api_key_env_var=None;
+
+
         // Values from FactoryConfig, with fallbacks to defaults
         let mcp_server_url = self.factory_config.factory_discovery_url.clone(); // Reusing discovery URL for MCP server as an example
         let mcp_server_api_key = None; // API key might be loaded from environment or a more secure source
@@ -169,6 +173,7 @@ impl AgentFactory {
             agent_mcp_server_api_key: mcp_server_api_key,
             agent_mcp_model_id: mcp_model_id,
             agent_mcp_llm_url: mcp_llm_url,
+            agent_mcp_llm_api_key_env_var:agent_mcp_llm_api_key_env_var,
             agent_mcp_system_prompt: mcp_system_prompt,
             agent_mcp_endpoint_url: mcp_endpoint_url,
         })

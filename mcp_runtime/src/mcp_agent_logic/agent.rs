@@ -60,8 +60,13 @@ impl McpAgent {
         let model_id = agent_mcp_config.agent_mcp_model_id.clone();
         let system_message = agent_mcp_config.agent_mcp_system_prompt.clone();
 
-        let llm_mcp_api_key = env::var("LLM_MCP_API_KEY")
-            .context("LLM_MCP_API_KEY environment variable must be set")?;
+        let llm_mcp_api_key = if let Some(env_var_name) = &agent_mcp_config.agent_mcp_llm_api_key_env_var {
+            env::var(env_var_name)
+                .context(format!("Environment variable '{}' for LLM API key must be set", env_var_name))?
+        } else {
+            env::var("LLM_MCP_API_KEY")
+                .context("LLM_MCP_API_KEY environment variable must be set")?
+        };
 
         let mcp_client = Arc::new(initialize_mcp_client_v2(agent_mcp_config.clone())
             .await

@@ -123,7 +123,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     /************************************************/ 
     // load a2a config file and initialize appropriateruntime
     let executor_agent_config = AgentConfig::load_agent_config(&args.config_file).expect("Incorrect Executor Agent config file");
-
+    let agent_api_key="".to_string();
 
     /************************************************/
     /* Instantiate Memory, Evaluation and Discovery Services  */
@@ -156,7 +156,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     /************************************************/
     /* Launch Workflow Agent                        */
     /************************************************/ 
-    let agent = ExecutorAgent::new(executor_agent_config.clone(), evaluation_service, memory_service, discovery_service.clone(), workflow_invokers).await?;
+    let agent = ExecutorAgent::new(executor_agent_config.clone(),agent_api_key, evaluation_service, memory_service, discovery_service.clone(), workflow_invokers).await?;
+
 
     /************************************************/
     /* Launch Workflow Agent Server                 */

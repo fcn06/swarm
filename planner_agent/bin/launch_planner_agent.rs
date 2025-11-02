@@ -1,5 +1,5 @@
 use resource_invoker::McpRuntimeToolInvoker as McpRuntimeTools;
-
+use std::env;
 
 use clap::Parser;
 use std::sync::Arc;
@@ -130,7 +130,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     /************************************************/ 
     // load a2a config file and initialize appropriateruntime
     let planner_agent_config = AgentConfig::load_agent_config(&args.config_file).expect("Incorrect WorkFlow Agent config file");
-
+    let agent_api_key = env::var("LLM_PLANNER_API_KEY").expect("LLM_PLANNER_API_KEY must be set");
 
     /************************************************/
     /* Instantiate Memory, Evaluation and Discovery Services  */
@@ -150,9 +150,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     /************************************************/
     /* Launch Workflow Agent                        */
     /************************************************/ 
-    let agent = PlannerAgent::new(planner_agent_config.clone(), evaluation_service, memory_service, discovery_service.clone(), None).await?;
-    //let agent = PlannerAgent::new(planner_agent_config.clone(), None, memory_service, discovery_service.clone(), None).await?;
-
+    let agent = PlannerAgent::new(planner_agent_config.clone(),agent_api_key, evaluation_service, memory_service, discovery_service.clone(), None).await?;
+    
     /************************************************/
     /* Launch Workflow Agent Server                 */
     /************************************************/ 

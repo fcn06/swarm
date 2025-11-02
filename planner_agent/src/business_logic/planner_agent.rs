@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use async_trait::async_trait;
 use tracing::{info, debug, error, warn};
-use std::env;
+
 use anyhow::{Context, bail, Result};
 use serde_json::{Map, Value};
 use llm_api::chat::{ChatLlmInteraction, Message as LlmMessage};
@@ -39,13 +39,14 @@ pub struct PlannerAgent {
 impl Agent for PlannerAgent {
     async fn new(
         agent_config: AgentConfig,
+        agent_api_key:String,
         evaluation_service: Option<Arc<dyn EvaluationService>>,
         _memory_service: Option<Arc<dyn MemoryService>>,
         discovery_service: Option<Arc<dyn DiscoveryService>>,
         _workflow_service: Option<Arc<dyn WorkflowServiceApi>>,
     ) -> Result<Self> {
-        let llm_planner_api_key = env::var("LLM_PLANNER_API_KEY")
-            .context("LLM_PLANNER_API_KEY must be set")?;
+        
+        let llm_planner_api_key = agent_api_key;
 
         let llm_interaction = ChatLlmInteraction::new(
             agent_config.agent_llm_url(),

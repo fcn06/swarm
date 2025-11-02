@@ -18,7 +18,6 @@ use anyhow::Context;
 use mcp_runtime::mcp_agent_logic::agent::McpAgent;
 
 use llm_api::chat::Message as LlmMessage;
-use std::env;
 
 use agent_core::business_logic::agent::{Agent};
 use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService};
@@ -42,6 +41,7 @@ impl Agent for BasicAgent {
     /// Creation of a new simple a2a agent
     async fn new(
         agent_config: AgentConfig,
+        agent_api_key:String,
         _evaluation_service: Option<Arc<dyn EvaluationService>>,
         _memory_service: Option<Arc<dyn MemoryService>>,
         _discovery_service: Option<Arc<dyn DiscoveryService>>,
@@ -55,7 +55,7 @@ impl Agent for BasicAgent {
         let _system_message = agent_config.agent_system_prompt();
 
         // Set API key for LLM
-        let llm_a2a_api_key = env::var("LLM_A2A_API_KEY").expect("LLM_A2A_API_KEY must be set");
+        let llm_a2a_api_key =agent_api_key;
 
         let llm_interaction= ChatLlmInteraction::new(
             agent_config.agent_llm_url(),

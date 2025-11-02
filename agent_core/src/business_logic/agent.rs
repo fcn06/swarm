@@ -18,6 +18,7 @@ use serde_json::Value;
 pub trait Agent: Send + Sync  + Clone + 'static {
     async fn new( 
         agent_config: AgentConfig, 
+        agent_api_key:String,
         evaluation_service: Option<Arc<dyn EvaluationService>>, 
         memory_service: Option<Arc<dyn MemoryService>>, 
         discovery_service: Option<Arc<dyn DiscoveryService>>,

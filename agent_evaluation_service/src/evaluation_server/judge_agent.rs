@@ -1,4 +1,3 @@
-use std::env;
 use llm_api::chat::{ChatLlmInteraction};
 use anyhow::{Context, Result};
 use std::fs;
@@ -16,7 +15,7 @@ pub struct JudgeAgent {
 impl JudgeAgent {
 
     /// Creation of a new simple a2a agent
-    pub async fn new(agent_config: AgentConfig ) -> anyhow::Result<Self> {
+    pub async fn new(agent_config: AgentConfig,  agent_api_key:String ) -> anyhow::Result<Self> {
 
         // Set model to be used
         let model_id = agent_config.agent_model_id();
@@ -25,7 +24,7 @@ impl JudgeAgent {
         let _system_message = agent_config.agent_system_prompt();
 
         // Set API key for LLM
-        let llm_a2a_api_key = env::var("LLM_JUDGE_API_KEY").expect("LLM_JUDGE_API_KEY must be set");
+        let llm_a2a_api_key =  agent_api_key;
 
         let llm_interaction= ChatLlmInteraction::new(
             agent_config.agent_llm_url(),

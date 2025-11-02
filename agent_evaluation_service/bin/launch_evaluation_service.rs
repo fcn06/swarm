@@ -8,6 +8,7 @@ use tracing_subscriber::{
 use clap::Parser;
 use agent_evaluation_service::evaluation_server::server::EvaluationServer;
 use configuration::AgentConfig;
+use std::env;
 
 /// Command-line arguments for the reimbursement server
 #[derive(Parser, Debug)]
@@ -62,7 +63,9 @@ async fn main() -> anyhow::Result<()> {
     /* Launch Evaluation Server                         */
     /************************************************/ 
     let agent_config = AgentConfig::load_agent_config(&args.config_file).expect("REASON");
-    let evaluation_server = EvaluationServer::new(args.uri,agent_config).await?;
+    let agent_api_key = env::var("LLM_JUDGE_API_KEY").expect("LLM_JUDGE_API_KEY must be set");
+
+    let evaluation_server = EvaluationServer::new(args.uri,agent_config,agent_api_key).await?;
     evaluation_server.start_http().await?;
 
     Ok(())

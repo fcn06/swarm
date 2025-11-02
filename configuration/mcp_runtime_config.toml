@@ -25,7 +25,10 @@ agent_mcp_server_api_key="<YOUR_API_KEY>"
 #################################################################
 # Define her the url of openai compatible endpoint 
 # as well as the model to use
+# api key for the mcp runtime needs to be defined as
+# env variable. Below you can define the name it points to
 #################################################################
+agent_mcp_llm_api_key_env_var="LLM_MCP_API_KEY" 
 #agent_mcp_model_id="gemini-2.0-flash"
 #agent_mcp_llm_url ="https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
 #agent_mcp_model_id="qwen/qwen3-32b"

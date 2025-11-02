@@ -14,15 +14,12 @@ use std::sync::Arc;
 use crate::business_logic::services::DiscoveryService;
 
 // Removed direct dependency on AgentDiscoveryServiceClient
-// use agent_discovery_service::discovery_service_client::agent_discovery_client::AgentDiscoveryServiceClient;
 
 use anyhow::Result;
 
 use uuid::Uuid;
 
 
-//use agent_discovery_service::model::models::AgentSkill;
-//use agent_discovery_service::model::models::AgentDefinition;
 use agent_models::registry::registry_models::{AgentDefinition,AgentSkillDefinition};
 
 

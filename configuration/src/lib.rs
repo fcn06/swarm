@@ -24,6 +24,7 @@ pub struct AgentMcpConfig {
     pub agent_mcp_server_api_key:Option<String>, // this is the API-key to connect to your mcp server
     pub agent_mcp_model_id: String,
     pub agent_mcp_llm_url: String, // This is the LLM that will manage interactions with MCP server. LLM_MCP_API_KEY is connected to this one
+    pub agent_mcp_llm_api_key_env_var: Option<String>, // New field: name of environment variable holding the LLM API key
     pub agent_mcp_system_prompt: String,
     pub agent_mcp_endpoint_url: Option<String>, // This will come from command line or instance config
 }

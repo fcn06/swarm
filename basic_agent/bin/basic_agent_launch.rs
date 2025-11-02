@@ -5,6 +5,7 @@ use agent_core::business_logic::agent::Agent;
 
 
 use clap::Parser;
+use std::env;
 
 use tracing::{ Level};
 use tracing_subscriber::{
@@ -66,7 +67,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // load a2a config file and initialize appropriateruntime
     let basic_agent_config = AgentConfig::load_agent_config(&args.config_file).expect("Incorrect Basic Agent config file");
   
-    let agent = BasicAgent::new(basic_agent_config.clone(), None, None,None,None).await?;
+    let agent_api_key = env::var("LLM_A2A_API_KEY").expect("LLM_A2A_API_KEY must be set");
+
+    let agent = BasicAgent::new(basic_agent_config.clone(),agent_api_key, None, None,None,None).await?;
 
     // Create the modern server, and pass the runtime elements
     let server = AgentServer::<BasicAgent>::new(basic_agent_config, agent,None).await?;

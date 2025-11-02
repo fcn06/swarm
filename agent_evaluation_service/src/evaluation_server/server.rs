@@ -30,8 +30,8 @@ pub struct EvaluationServer {
 }
 
 impl EvaluationServer {
-    pub async fn new(uri:String, agent_config: AgentConfig) -> anyhow::Result<Self> {
-        let judge_agent=JudgeAgent::new(agent_config.clone()).await?;
+    pub async fn new(uri:String, agent_config: AgentConfig,  agent_api_key:String) -> anyhow::Result<Self> {
+        let judge_agent=JudgeAgent::new(agent_config.clone(),agent_api_key).await?;
 
         // Create AppState
         let app_state = AppState {

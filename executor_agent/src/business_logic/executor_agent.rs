@@ -60,6 +60,7 @@ pub struct ExecutorAgent {
 impl Agent for ExecutorAgent {
     async fn new(
         agent_config: AgentConfig,
+        _agent_api_key:String,
         evaluation_service: Option<Arc<dyn EvaluationService>>,
         _memory_service: Option<Arc<dyn MemoryService>>,
         _discovery_service: Option<Arc<dyn DiscoveryService>>,

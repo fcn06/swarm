@@ -2,54 +2,28 @@ use anyhow::Result;
 use configuration::{AgentConfig, AgentMcpConfig};
 use agent_models::factory::config::{AgentDomain, AgentType, FactoryAgentConfig, FactoryConfig, LlmProviderUrl};
 use tracing::{info, debug};
+use std::sync::Arc;
+use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService};
+use agent_service_adapters::{AgentEvaluationServiceAdapter, AgentMemoryServiceAdapter,AgentDiscoveryServiceAdapter};
 
-
-/*
-
-
-async fn setup_evaluation_service(planner_agent_config: &AgentConfig) -> Option<Arc<dyn EvaluationService>> {
-    if let Some(url) = planner_agent_config.agent_evaluation_service_url() {
-        info!("Evaluation service configured at: {}", url);
-        let adapter = AgentEvaluationServiceAdapter::new(&url);
-        Some(Arc::new(adapter))
-    } else {
-        warn!("Evaluation service URL not configured. No evaluations will be logged.");
-        None
-    }
-}
-
-async fn setup_memory_service(planner_agent_config: &AgentConfig) -> Option<Arc<dyn MemoryService>> {
-    if let Some(url) = planner_agent_config.agent_memory_service_url() {
-        info!("Memory service configured at: {}", url);
-        let adapter = AgentMemoryServiceAdapter::new(&url);
-        Some(Arc::new(adapter))
-    } else {
-        warn!("Memory service URL not configured. No memory will be used.");
-        None
-    }
-}
-
-async fn setup_discovery_service(discovery_url: String) -> Option<Arc<dyn DiscoveryService>> {
-    info!("Discovery service configured at: {}", discovery_url);
-    let adapter = AgentDiscoveryServiceAdapter::new(&discovery_url);
-    Some(Arc::new(adapter))
-}
-
-*/
 
 // launch services
 // Create and launch agent with factory agentbuilder
 
-
-
 pub struct AgentFactory {
-    factory_config: FactoryConfig,
+    pub factory_config: FactoryConfig,
+    pub factory_discovery_service: Arc<dyn DiscoveryService>,
+    pub factory_memory_service: Option<Arc<dyn MemoryService>>,
+    pub factory_evaluation_service: Option<Arc<dyn EvaluationService>>,
 }
 
 impl AgentFactory {
     pub fn new(factory_config: FactoryConfig) -> Self {
         AgentFactory {
-            factory_config,
+            factory_config:factory_config.clone(),
+            factory_discovery_service: Arc::new(AgentDiscoveryServiceAdapter::new(&factory_config.factory_discovery_url.expect("Factory Discovery URL not set"))),
+            factory_memory_service: Some(Arc::new(AgentMemoryServiceAdapter::new(&factory_config.factory_memory_service_url.expect("Factory Memory Service URL not set")))),
+            factory_evaluation_service: Some(Arc::new(AgentEvaluationServiceAdapter::new(&factory_config.factory_evaluation_service_url.expect("Factory Evaluation Service URL not set")))),
         }
     }
 

@@ -4,10 +4,22 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-agent_models = { path = "../agent_models" }
-configuration = { path = "../configuration" }
+agent_models={workspace=true}
+agent_service_adapters={workspace=true}
+agent_core={workspace=true}
+resource_invoker={workspace=true}
+configuration={workspace=true}
+
+tokio= { workspace = true }
+async-trait = { workspace = true }
+
 anyhow = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 toml = { workspace = true }
 tracing = { workspace = true }
+clap = { workspace = true }
+
+[[bin]]
+name = "launch_factory"
+path = "bin/launch_factory.rs"

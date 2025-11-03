@@ -25,8 +25,6 @@ echo "So to summarize : "
 echo "export LLM_A2A_API_KEY=<YOUR GROQ API KEY>"
 echo "export LLM_MCP_API_KEY=<YOUR GROQ API KEY>"
 echo "export LLM_JUDGE_API_KEY=<YOUR GROQ API KEY>"
-echo "export LLM_PLANNER_API_KEY=<YOUR GROQ API KEY>"
-echo "export LLM_EXECUTOR_API_KEY=<YOUR GROQ API KEY>"
 echo "**************************************************************************"
 
 read -n 1 -s -r -p "Press any key to start..."
@@ -67,7 +65,7 @@ echo $'\n'
 echo "##############################################################"
 echo $'\n'
 
-echo "E) Launch one basic domain agents listening on port 8080, with a dedicated mcp config"
+echo "E) Launch factory and one basic domain agents listening on port 8080, with a dedicated mcp config"
 echo $'\n'
 echo "Factory Agent"
 echo $'\n'
@@ -80,9 +78,6 @@ echo $'\n'
 
 echo "##############################################################"
 echo $'\n'
-
-echo "F) Launch the agent_client with complex requests. The outcome of the agents will be evaluated by the LLM as a Judge."
-echo " Agents will redefine and re execute workflow if evaluation rating is below 5 out of 10."
 
 echo $'\n'
 read -n 1 -s -r -p "Press any key to continue..."

@@ -1,11 +1,13 @@
 use anyhow::Result;
-use configuration::{AgentConfig, AgentMcpConfig};
+use configuration::{AgentConfig};
 use agent_models::factory::config::{AgentDomain, AgentType, FactoryAgentConfig, FactoryConfig, LlmProviderUrl};
 use tracing::{info, debug};
 use std::sync::Arc;
 use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService};
 use agent_service_adapters::{AgentEvaluationServiceAdapter, AgentMemoryServiceAdapter,AgentDiscoveryServiceAdapter};
-
+use basic_agent::business_logic::basic_agent::BasicAgent;
+use agent_core::server::agent_server::AgentServer;
+use agent_core::business_logic::agent::Agent;
 
 // launch services
 // Create and launch agent with factory agentbuilder
@@ -107,52 +109,30 @@ impl AgentFactory {
             },
         }
 
+        // todo:add mcp config
+
         // Additional defaults if not already set
         let final_config = builder.build()?;
         debug!("Created AgentConfig: {:?}", final_config);
         Ok(final_config)
     }
 
-    pub fn create_mcp_config(&self) -> Result<AgentMcpConfig> {
-        info!("Creating AgentMcpConfig from FactoryConfig");
 
-        // Default values for AgentMcpConfig
-        let mcp_role_tool = "tool".to_string();
-        let mcp_role_assistant = "assistant".to_string();
-        let mcp_tool_choice_auto = "auto".to_string();
-        let mcp_finish_reason_tool_calls = "tool_calls".to_string();
-        let mcp_finish_reason_stop = "stop".to_string();
-        let mcp_max_loops = 5; // Sensible default
-        let mcp_system_prompt = "You are a helpful assistant that can use tools.".to_string();
-
-        let agent_mcp_llm_api_key_env_var=None;
-
-
-        // Values from FactoryConfig, with fallbacks to defaults
-        let mcp_server_url = self.factory_config.factory_discovery_url.clone(); // Reusing discovery URL for MCP server as an example
-        let mcp_server_api_key = None; // API key might be loaded from environment or a more secure source
-        let mcp_model_id = "gemini-2.0-flash".to_string(); // Default MCP LLM model
-        let mcp_llm_url = LlmProviderUrl::Google.to_string(); // Using the Display implementation
-        let mcp_endpoint_url = None;
-
-        Ok(AgentMcpConfig {
-            agent_mcp_role_tool: mcp_role_tool,
-            agent_mcp_role_assistant: mcp_role_assistant,
-            agent_mcp_tool_choice_auto: mcp_tool_choice_auto,
-            agent_mcp_finish_reason_tool_calls: mcp_finish_reason_tool_calls,
-            agent_mcp_finish_reason_stop: mcp_finish_reason_stop,
-            agent_mcp_max_loops: mcp_max_loops,
-            agent_mcp_server_url: mcp_server_url,
-            agent_mcp_server_api_key: mcp_server_api_key,
-            agent_mcp_model_id: mcp_model_id,
-            agent_mcp_llm_url: mcp_llm_url,
-            agent_mcp_llm_api_key_env_var:agent_mcp_llm_api_key_env_var,
-            agent_mcp_system_prompt: mcp_system_prompt,
-            agent_mcp_endpoint_url: mcp_endpoint_url,
-        })
-    }
 
     pub fn get_factory_config(&self) -> &FactoryConfig {
         &self.factory_config
     }
+
+    pub async fn launch_agent(&self, factory_agent_config: &FactoryAgentConfig, host: String, http_port: String) -> Result<()> {
+        let agent_config = self.create_agent_config(factory_agent_config, host, http_port).expect("Error Creating Agent Config from Factory");
+        let agent = BasicAgent::new(agent_config.clone(), factory_agent_config.factory_agent_llm_provider_api_key.clone(), None, None, None, None).await?;
+        // Create the modern server, and pass the runtime elements
+        let server = AgentServer::<BasicAgent>::new(agent_config, agent, None).await?;
+        //println!("🌐 Starting HTTP server only...");
+        server.start_http().await.map_err(|e| anyhow::anyhow!("{}", e))?;
+        Ok(())
+    }
+
+    // todo: load agent config from file
+
 }

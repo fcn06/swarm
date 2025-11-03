@@ -130,6 +130,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
 
  let agent_api_key = env::var("LLM_A2A_API_KEY").expect("LLM_A2A_API_KEY must be set");
 
+    // Idea is to have a very simple API to create and Launch an Agent
 
     let factory_agent_config=FactoryAgentConfig {
         factory_agent_url:"http://127.0.0.1:8080".to_string(),
@@ -142,19 +143,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
         factory_agent_llm_model_id: "openai/gpt-oss-20b".to_string(),
     };
 
+    // todo : All these functions needs to be abstracted by AgentFactory
+    // with something Like agent_factory.launch_agent (factory_agent_config );
+
     let agent_config=agent_factory.create_agent_config(&factory_agent_config,"127.0.0.1".to_string(),"8080".to_string()).expect("Error Creating Agent Config from Factory");
-
-
-    // todo:include basic_agent crate
-
     let agent = BasicAgent::new(agent_config.clone(),factory_agent_config.factory_agent_llm_provider_api_key, None, None,None,None).await?;
-
     // Create the modern server, and pass the runtime elements
     let server = AgentServer::<BasicAgent>::new(agent_config, agent,None).await?;
-
     //println!("🌐 Starting HTTP server only...");
     server.start_http().await?;
-
 
     /************************************************/
     /* Agent  launched                              */

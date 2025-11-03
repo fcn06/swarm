@@ -12,7 +12,6 @@ members = [
                 "basic_agent",
                 "mcp_runtime",
                 "workflow_management",
-#                "workflow_agent",
                 "planner_agent",
                 "executor_agent",
                 "examples/a2a_agent_endpoint","examples/mcp_runtime_endpoint","examples/mcp_server","examples/mcp_client",

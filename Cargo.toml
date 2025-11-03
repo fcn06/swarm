@@ -32,6 +32,8 @@ mcp_runtime = { path = "./mcp_runtime" }
 workflow_management = { path = "./workflow_management" }
 
 executor_agent = { path = "./executor_agent" }
+basic_agent = { path = "./basic_agent" }
+
 agent_models = { path = "./agent_models" }
 agent_service_adapters = { path = "./agent_service_adapters" }
 

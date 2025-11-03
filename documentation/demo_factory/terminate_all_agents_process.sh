@@ -22,3 +22,7 @@ pkill -f "evaluation_serv"
 echo "Kill The Discovery Service"
 echo $'\n'
 pkill -f "discovery_servi"
+
+echo "Kill The Launch Factory Service"
+echo $'\n'
+pkill -f "launch_factory"

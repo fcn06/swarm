@@ -13,10 +13,19 @@ use agent_factory::agent_factory::AgentFactory;
 
 use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService};
 
-
 // Registration via discovery service
 use agent_models::registry::registry_models::{TaskDefinition,AgentDefinition,ToolDefinition};
 use agent_models::factory::config::FactoryConfig;
+
+use agent_models::factory::config::LlmProviderUrl;
+use agent_models::factory::config::AgentDomain;
+use agent_models::factory::config::AgentType;
+use agent_models::factory::config::FactoryAgentConfig;
+
+
+use basic_agent::business_logic::basic_agent::BasicAgent;
+use agent_core::server::agent_server::AgentServer;
+use agent_core::business_logic::agent::Agent;
 
 /// Command-line arguments
 #[derive(Parser, Debug)]
@@ -57,6 +66,7 @@ async fn register_tasks(discovery_service: Arc<dyn DiscoveryService>) -> anyhow:
 /// Register Agents in Discovery Service
 async fn register_agents(discovery_service: Arc<dyn DiscoveryService>) -> anyhow::Result<()> {
 
+    // todo:harmonize agent_id and agent_name
     let agent_definition=AgentDefinition {
         id: "Basic_Agent".to_string(),
         name: "Basic Agent for weather requests, customer requests and other general topics".to_string(),
@@ -117,9 +127,35 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     /************************************************/
     /* Launch Agents from Factor                    */
     /************************************************/ 
-    
-    // todo : Launch Agents from Factory
-    
+
+ let agent_api_key = env::var("LLM_A2A_API_KEY").expect("LLM_A2A_API_KEY must be set");
+
+
+    let factory_agent_config=FactoryAgentConfig {
+        factory_agent_url:"http://127.0.0.1:8080".to_string(),
+        factory_agent_type: AgentType::Specialist,
+        factory_agent_domains: Some(AgentDomain::General), // Apply only if agent is domain specialist
+        factory_agent_name: "Basic_Agent".to_string(),
+        factory_agent_description: "An Agent that answer Basic Questions".to_string(),
+        factory_agent_llm_provider_url: LlmProviderUrl::Groq,
+        factory_agent_llm_provider_api_key: agent_api_key, // to be injected at runtime
+        factory_agent_llm_model_id: "openai/gpt-oss-20b".to_string(),
+    };
+
+    let agent_config=agent_factory.create_agent_config(&factory_agent_config,"127.0.0.1".to_string(),"8080".to_string()).expect("Error Creating Agent Config from Factory");
+
+
+    // todo:include basic_agent crate
+
+    let agent = BasicAgent::new(agent_config.clone(),factory_agent_config.factory_agent_llm_provider_api_key, None, None,None,None).await?;
+
+    // Create the modern server, and pass the runtime elements
+    let server = AgentServer::<BasicAgent>::new(agent_config, agent,None).await?;
+
+    //println!("🌐 Starting HTTP server only...");
+    server.start_http().await?;
+
+
     /************************************************/
     /* Agent  launched                              */
     /************************************************/ 

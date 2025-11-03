@@ -10,6 +10,8 @@ agent_core={workspace=true}
 resource_invoker={workspace=true}
 configuration={workspace=true}
 
+basic_agent={workspace=true}
+
 tokio= { workspace = true }
 async-trait = { workspace = true }
 

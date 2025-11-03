@@ -27,7 +27,7 @@ impl AgentFactory {
         }
     }
 
-    pub fn create_agent_config(&self, factory_agent_config: &FactoryAgentConfig, host:String,http_port:String,ws_port:String) -> Result<AgentConfig> {
+    pub fn create_agent_config(&self, factory_agent_config: &FactoryAgentConfig, host:String,http_port:String) -> Result<AgentConfig> {
         info!("Creating AgentConfig for agent: {}", factory_agent_config.factory_agent_name);
 
         let mut builder = AgentConfig::builder()
@@ -46,8 +46,7 @@ impl AgentFactory {
         // Set common defaults or values from factory_config
         builder = builder.agent_host(host)
                          .agent_http_port(http_port)
-                         .agent_ws_port(ws_port);
-                        // .agent_discovery_url(self.factory_config.factory_discovery_url.clone().unwrap_or_default());
+                         .agent_ws_port("9000".to_string());
 
         // Set agent-type specific defaults or logic
         match factory_agent_config.factory_agent_type {

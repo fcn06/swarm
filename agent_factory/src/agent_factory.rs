@@ -6,6 +6,8 @@ use std::sync::Arc;
 use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService};
 use agent_service_adapters::{AgentEvaluationServiceAdapter, AgentMemoryServiceAdapter,AgentDiscoveryServiceAdapter};
 use basic_agent::business_logic::basic_agent::BasicAgent;
+use planner_agent::business_logic::planner_agent::PlannerAgent;
+use executor_agent::business_logic::executor_agent::ExecutorAgent;
 use agent_core::server::agent_server::AgentServer;
 use agent_core::business_logic::agent::Agent;
 
@@ -34,11 +36,12 @@ impl AgentFactory {
         }
     }
 
-    pub fn create_agent_config(&self, factory_agent_config: &FactoryAgentConfig, host:String,http_port:String) -> Result<AgentConfig> {
+    pub fn create_agent_config(&self, factory_agent_config: &FactoryAgentConfig, agent_http_endpoint:String) -> Result<AgentConfig> {
         info!("Creating AgentConfig for agent: {}", factory_agent_config.factory_agent_name);
 
         let mut builder = AgentConfig::builder()
             .agent_name(factory_agent_config.factory_agent_name.clone())
+            .agent_id(factory_agent_config.factory_agent_id.clone())
             .agent_description(factory_agent_config.factory_agent_description.clone())
             .agent_model_id(factory_agent_config.factory_agent_llm_model_id.clone());
 
@@ -51,9 +54,8 @@ impl AgentFactory {
         builder = builder.agent_llm_url(llm_url);
 
         // Set common defaults or values from factory_config
-        builder = builder.agent_host(host)
-                         .agent_http_port(http_port)
-                         .agent_ws_port("9000".to_string());
+        builder = builder.agent_http_endpoint(agent_http_endpoint)
+                         .agent_ws_endpoint("ws://127.0.0.1:9000".to_string());
 
         // Set agent-type specific defaults or logic
         match factory_agent_config.factory_agent_type {
@@ -128,22 +130,30 @@ impl AgentFactory {
         &self.factory_config
     }
 
-    pub async fn launch_agent(&self, factory_agent_config: &FactoryAgentConfig, agent_type:AgentType,agent_endpoint: String) -> Result<()> {
+    pub async fn launch_agent(&self, factory_agent_config: &FactoryAgentConfig, agent_type:AgentType,agent_http_endpoint: String) -> Result<()> {
         
-        let host="127.0.0.1".to_string();
-        let http_port="8080".to_string();
+        let agent_config = self.create_agent_config(factory_agent_config, agent_http_endpoint).expect("Error Creating Agent Config from Factory");
         
-        let agent_config = self.create_agent_config(factory_agent_config, host, http_port).expect("Error Creating Agent Config from Factory");
-        
-        let agent = BasicAgent::new(agent_config.clone(), factory_agent_config.factory_agent_llm_provider_api_key.clone(), None, None, None, None).await?;
-        // Create the modern server, and pass the runtime elements
-        let server = AgentServer::<BasicAgent>::new(agent_config, agent, None).await?;
+        match agent_type {
+            AgentType::Specialist => {
+                let agent = BasicAgent::new(agent_config.clone(), factory_agent_config.factory_agent_llm_provider_api_key.clone(), None, None, None, None).await?;
+                let server = AgentServer::<BasicAgent>::new(agent_config, agent, None).await?;
+                server.start_http().await.map_err(|e| anyhow::anyhow!("{}", e))?;
+            },
+            AgentType::Planner => {
+                let agent = PlannerAgent::new(agent_config.clone(), factory_agent_config.factory_agent_llm_provider_api_key.clone(), None, None, None, None).await?;
+                let server = AgentServer::<PlannerAgent>::new(agent_config, agent, None).await?;
+                server.start_http().await.map_err(|e| anyhow::anyhow!("{}", e))?;
+            },
+            AgentType::Executor => {
+                let agent = ExecutorAgent::new(agent_config.clone(), factory_agent_config.factory_agent_llm_provider_api_key.clone(), None, None, None, None).await?;
+                let server = AgentServer::<ExecutorAgent>::new(agent_config, agent, None).await?;
+                server.start_http().await.map_err(|e| anyhow::anyhow!("{}", e))?;
+            },
+        }
 
-        //println!("🌐 Starting HTTP server only...");
-        server.start_http().await.map_err(|e| anyhow::anyhow!("{}", e))?;
         Ok(())
     }
 
-    // todo: load agent config from file
 
 }

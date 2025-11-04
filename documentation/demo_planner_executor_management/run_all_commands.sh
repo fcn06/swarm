@@ -1,32 +1,16 @@
 #!/bin/bash
 
 echo "**************************************************************************"
-echo "THE BELOW EXAMPLES ARE CONFIGURED WITH GEMENI, for workflow agents"
-echo "You should get an API key"
-echo "This is the url that we will be targetting"
-echo "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
-echo "**************************************************************************"
-echo $'\n'
-echo "**************************************************************************"
-echo "BUT FOR LLM as a Judge, we are using a different model. In our case, we will use openai/gpt-oss-20b, exposed from GROQ"
-echo "You should get an API key"
-echo "This is the url that we will be targetting"
-echo "https://api.groq.com/openai/v1/chat/completions"
-echo "**************************************************************************"
-
-echo "**************************************************************************"
 echo "THESE COMMANDS HAVE TO BE SENT FROM THE ROOT OF THE REPOSITORY"
 echo "Export LLM_A2A_API_KEY beforehand beforehand as API Key related to LLM controlling Domain Agents. Our configuration files are targetting Groq"
 echo "Export LLM_MCP_API_KEY beforehand beforehand as API Key related to LLM Controlling MCP Runtime. Our configurations are targetting Groq"
 echo "Export LLM_JUDGE_API_KEY  beforehand as the API Key related to LLM Controlling Evaluation Service ( LLM as a Judge).Our configurations are targetting GROQ"
 echo "Export LLM_PLANNER_API_KEY  beforehand as the API Key related to LLM controlling the planner agent interaction.Our configurations are targetting GROQ"
-echo "Export LLM_EXECUTOR_API_KEY  beforehand as the API Key related to LLM controlling the executor agent interaction.Our configurations are targetting GROQ"
 echo "So to summarize : "
 echo "export LLM_A2A_API_KEY=<YOUR GROQ API KEY>"
 echo "export LLM_MCP_API_KEY=<YOUR GROQ API KEY>"
 echo "export LLM_JUDGE_API_KEY=<YOUR GROQ API KEY>"
 echo "export LLM_PLANNER_API_KEY=<YOUR GROQ API KEY>"
-echo "export LLM_EXECUTOR_API_KEY=<YOUR GROQ API KEY>"
 echo "**************************************************************************"
 
 read -n 1 -s -r -p "Press any key to start..."

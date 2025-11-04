@@ -47,10 +47,13 @@ impl AgentMcpConfig {
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct AgentConfig {
+    pub agent_id: String,
     pub agent_name: String,
-    pub agent_host: String,
-    pub agent_http_port: String,
-    pub agent_ws_port: String,
+    pub agent_http_endpoint: String,
+    pub agent_ws_endpoint: String,
+    //pub agent_host: String,
+    //pub agent_http_port: String,
+    //pub agent_ws_port: String,
     //pub agent_discovery_url: Option<String>, // to remove from config and make it runtime
     pub agent_discoverable: Option<bool>,
     pub agent_executor_url: Option<String>, // todo: to remove from config and make it runtime
@@ -85,10 +88,13 @@ impl AgentConfig {
         AgentConfigBuilder::new()
     }
 
+    pub fn agent_id(&self) -> String { self.agent_id.clone() }
     pub fn agent_name(&self) -> String { self.agent_name.clone() }
-    pub fn agent_host(&self) -> String { self.agent_host.clone() }
-    pub fn agent_http_port(&self) -> u16 { self.agent_http_port.parse().unwrap_or_default() }
-    pub fn agent_ws_port(&self) -> u16 { self.agent_ws_port.parse().unwrap_or_default() }
+    pub fn agent_http_endpoint(&self) -> String { self.agent_http_endpoint.clone() }
+    pub fn agent_ws_endpoint(&self) -> String { self.agent_ws_endpoint.clone() }
+    //pub fn agent_host(&self) -> String { self.agent_host.clone() }
+    //pub fn agent_http_port(&self) -> u16 { self.agent_http_port.parse().unwrap_or_default() }
+    //pub fn agent_ws_port(&self) -> u16 { self.agent_ws_port.parse().unwrap_or_default() }
     //pub fn agent_discovery_url(&self) -> Option<String> { self.agent_discovery_url.clone() }
     pub fn agent_discoverable(&self) -> Option<bool> { self.agent_discoverable.or(Some(true)) } // true by defaul except when explicitly set to false
     pub fn agent_executor_url(&self) -> Option<String> { self.agent_executor_url.clone() }
@@ -111,10 +117,13 @@ impl AgentConfig {
 }
 
 pub struct AgentConfigBuilder {
+    pub agent_id: Option<String>,
     pub agent_name: Option<String>,
-    pub agent_host: Option<String>,
-    pub agent_http_port: Option<String>,
-    pub agent_ws_port: Option<String>,
+    pub agent_http_endpoint: Option<String>,
+    pub agent_ws_endpoint: Option<String>,
+    //pub agent_host: Option<String>,
+    //pub agent_http_port: Option<String>,
+    //pub agent_ws_port: Option<String>,
     //pub agent_discovery_url: Option<String>,
     pub agent_discoverable: Option<bool>,
     pub agent_executor_url: Option<String>,
@@ -138,10 +147,13 @@ pub struct AgentConfigBuilder {
 impl AgentConfigBuilder {
     pub fn new() -> Self {
         AgentConfigBuilder {
+            agent_id: None, 
             agent_name: None,
-            agent_host: None,
-            agent_http_port: None,
-            agent_ws_port: None,
+            agent_http_endpoint: None,
+            agent_ws_endpoint: None,
+            //agent_host: None,
+            //agent_http_port: None,
+            //agent_ws_port: None,
             //agent_discovery_url: None,
             agent_discoverable: None,
             agent_executor_url: None,
@@ -163,10 +175,27 @@ impl AgentConfigBuilder {
         }
     }
 
+    pub fn agent_id(mut self, agent_id: String) -> Self {
+        self.agent_id = Some(agent_id);
+        self
+    }
+
     pub fn agent_name(mut self, agent_name: String) -> Self {
         self.agent_name = Some(agent_name);
         self
     }
+
+    pub fn agent_http_endpoint(mut self, agent_http_endpoint: String) -> Self {
+        self.agent_http_endpoint = Some(agent_http_endpoint);
+        self
+    }
+
+    pub fn agent_ws_endpoint(mut self, agent_ws_endpoint: String) -> Self {
+        self.agent_ws_endpoint = Some(agent_ws_endpoint);
+        self
+    }
+
+    /* 
 
     pub fn agent_host(mut self, agent_host: String) -> Self {
         self.agent_host = Some(agent_host);
@@ -183,7 +212,6 @@ impl AgentConfigBuilder {
         self
     }
 
-    /* 
     pub fn agent_discovery_url(mut self, agent_discovery_url: String) -> Self {
         self.agent_discovery_url = Some(agent_discovery_url);
         self
@@ -279,10 +307,13 @@ impl AgentConfigBuilder {
 
     pub fn build(self) -> anyhow::Result<AgentConfig> {
         Ok(AgentConfig {
+            agent_id: self.agent_id.ok_or_else(|| anyhow::anyhow!("agent_id is required"))?,
             agent_name: self.agent_name.ok_or_else(|| anyhow::anyhow!("agent_name is required"))?,
-            agent_host: self.agent_host.ok_or_else(|| anyhow::anyhow!("agent_host is required"))?,
-            agent_http_port: self.agent_http_port.ok_or_else(|| anyhow::anyhow!("agent_http_port is required"))?,
-            agent_ws_port: self.agent_ws_port.ok_or_else(|| anyhow::anyhow!("agent_ws_port is required"))?,
+            agent_http_endpoint: self.agent_http_endpoint.ok_or_else(|| anyhow::anyhow!("agent_http_endpoint is required"))?,
+            agent_ws_endpoint: self.agent_ws_endpoint.ok_or_else(|| anyhow::anyhow!("agent_ws_endpoint is required"))?,
+            //agent_host: self.agent_host.ok_or_else(|| anyhow::anyhow!("agent_host is required"))?,
+            //agent_http_port: self.agent_http_port.ok_or_else(|| anyhow::anyhow!("agent_http_port is required"))?,
+            //agent_ws_port: self.agent_ws_port.ok_or_else(|| anyhow::anyhow!("agent_ws_port is required"))?,
             //agent_discovery_url: self.agent_discovery_url,
             agent_discoverable: self.agent_discoverable,
             agent_executor_url: self.agent_executor_url,

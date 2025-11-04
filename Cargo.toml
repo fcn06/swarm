@@ -30,6 +30,7 @@ agent_discovery_service = { path = "./agent_discovery_service" }
 mcp_runtime = { path = "./mcp_runtime" }
 workflow_management = { path = "./workflow_management" }
 
+planner_agent = { path = "./planner_agent" }
 executor_agent = { path = "./executor_agent" }
 basic_agent = { path = "./basic_agent" }
 

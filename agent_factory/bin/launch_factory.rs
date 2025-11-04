@@ -131,6 +131,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
         .with_factory_agent_type(AgentType::Specialist)
         .with_factory_agent_domains(AgentDomain::General)
         .with_factory_agent_name("Basic_Agent".to_string())
+        .with_factory_agent_id("Basic_Agent".to_string())
         .with_factory_agent_description("An Agent that answer Basic Questions".to_string())
         .with_factory_agent_llm_provider_url(LlmProviderUrl::Groq)
         .with_factory_agent_llm_provider_api_key(agent_api_key)

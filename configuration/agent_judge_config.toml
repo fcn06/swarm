@@ -5,12 +5,15 @@
 #################################################################
 # General parameters
 #################################################################
-agent_name="Judge Agent"
-agent_host="127.0.0.1"
-agent_http_port="6000"
+agent_id="Judge_Agent"
+agent_name="Judge_Agent"
+agent_http_endpoint="http://127.0.0.1:6000"
+agent_ws_endpoint="ws://127.0.0.1:6001"
 
-# Future use. Websocket is not supported
-agent_ws_port="6001"
+#agent_name="Judge Agent"
+#agent_host="127.0.0.1"
+#agent_http_port="6000"
+#agent_ws_port="6001"
 
 #################################################################
 # Future use : It would make sense to have a discovery service

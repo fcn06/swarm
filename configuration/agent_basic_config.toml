@@ -5,12 +5,14 @@
 #################################################################
 # General parameters
 #################################################################
+agent_id="Basic_Agent"
 agent_name="Basic_Agent"
-agent_host="127.0.0.1"
-agent_http_port="8080"
+agent_http_endpoint="http://127.0.0.1:8080"
+agent_ws_endpoint="ws://127.0.0.1:8081"
 
-# Future use. Websocket is not supported
-agent_ws_port="8081"
+#agent_host="127.0.0.1"
+#agent_http_port="8080"
+#agent_ws_port="8081"
 
 #################################################################
 # Future use : It would make sense to have a discovery service

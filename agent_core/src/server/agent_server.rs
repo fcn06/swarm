@@ -87,12 +87,12 @@ impl<T:Agent> AgentServer<T> {
             storage,
         );
 
-        let agent_endpoint= format!("http://{}:{}", self.config.agent_host(), self.config.agent_http_port());
+        let agent_http_endpoint= format!("{}", self.config.agent_http_endpoint());
+        let _agent_ws_endpoint= format!("{}", self.config.agent_ws_endpoint());
 
         let agent_info = SimpleAgentInfo::new(
             self.config.agent_name(),
-            agent_endpoint.clone(),
-            //format!("http://{}:{}", self.config.agent_host(), self.config.agent_http_port()),
+            agent_http_endpoint.clone(),
         )
         .with_description(self.config.agent_description())
         .with_documentation_url(self.config.agent_doc_url().expect("NO DOC URL PROVIDED IN CONFIG"))
@@ -111,7 +111,7 @@ impl<T:Agent> AgentServer<T> {
             id:Uuid::new_v4().to_string(),
             name:self.config.agent_name(),
             description:self.config.agent_description(),
-            agent_endpoint:  agent_endpoint,
+            agent_endpoint:  agent_http_endpoint.clone(),
             skills:vec![AgentSkillDefinition{
                 name:self.config.agent_skill_name(),
                 description:self.config.agent_skill_description(),
@@ -125,19 +125,20 @@ impl<T:Agent> AgentServer<T> {
             self.register_with_discovery_service(&agent_definition).await?;
         }
 
-        let bind_address = format!("{}:{}", self.config.agent_host(), self.config.agent_http_port());
+        // bind address is on format  0.0.0.0:0000
+        let bind_address = agent_http_endpoint.clone().replace("http://","");
 
         println!(
-            "🌐 Starting HTTP a2a agent server {} on {}:{}",
-            self.config.agent_name(), self.config.agent_host(), self.config.agent_http_port()
+            "🌐 Starting HTTP a2a agent server {} on {}",
+            self.config.agent_name(), self.config.agent_http_endpoint()
         );
         println!(
-            "📋 Agent card: http://{}:{}/agent-card",
-            self.config.agent_host(), self.config.agent_http_port()
+            "📋 Agent card: {}/agent-card",
+            self.config.agent_http_endpoint(),
         );
         println!(
-            "🛠️  Skills: http://{}:{}/skills",
-            self.config.agent_host(), self.config.agent_http_port()
+            "🛠️  Skills: {}/skills",
+            self.config.agent_http_endpoint()
         );
         println!("💾 Storage: In-memory (non-persistent)");
         println!("🔓 Authentication: None (public access)");

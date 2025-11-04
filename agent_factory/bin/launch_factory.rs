@@ -22,6 +22,7 @@ use agent_models::factory::config::AgentType;
 use agent_models::factory::config::FactoryAgentConfig;
 
 
+
 /// Command-line arguments
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -136,8 +137,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
         .with_factory_agent_llm_model_id("openai/gpt-oss-20b".to_string())
         .build().map_err(|e| anyhow::anyhow!("Failed to build FactoryAgentConfig: {}", e))?;
 
+        //todo: add mcp_config to factory_agent_config
 
-    agent_factory.launch_agent(&factory_agent_config,"127.0.0.1".to_string(),"8080".to_string()).await?;
+
+    agent_factory.launch_agent(&factory_agent_config,AgentType::Specialist,"http://127.0.0.1:8080".to_string()).await?;
 
     /************************************************/
     /* Agent  launched                              */

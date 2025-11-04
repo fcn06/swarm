@@ -9,6 +9,11 @@ use basic_agent::business_logic::basic_agent::BasicAgent;
 use agent_core::server::agent_server::AgentServer;
 use agent_core::business_logic::agent::Agent;
 
+
+const GROQ_CHAT_COMPLETION_ENDPOINT: &'static str = "https://api.groq.com/openai/v1/chat/completions";
+const GOOGLE_CHAT_COMPLETION_ENDPOINT: &'static str = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+const LLAMACPP_CHAT_COMPLETION_ENDPOINT: &'static str = "http://localhost:2000/v1/chat/completions";
+
 // launch services
 // Create and launch agent with factory agentbuilder
 
@@ -39,9 +44,9 @@ impl AgentFactory {
 
         // Map LLM provider URL
         let llm_url = match &factory_agent_config.factory_agent_llm_provider_url {
-            LlmProviderUrl::Groq => "https://api.groq.com/openai/v1/chat/completions".to_string(),
-            LlmProviderUrl::Google => "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions".to_string(),
-            LlmProviderUrl::LlamaCpp => "http://localhost:2000/v1/chat/completions".to_string(),
+            LlmProviderUrl::Groq => GROQ_CHAT_COMPLETION_ENDPOINT.to_string(),
+            LlmProviderUrl::Google => GOOGLE_CHAT_COMPLETION_ENDPOINT.to_string(),
+            LlmProviderUrl::LlamaCpp => LLAMACPP_CHAT_COMPLETION_ENDPOINT.to_string(),
         };
         builder = builder.agent_llm_url(llm_url);
 
@@ -123,11 +128,17 @@ impl AgentFactory {
         &self.factory_config
     }
 
-    pub async fn launch_agent(&self, factory_agent_config: &FactoryAgentConfig, host: String, http_port: String) -> Result<()> {
+    pub async fn launch_agent(&self, factory_agent_config: &FactoryAgentConfig, agent_type:AgentType,agent_endpoint: String) -> Result<()> {
+        
+        let host="127.0.0.1".to_string();
+        let http_port="8080".to_string();
+        
         let agent_config = self.create_agent_config(factory_agent_config, host, http_port).expect("Error Creating Agent Config from Factory");
+        
         let agent = BasicAgent::new(agent_config.clone(), factory_agent_config.factory_agent_llm_provider_api_key.clone(), None, None, None, None).await?;
         // Create the modern server, and pass the runtime elements
         let server = AgentServer::<BasicAgent>::new(agent_config, agent, None).await?;
+
         //println!("🌐 Starting HTTP server only...");
         server.start_http().await.map_err(|e| anyhow::anyhow!("{}", e))?;
         Ok(())

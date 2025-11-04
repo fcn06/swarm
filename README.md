@@ -101,6 +101,38 @@ sh ./documentation/demo_planner_executor_management/terminate_all_agents_process
 
 ---
 
+## **🏭 Agent Factory: Programmatic Agent Launch**
+
+Swarm provides an `AgentFactory` to dynamically launch and manage agents programmatically. This allows for creating flexible and scalable multi-agent systems where agents can be instantiated on-the-fly based on runtime conditions.
+
+You can configure an agent's properties, such as its type, domain, name, description, and the LLM it uses, and then launch it with a single command.
+
+Here’s a code snippet illustrating how to launch a "Basic_Agent":
+
+```rust
+    let agent_api_key = env::var("LLM_A2A_API_KEY").expect("LLM_A2A_API_KEY must be set");
+
+
+    let factory_agent_config = FactoryAgentConfig::builder()
+        .with_factory_agent_url("http://127.0.0.1:8080".to_string())
+        .with_factory_agent_type(AgentType::Specialist)
+        .with_factory_agent_domains(AgentDomain::General)
+        .with_factory_agent_name("Basic_Agent".to_string())
+        .with_factory_agent_description("An Agent that answer Basic Questions".to_string())
+        .with_factory_agent_llm_provider_url(LlmProviderUrl::Groq)
+        .with_factory_agent_llm_provider_api_key(agent_api_key)
+        .with_factory_agent_llm_model_id("openai/gpt-oss-20b".to_string())
+        .build().map_err(|e| anyhow::anyhow!("Failed to build FactoryAgentConfig: {}", e))?;
+
+        //todo: add mcp_config to factory_agent_config
+
+
+    agent_factory.launch_agent(&factory_agent_config,AgentType::Specialist,"http://127.0.0.1:8080".to_string()).await?;
+```
+
+This capability is essential for creating adaptive systems that can scale their workforce based on the tasks at hand.
+
+---
 
 ## **💡 Other Examples**
 

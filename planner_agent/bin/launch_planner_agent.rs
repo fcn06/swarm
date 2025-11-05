@@ -84,7 +84,7 @@ async fn register_agents(discovery_service: Arc<dyn DiscoveryService>) -> anyhow
 
     let agent_definition=AgentDefinition {
         id: "Basic_Agent".to_string(),
-        name: "Basic Agent for weather requests, customer requests and other general topics".to_string(),
+        name: "Basic Agent".to_string(),
         description: "Retrieve Weather in a Location, Get customer details and other General Requests".to_string(),
         agent_endpoint: "http://localhost:8080".to_string(),
         skills: Vec::new(),
@@ -156,6 +156,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     /* Launch Workflow Agent Server                 */
     /************************************************/ 
     // Create the modern server, and pass the runtime elements
+    // todo:enable a way to avoid evaluation if not needed
     let server = AgentServer::<PlannerAgent>::new(planner_agent_config, agent, discovery_service).await?;
    
     println!("🌐 Starting HTTP server only...");

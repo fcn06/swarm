@@ -62,14 +62,14 @@ async fn register_tasks(discovery_service: Arc<dyn DiscoveryService>) -> anyhow:
 /// Register Agents in Discovery Service
 async fn register_agents(discovery_service: Arc<dyn DiscoveryService>) -> anyhow::Result<()> {
 
-    // todo:harmonize agent_id and agent_name
     let agent_definition=AgentDefinition {
         id: "Basic_Agent".to_string(),
-        name: "Basic Agent for weather requests, customer requests and other general topics".to_string(),
+        name: "Basic Agent".to_string(),
         description: "Retrieve Weather in a Location, Get customer details and other General Requests".to_string(),
         agent_endpoint: "http://localhost:8080".to_string(),
         skills: Vec::new(),
     };
+
 
     discovery_service.register_agent(&agent_definition).await?;
     Ok(())

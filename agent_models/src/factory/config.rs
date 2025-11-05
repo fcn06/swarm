@@ -37,6 +37,7 @@ pub struct FactoryAgentConfig {
     pub factory_agent_llm_provider_url: LlmProviderUrl,
     pub factory_agent_llm_provider_api_key: String, // to be injected at runtime
     pub factory_agent_llm_model_id: String,
+    pub factory_agent_mcp_runtime_config: Option<FactoryMcpRuntimeConfig>,
 }
 
 impl FactoryAgentConfig {
@@ -55,6 +56,7 @@ pub struct FactoryAgentConfigBuilder {
     factory_agent_llm_provider_url: Option<LlmProviderUrl>,
     factory_agent_llm_provider_api_key: Option<String>,
     factory_agent_llm_model_id: Option<String>,
+    factory_agent_mcp_runtime_config: Option<FactoryMcpRuntimeConfig>,
 }
 
 impl FactoryAgentConfigBuilder {
@@ -69,6 +71,7 @@ impl FactoryAgentConfigBuilder {
             factory_agent_llm_provider_url: None,
             factory_agent_llm_provider_api_key: None,
             factory_agent_llm_model_id: None,
+            factory_agent_mcp_runtime_config:None,
         }
     }
 
@@ -117,6 +120,12 @@ impl FactoryAgentConfigBuilder {
         self
     }
 
+    pub fn with_factory_agent_mcp_runtime_config(mut self, factory_agent_mcp_runtime_config: FactoryMcpRuntimeConfig) -> Self {
+        self.factory_agent_mcp_runtime_config = Some(factory_agent_mcp_runtime_config);
+        self
+    }
+
+
     pub fn build(self) -> Result<FactoryAgentConfig, String> {
         let factory_agent_url = self.factory_agent_url.ok_or_else(|| "factory_agent_url is not set".to_string())?;
         let factory_agent_type = self.factory_agent_type.ok_or_else(|| "factory_agent_type is not set".to_string())?;
@@ -137,6 +146,7 @@ impl FactoryAgentConfigBuilder {
             factory_agent_llm_provider_url,
             factory_agent_llm_provider_api_key,
             factory_agent_llm_model_id,
+            factory_agent_mcp_runtime_config : self.factory_agent_mcp_runtime_config,
         })
     }
 }
@@ -180,5 +190,82 @@ impl fmt::Display for LlmProviderUrl {
             LlmProviderUrl::Google => write!(f, "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"),
             LlmProviderUrl::LlamaCpp => write!(f, "http://localhost:2000/v1/chat/completions"),
         }
+    }
+}
+
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FactoryMcpRuntimeConfig {
+    pub factory_mcp_llm_provider_url: LlmProviderUrl,
+    pub factory_mcp_llm_provider_api_key: String, // to be injected at runtime
+    pub factory_mcp_llm_model_id: String,
+    pub factory_mcp_server_url: String,
+    pub factory_mcp_server_api_key: String,
+}
+
+impl FactoryMcpRuntimeConfig {
+    pub fn builder() -> FactoryMcpRuntimeConfigBuilder {
+        FactoryMcpRuntimeConfigBuilder::new()
+    }
+}
+
+pub struct FactoryMcpRuntimeConfigBuilder {
+    factory_mcp_llm_provider_url: Option<LlmProviderUrl>,
+    factory_mcp_llm_provider_api_key: Option<String>,
+    factory_mcp_llm_model_id: Option<String>,
+    factory_mcp_server_url: Option<String>,
+    factory_mcp_server_api_key: Option<String>,
+}
+
+impl FactoryMcpRuntimeConfigBuilder {
+    pub fn new() -> Self {
+        FactoryMcpRuntimeConfigBuilder {
+            factory_mcp_llm_provider_url: None,
+            factory_mcp_llm_provider_api_key: None,
+            factory_mcp_llm_model_id: None,
+            factory_mcp_server_url: None,
+            factory_mcp_server_api_key: None,
+        }
+    }
+
+    pub fn with_factory_mcp_llm_provider_url(mut self, factory_mcp_llm_provider_url: LlmProviderUrl) -> Self {
+        self.factory_mcp_llm_provider_url = Some(factory_mcp_llm_provider_url);
+        self
+    }
+
+    pub fn with_factory_mcp_llm_provider_api_key(mut self, factory_mcp_llm_provider_api_key: String) -> Self {
+        self.factory_mcp_llm_provider_api_key = Some(factory_mcp_llm_provider_api_key);
+        self
+    }
+
+    pub fn with_factory_mcp_llm_model_id(mut self, factory_mcp_llm_model_id: String) -> Self {
+        self.factory_mcp_llm_model_id = Some(factory_mcp_llm_model_id);
+        self
+    }
+
+    pub fn with_factory_mcp_server_url(mut self, factory_mcp_server_url: String) -> Self {
+        self.factory_mcp_server_url = Some(factory_mcp_server_url);
+        self
+    }
+
+    pub fn with_factory_mcp_server_api_key(mut self, factory_mcp_server_api_key: String) -> Self {
+        self.factory_mcp_server_api_key = Some(factory_mcp_server_api_key);
+        self
+    }
+
+    pub fn build(self) -> Result<FactoryMcpRuntimeConfig, String> {
+        let factory_mcp_llm_provider_url = self.factory_mcp_llm_provider_url.ok_or_else(|| "factory_mcp_llm_provider_url is not set".to_string())?;
+        let factory_mcp_llm_provider_api_key = self.factory_mcp_llm_provider_api_key.ok_or_else(|| "factory_mcp_llm_provider_api_key is not set".to_string())?;
+        let factory_mcp_llm_model_id = self.factory_mcp_llm_model_id.ok_or_else(|| "factory_mcp_llm_model_id is not set".to_string())?;
+        let factory_mcp_server_url = self.factory_mcp_server_url.ok_or_else(|| "factory_mcp_server_url is not set".to_string())?;
+        let factory_mcp_server_api_key = self.factory_mcp_server_api_key.ok_or_else(|| "factory_mcp_server_api_key is not set".to_string())?;
+
+        Ok(FactoryMcpRuntimeConfig {
+            factory_mcp_llm_provider_url,
+            factory_mcp_llm_provider_api_key,
+            factory_mcp_llm_model_id,
+            factory_mcp_server_url,
+            factory_mcp_server_api_key,
+        })
     }
 }

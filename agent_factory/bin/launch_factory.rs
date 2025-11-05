@@ -21,7 +21,7 @@ use agent_models::factory::config::AgentDomain;
 use agent_models::factory::config::AgentType;
 use agent_models::factory::config::FactoryAgentConfig;
 
-
+use agent_models::factory::config::FactoryMcpRuntimeConfig;
 
 /// Command-line arguments
 #[derive(Parser, Debug)]
@@ -125,6 +125,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
 
     let agent_api_key = env::var("LLM_A2A_API_KEY").expect("LLM_A2A_API_KEY must be set");
 
+    // include McpRuntimeConfig
+    /* 
+    let _factory_mcp_runtime_config=FactoryMcpRuntimeConfig {
+        factory_mcp_llm_provider_url:LlmProviderUrl::Groq,
+        factory_mcp_llm_provider_api_key:agent_api_key.clone(),
+        factory_mcp_llm_model_id:"openai/gpt-oss-20b".to_string(),
+        factory_mcp_server_url:"http://localhost:8000/sse".to_string(),
+        factory_mcp_server_api_key:"".to_string(),
+    };
+    */
 
     let factory_agent_config = FactoryAgentConfig::builder()
         .with_factory_agent_url("http://127.0.0.1:8080".to_string())

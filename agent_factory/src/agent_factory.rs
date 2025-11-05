@@ -130,6 +130,8 @@ impl AgentFactory {
         &self.factory_config
     }
 
+
+    
     pub async fn launch_agent(&self, factory_agent_config: &FactoryAgentConfig, agent_type:AgentType,agent_http_endpoint: String) -> Result<()> {
         
         let agent_config = self.create_agent_config(factory_agent_config, agent_http_endpoint).expect("Error Creating Agent Config from Factory");

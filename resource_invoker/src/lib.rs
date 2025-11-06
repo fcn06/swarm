@@ -10,7 +10,7 @@ use agent_core::agent_interaction_protocol::agent_interaction::AgentInteraction;
 use agent_core::agent_interaction_protocol::a2a_agent_interaction::A2AAgentInteraction;
 
 use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService};
-use configuration::{AgentReference, AgentMcpConfig};
+use configuration::{AgentReference, McpRuntimeConfig};
 
 use rmcp::model::CallToolRequestParam;
 use mcp_runtime::runtime::mcp_runtime::{McpRuntime};
@@ -226,7 +226,7 @@ impl McpRuntimeToolInvoker  {
     }
 
     pub async fn initialize_mcp_agent(mcp_config_path: String) -> anyhow::Result<McpRuntime> {
-        let agent_mcp_config = AgentMcpConfig::load_agent_config(mcp_config_path.as_str())
+        let agent_mcp_config = McpRuntimeConfig::load_agent_config(mcp_config_path.as_str())
             .context("Error loading MCP config for planner")?;
         let mcp_runtime = McpRuntime::initialize_mcp_client_v2(agent_mcp_config).await?;
         Ok(mcp_runtime)

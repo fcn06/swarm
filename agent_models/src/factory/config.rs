@@ -5,8 +5,12 @@ use toml;
 
 // Store factory parameters in databases
 
-// Contains framework level configuration
 
+
+/******************************************************************/
+// Factory Configuration
+// Contains framework level configuration
+/******************************************************************/
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FactoryConfig {
@@ -24,7 +28,12 @@ impl FactoryConfig {
     }
 }
 
+
+/******************************************************************/
+// Factory Agent Configuration
 // Contains agent level configuration
+/******************************************************************/
+
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FactoryAgentConfig {
@@ -192,6 +201,10 @@ impl fmt::Display for LlmProviderUrl {
         }
     }
 }
+
+/******************************************************************/
+// Factory MCP Runtime Configuration
+/******************************************************************/
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

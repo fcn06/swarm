@@ -18,7 +18,7 @@ use std::borrow::Cow;
 use std::sync::Arc;
 
 use llm_api::chat::ToolCall;
-use configuration::AgentMcpConfig;
+use configuration::McpRuntimeConfig;
 
 // https://github.com/modelcontextprotocol/rust-sdk/blob/main/docs/OAUTH_SUPPORT.md
 // https://github.com/modelcontextprotocol/rust-sdk/blob/b9d7d61ebd6e8385cbc4aa105d4e25774fc1a59c/crates/rmcp/src/transport/common/reqwest/sse_client.rs#L25 
@@ -30,7 +30,7 @@ pub type McpClient = RunningService<RoleClient, InitializeRequestParam>;
 
 #[allow(dead_code)]
 pub struct McpRuntime {
-    agent_mcp_config: AgentMcpConfig,
+    agent_mcp_config: McpRuntimeConfig,
     client: McpClient,
 }
 
@@ -72,7 +72,7 @@ pub async fn start_with_default_headers(
 
 /// Initializes the MCP client and connects to the server.
 /// Initializes logging (potentially repeated if called multiple times).
-pub async fn initialize_mcp_client_v2(agent_mcp_config: AgentMcpConfig)
+pub async fn initialize_mcp_client_v2(agent_mcp_config: McpRuntimeConfig)
     -> anyhow::Result<Self> {
     
     let mcp_server_url_string = agent_mcp_config

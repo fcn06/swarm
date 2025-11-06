@@ -10,7 +10,8 @@ use planner_agent::business_logic::planner_agent::PlannerAgent;
 use executor_agent::business_logic::executor_agent::ExecutorAgent;
 use agent_core::server::agent_server::AgentServer;
 use agent_core::business_logic::agent::Agent;
-
+use configuration::McpRuntimeConfig;
+use agent_models::factory::config::FactoryMcpRuntimeConfig;
 
 const GROQ_CHAT_COMPLETION_ENDPOINT: &'static str = "https://api.groq.com/openai/v1/chat/completions";
 const GOOGLE_CHAT_COMPLETION_ENDPOINT: &'static str = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
@@ -125,6 +126,39 @@ impl AgentFactory {
     }
 
 
+    pub fn create_mcp_config(&self,factory_mcp_runtime_config:&FactoryMcpRuntimeConfig) -> Result<McpRuntimeConfig> {
+
+
+        let mcp_runtime_system_prompt=r#"You are a helpful assistant that answers user requests. If you can answer a question using your general knowledge, do so. Otherwise, you can use one or more tools to find the answer. When you receive a message with a role called \"tool\", you must use the response from tools in order to build a final answer."#;
+
+        let llm_mcp_url = match &factory_mcp_runtime_config.factory_mcp_llm_provider_url {
+            LlmProviderUrl::Groq => GROQ_CHAT_COMPLETION_ENDPOINT.to_string(),
+            LlmProviderUrl::Google => GOOGLE_CHAT_COMPLETION_ENDPOINT.to_string(),
+            LlmProviderUrl::LlamaCpp => LLAMACPP_CHAT_COMPLETION_ENDPOINT.to_string(),
+        };
+
+
+        Ok(
+            McpRuntimeConfig {
+                agent_mcp_role_tool: "tool".to_string(),
+                agent_mcp_role_assistant: "assistant".to_string(),
+                agent_mcp_tool_choice_auto: "auto".to_string(),
+                agent_mcp_finish_reason_tool_calls:"tool_calls".to_string(),
+                agent_mcp_finish_reason_stop: "stop".to_string(),
+                agent_mcp_max_loops: 5, // Use appropriate type
+                agent_mcp_server_url: Some(factory_mcp_runtime_config.factory_mcp_server_url.clone()),
+                agent_mcp_server_api_key:Some(factory_mcp_runtime_config.factory_mcp_server_api_key.clone()),
+                agent_mcp_model_id: factory_mcp_runtime_config.factory_mcp_llm_model_id.clone(),
+                agent_mcp_llm_url: llm_mcp_url, 
+                agent_mcp_llm_api_key_env_var: Some(factory_mcp_runtime_config.factory_mcp_llm_provider_api_key.clone()), 
+                agent_mcp_system_prompt: mcp_runtime_system_prompt.to_string(),
+                agent_mcp_endpoint_url: None, 
+            }
+        )
+
+    }
+
+
 
     pub fn get_factory_config(&self) -> &FactoryConfig {
         &self.factory_config
@@ -139,6 +173,43 @@ impl AgentFactory {
         match agent_type {
             AgentType::Specialist => {
                 let agent = BasicAgent::new(agent_config.clone(), factory_agent_config.factory_agent_llm_provider_api_key.clone(), None, None, None, None).await?;
+                let server = AgentServer::<BasicAgent>::new(agent_config, agent, None).await?;
+                server.start_http().await.map_err(|e| anyhow::anyhow!("{}", e))?;
+            },
+            AgentType::Planner => {
+                let agent = PlannerAgent::new(agent_config.clone(), factory_agent_config.factory_agent_llm_provider_api_key.clone(), None, None, None, None).await?;
+                let server = AgentServer::<PlannerAgent>::new(agent_config, agent, None).await?;
+                server.start_http().await.map_err(|e| anyhow::anyhow!("{}", e))?;
+            },
+            AgentType::Executor => {
+                let agent = ExecutorAgent::new(agent_config.clone(), factory_agent_config.factory_agent_llm_provider_api_key.clone(), None, None, None, None).await?;
+                let server = AgentServer::<ExecutorAgent>::new(agent_config, agent, None).await?;
+                server.start_http().await.map_err(|e| anyhow::anyhow!("{}", e))?;
+            },
+        }
+
+        Ok(())
+    }
+
+    pub async fn launch_agent_with_mcp(&self, factory_agent_config: &FactoryAgentConfig, 
+        factory_mcp_runtime_config:&FactoryMcpRuntimeConfig, agent_type:AgentType,agent_http_endpoint: String) -> Result<()> {
+        
+        let agent_config = self.create_agent_config(factory_agent_config, agent_http_endpoint).expect("Error Creating Agent Config from Factory");
+        let mcp_config=self.create_mcp_config(factory_mcp_runtime_config).expect("Error Creating MCP Config from Factory");
+
+        debug!("Agent Config: {:?}", agent_config);
+        debug!("MCP Config: {:?}", mcp_config);
+
+
+        match agent_type {
+            AgentType::Specialist => {
+                //let agent = BasicAgent::new(agent_config.clone(), factory_agent_config.factory_agent_llm_provider_api_key.clone(), None, None, None, None).await?;
+                let agent = BasicAgent::new_with_mcp(agent_config.clone(), 
+                    factory_agent_config.factory_agent_llm_provider_api_key.clone(), 
+                        mcp_config.clone(),
+                        factory_mcp_runtime_config.factory_mcp_llm_provider_api_key.clone(),
+                            None, None, None, None).await?;
+                
                 let server = AgentServer::<BasicAgent>::new(agent_config, agent, None).await?;
                 server.start_http().await.map_err(|e| anyhow::anyhow!("{}", e))?;
             },

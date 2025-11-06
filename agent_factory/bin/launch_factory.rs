@@ -126,15 +126,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     let agent_api_key = env::var("LLM_A2A_API_KEY").expect("LLM_A2A_API_KEY must be set");
 
     // include McpRuntimeConfig
-    /* 
-    let _factory_mcp_runtime_config=FactoryMcpRuntimeConfig {
-        factory_mcp_llm_provider_url:LlmProviderUrl::Groq,
-        factory_mcp_llm_provider_api_key:agent_api_key.clone(),
-        factory_mcp_llm_model_id:"openai/gpt-oss-20b".to_string(),
-        factory_mcp_server_url:"http://localhost:8000/sse".to_string(),
-        factory_mcp_server_api_key:"".to_string(),
-    };
-    */
+     
+    let factory_mcp_runtime_config = FactoryMcpRuntimeConfig::builder()
+        .with_factory_mcp_llm_provider_url(LlmProviderUrl::Groq)
+        .with_factory_mcp_llm_provider_api_key(agent_api_key.clone())
+        .with_factory_mcp_llm_model_id("openai/gpt-oss-20b".to_string())
+        .with_factory_mcp_server_url("http://localhost:8000/sse".to_string())
+        .with_factory_mcp_server_api_key("".to_string())
+        .build().map_err(|e| anyhow::anyhow!("Failed to build FactoryMcpRuntimeConfig: {}", e))?;
+    
+    
 
     let factory_agent_config = FactoryAgentConfig::builder()
         .with_factory_agent_url("http://127.0.0.1:8080".to_string())
@@ -151,7 +152,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
         //todo: add mcp_config to factory_agent_config
 
 
-    agent_factory.launch_agent(&factory_agent_config,AgentType::Specialist,"http://127.0.0.1:8080".to_string()).await?;
+    //agent_factory.launch_agent(&factory_agent_config,AgentType::Specialist,"http://127.0.0.1:8080".to_string()).await?;
+    agent_factory.launch_agent_with_mcp(&factory_agent_config,&factory_mcp_runtime_config,AgentType::Specialist,"http://127.0.0.1:8080".to_string()).await?;
 
     /************************************************/
     /* Agent  launched                              */

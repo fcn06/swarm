@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use uuid::Uuid;
-use configuration::{AgentMcpConfig};
+use configuration::{McpRuntimeConfig};
 use llm_api::chat::{ChatLlmInteraction};
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -67,7 +67,7 @@ impl Agent for BasicAgent {
         let mcp_agent = match agent_config.agent_mcp_config_path() {
             None => None,
             Some(path) => {
-                let agent_mcp_config = AgentMcpConfig::load_agent_config(path.as_str()).expect("Error loading MCP config for planner");
+                let agent_mcp_config = McpRuntimeConfig::load_agent_config(path.as_str()).expect("Error loading MCP config for planner");
                 let mcp_agent = McpAgent::new(agent_mcp_config).await?;
                 Some(Arc::new(Mutex::new(mcp_agent)))
             },
@@ -78,6 +78,9 @@ impl Agent for BasicAgent {
             mcp_agent,
           })
     }
+
+
+    
 
         /// business logic for handling user request
         async fn handle_request(&self, request: LlmMessage,_metadata:Option<Map<String, Value>>) ->anyhow::Result<ExecutionResult> {
@@ -115,5 +118,46 @@ impl Agent for BasicAgent {
      
          }
 
+
+}
+
+// todo: have it part of Agent trait
+
+impl BasicAgent {
+
+pub async fn new_with_mcp(
+    agent_config: AgentConfig,
+    agent_api_key:String,
+    mcp_runtime_config: McpRuntimeConfig,
+    mcp_runtime_api_key:String,
+    _evaluation_service: Option<Arc<dyn EvaluationService>>,
+    _memory_service: Option<Arc<dyn MemoryService>>,
+    _discovery_service: Option<Arc<dyn DiscoveryService>>,
+    _workflow_service: Option<Arc<dyn WorkflowServiceApi>>,
+) -> anyhow::Result<Self> {
+
+           // Set model to be used
+    let model_id = agent_config.agent_model_id();
+
+    // Set system message to be used
+    let _system_message = agent_config.agent_system_prompt();
+
+    // Set API key for LLM
+    let llm_a2a_api_key =agent_api_key;
+
+    let llm_interaction= ChatLlmInteraction::new(
+        agent_config.agent_llm_url(),
+        model_id,
+        llm_a2a_api_key,
+    );
+
+    let mcp_agent=Some(Arc::new(Mutex::new(McpAgent::new_v2(mcp_runtime_config,mcp_runtime_api_key).await?)));
+
+
+      Ok(Self {
+        llm_interaction,
+        mcp_agent,
+      })
+}
 
 }

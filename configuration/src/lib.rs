@@ -12,7 +12,7 @@ use tracing_subscriber::EnvFilter;
 
 // The configuration for the MCP runtime
 #[derive(Deserialize, Debug, Clone)]
-pub struct AgentMcpConfig {
+pub struct McpRuntimeConfig {
     //pub agent_mcp_system_prompt: String,
     pub agent_mcp_role_tool: String,
     pub agent_mcp_role_assistant: String,
@@ -29,12 +29,12 @@ pub struct AgentMcpConfig {
     pub agent_mcp_endpoint_url: Option<String>, // This will come from command line or instance config
 }
 
-impl AgentMcpConfig {
+impl McpRuntimeConfig {
     /// Loads agent configuration from a TOML file.
-    pub fn load_agent_config(path: &str) -> anyhow::Result<AgentMcpConfig> {
+    pub fn load_agent_config(path: &str) -> anyhow::Result<McpRuntimeConfig> {
         //info!("Loading agent configuration from: {}", path);
         let config_content = fs::read_to_string(path)?;
-        let config: AgentMcpConfig = toml::from_str(&config_content)?;
+        let config: McpRuntimeConfig = toml::from_str(&config_content)?;
         //debug!("Loaded agent configuration: {:?}", config);
         Ok(config)
     }

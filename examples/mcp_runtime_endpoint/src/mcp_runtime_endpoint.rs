@@ -9,7 +9,7 @@ use tracing_subscriber::{
 };
 
 use crate::api::endpoint::run_endpoint;
-use configuration::AgentMcpConfig;
+use configuration::McpRuntimeConfig;
 use mcp_runtime::mcp_agent_logic::agent::McpAgent;
 use clap::Parser;
 
@@ -29,7 +29,7 @@ struct Args {
 #[derive(Clone)] // AppState needs to be Clone to be used as Axum state
 pub struct AppState {
     pub mcp_agent: McpAgent,
-    pub agent_mcp_config: AgentMcpConfig, // Use Arc for shared ownership
+    pub agent_mcp_config: McpRuntimeConfig, // Use Arc for shared ownership
 }
 
 #[tokio::main]
@@ -75,7 +75,7 @@ let args = Args::parse();
     info!("Starting MCP Agent...");
 
     // load mcp config file and initialize appropriateruntime
-    let agent_mcp_config = match AgentMcpConfig::load_agent_config(&args.config_file) {
+    let agent_mcp_config = match McpRuntimeConfig::load_agent_config(&args.config_file) {
         Ok(config) => config,
         Err(e) => {
             error!(

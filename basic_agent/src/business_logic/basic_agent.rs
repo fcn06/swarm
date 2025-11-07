@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use uuid::Uuid;
-use configuration::{McpRuntimeConfig};
+use configuration::{AgentConfig, McpRuntimeConfig};
 use llm_api::chat::{ChatLlmInteraction};
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -22,7 +22,6 @@ use llm_api::chat::Message as LlmMessage;
 use agent_core::business_logic::agent::{Agent};
 use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService};
 
-use configuration::AgentConfig;
 
 use agent_models::execution::execution_result::{ExecutionResult};
 
@@ -42,6 +41,8 @@ impl Agent for BasicAgent {
     async fn new(
         agent_config: AgentConfig,
         agent_api_key:String,
+        mcp_runtime_config: Option<McpRuntimeConfig>,
+        mcp_runtime_api_key:Option<String>,
         _evaluation_service: Option<Arc<dyn EvaluationService>>,
         _memory_service: Option<Arc<dyn MemoryService>>,
         _discovery_service: Option<Arc<dyn DiscoveryService>>,
@@ -63,14 +64,18 @@ impl Agent for BasicAgent {
             llm_a2a_api_key,
         );
 
-        // Load MCP agent if specified in planner config
-        let mcp_agent = match agent_config.agent_mcp_config_path() {
-            None => None,
-            Some(path) => {
-                let agent_mcp_config = McpRuntimeConfig::load_agent_config(path.as_str()).expect("Error loading MCP config for planner");
-                let mcp_agent = McpAgent::new(agent_mcp_config).await?;
-                Some(Arc::new(Mutex::new(mcp_agent)))
-            },
+        let mcp_agent = if let (Some(config), Some(api_key)) = (mcp_runtime_config, mcp_runtime_api_key) {
+            // Case 1: Direct MCP config and API key provided to `new` function
+            Some(Arc::new(Mutex::new(McpAgent::new_v2(config, api_key).await?)))
+        } else if let Some(path) = agent_config.agent_mcp_config_path() {
+            // Case 2: MCP config path specified in AgentConfig
+            let agent_mcp_config = McpRuntimeConfig::load_agent_config(path.as_str())
+                .context("Error loading MCP config for basic agent from agent_config.agent_mcp_config_path")?;
+            let mcp_agent = McpAgent::new(agent_mcp_config).await?;
+            Some(Arc::new(Mutex::new(mcp_agent)))
+        } else {
+            // Case 3: No MCP config provided in any way
+            None
         };
 
           Ok(Self {
@@ -121,43 +126,8 @@ impl Agent for BasicAgent {
 
 }
 
-// todo: have it part of Agent trait
-
 impl BasicAgent {
-
-pub async fn new_with_mcp(
-    agent_config: AgentConfig,
-    agent_api_key:String,
-    mcp_runtime_config: McpRuntimeConfig,
-    mcp_runtime_api_key:String,
-    _evaluation_service: Option<Arc<dyn EvaluationService>>,
-    _memory_service: Option<Arc<dyn MemoryService>>,
-    _discovery_service: Option<Arc<dyn DiscoveryService>>,
-    _workflow_service: Option<Arc<dyn WorkflowServiceApi>>,
-) -> anyhow::Result<Self> {
-
-           // Set model to be used
-    let model_id = agent_config.agent_model_id();
-
-    // Set system message to be used
-    let _system_message = agent_config.agent_system_prompt();
-
-    // Set API key for LLM
-    let llm_a2a_api_key =agent_api_key;
-
-    let llm_interaction= ChatLlmInteraction::new(
-        agent_config.agent_llm_url(),
-        model_id,
-        llm_a2a_api_key,
-    );
-
-    let mcp_agent=Some(Arc::new(Mutex::new(McpAgent::new_v2(mcp_runtime_config,mcp_runtime_api_key).await?)));
-
-
-      Ok(Self {
-        llm_interaction,
-        mcp_agent,
-      })
-}
+    // The new_with_mcp function has been integrated into the `new` function of the Agent trait.
+    // This block can now be removed or repurposed if there are other BasicAgent-specific methods.
 
 }

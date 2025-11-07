@@ -150,7 +150,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     /************************************************/
     /* Launch Workflow Agent                        */
     /************************************************/ 
-    let agent = PlannerAgent::new(planner_agent_config.clone(),agent_api_key, evaluation_service, memory_service, discovery_service.clone(), None).await?;
+    let agent = PlannerAgent::new(planner_agent_config.clone(),agent_api_key,None,None, evaluation_service, memory_service, discovery_service.clone(), None).await?;
     
     /************************************************/
     /* Launch Workflow Agent Server                 */

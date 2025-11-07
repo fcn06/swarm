@@ -3,7 +3,7 @@ use async_trait::async_trait;
 use agent_models::execution::execution_result::{ExecutionResult};
 
 use llm_api::chat::Message as LlmMessage;
-use configuration::AgentConfig;
+use configuration::{AgentConfig, McpRuntimeConfig};
 
 use std::sync::Arc;
 use crate::business_logic::services::MemoryService;
@@ -19,13 +19,13 @@ pub trait Agent: Send + Sync  + Clone + 'static {
     async fn new( 
         agent_config: AgentConfig, 
         agent_api_key:String,
+        mcp_runtime_config: Option<McpRuntimeConfig>,
+        mcp_runtime_api_key:Option<String>,
         evaluation_service: Option<Arc<dyn EvaluationService>>, 
         memory_service: Option<Arc<dyn MemoryService>>, 
         discovery_service: Option<Arc<dyn DiscoveryService>>,
         workflow_service: Option<Arc<dyn WorkflowServiceApi>>
     ) -> anyhow::Result<Self>;
-    //async fn handle_request(&self, request: LlmMessage) -> anyhow::Result<ExecutionResult>;
     async fn handle_request(&self, request: LlmMessage, metadata:Option<Map<String, Value>>) -> anyhow::Result<ExecutionResult>;
     
 }
-

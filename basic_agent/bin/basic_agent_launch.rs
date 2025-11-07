@@ -69,7 +69,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
   
     let agent_api_key = env::var("LLM_A2A_API_KEY").expect("LLM_A2A_API_KEY must be set");
 
-    let agent = BasicAgent::new(basic_agent_config.clone(),agent_api_key, None, None,None,None).await?;
+    let agent = BasicAgent::new(basic_agent_config.clone(),agent_api_key, None,None,None, None,None,None).await?;
 
     // Create the modern server, and pass the runtime elements
     let server = AgentServer::<BasicAgent>::new(basic_agent_config, agent,None).await?;

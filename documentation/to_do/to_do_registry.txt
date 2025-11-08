@@ -1,9 +1,0 @@
-remove tool,agent, task registry from
-executor agent
-workflow agent
-workflow management
-==> Done
-
-Replace when needed runners with invokers. Done
-
-Implement a notion of context

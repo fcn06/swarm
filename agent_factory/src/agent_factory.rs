@@ -187,8 +187,6 @@ impl AgentFactory {
         &self.factory_config
     }
 
-
-    // todo: adjust behaviour if flag is evaluated is true for planner agent
     
     pub async fn launch_agent(&self, factory_agent_config: &FactoryAgentConfig, agent_type:AgentType) -> Result<()> {
         
@@ -201,6 +199,9 @@ impl AgentFactory {
                 server.start_http().await.map_err(|e| anyhow::anyhow!("{}", e))?;
             },
             AgentType::Planner => {
+                // todo :
+                // if (factory_agent_config.factory_agent_is_evaluated == true) {include evaluation service } else { do not include evaluation service};
+                
                 let agent = PlannerAgent::new(agent_config.clone(), factory_agent_config.factory_agent_llm_provider_api_key.clone(),None ,None, None, None, None).await?;
                 let server = AgentServer::<PlannerAgent>::new(agent_config, agent, None).await?;
                 server.start_http().await.map_err(|e| anyhow::anyhow!("{}", e))?;

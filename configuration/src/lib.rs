@@ -96,7 +96,7 @@ impl AgentConfig {
     //pub fn agent_http_port(&self) -> u16 { self.agent_http_port.parse().unwrap_or_default() }
     //pub fn agent_ws_port(&self) -> u16 { self.agent_ws_port.parse().unwrap_or_default() }
     //pub fn agent_discovery_url(&self) -> Option<String> { self.agent_discovery_url.clone() }
-    pub fn agent_discoverable(&self) -> Option<bool> { self.agent_discoverable.or(Some(true)) } // true by defaul except when explicitly set to false
+    pub fn agent_discoverable(&self) -> Option<bool> { self.agent_discoverable.or(Some(false)) } // false by defaul except when explicitly set to true
     pub fn agent_executor_url(&self) -> Option<String> { self.agent_executor_url.clone() }
     pub fn agent_system_prompt(&self) -> Option<String> { self.agent_system_prompt.clone() }
     pub fn agent_version(&self) -> String { self.agent_version.clone() }

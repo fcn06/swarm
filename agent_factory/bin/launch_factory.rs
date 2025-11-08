@@ -153,7 +153,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
 
 
     //agent_factory.launch_agent(&factory_agent_config,AgentType::Specialist,"http://127.0.0.1:8080".to_string()).await?;
-    agent_factory.launch_agent_with_mcp(&factory_agent_config,&factory_mcp_runtime_config,AgentType::Specialist,"http://127.0.0.1:8080".to_string()).await?;
+    agent_factory.launch_agent_with_mcp(&factory_agent_config,&factory_mcp_runtime_config,AgentType::Specialist).await?;
 
     /************************************************/
     /* Agent  launched                              */

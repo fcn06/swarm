@@ -111,26 +111,30 @@ You can configure an agent's properties, such as its type, domain, name, descrip
 Here’s a code snippet illustrating how to launch a "Basic_Agent" with `mcp_runtime` configuration:
 
 ```rust
-    let agent_api_key = env::var("LLM_A2A_API_KEY").expect("LLM_A2A_API_KEY must be set");
-
-    let mcp_config = McpRuntimeConfig::builder()
-        .with_mcp_runtime_url("http://127.0.0.1:8081".to_string())
-        .with_mcp_runtime_api_key("your_mcp_api_key".to_string())
-        .build().map_err(|e| anyhow::anyhow!("Failed to build McpRuntimeConfig: {}", e))?;
+      let agent_api_key = env::var("LLM_A2A_API_KEY").expect("LLM_A2A_API_KEY must be set");
+     
+    let factory_mcp_runtime_config = FactoryMcpRuntimeConfig::builder()
+        .with_factory_mcp_llm_provider_url(LlmProviderUrl::Groq)
+        .with_factory_mcp_llm_provider_api_key(agent_api_key.clone())
+        .with_factory_mcp_llm_model_id("openai/gpt-oss-20b".to_string())
+        .with_factory_mcp_server_url("http://localhost:8000/sse".to_string())
+        .with_factory_mcp_server_api_key("".to_string())
+        .build().map_err(|e| anyhow::anyhow!("Failed to build FactoryMcpRuntimeConfig: {}", e))?;
 
     let factory_agent_config = FactoryAgentConfig::builder()
         .with_factory_agent_url("http://127.0.0.1:8080".to_string())
         .with_factory_agent_type(AgentType::Specialist)
         .with_factory_agent_domains(AgentDomain::General)
         .with_factory_agent_name("Basic_Agent".to_string())
+        .with_factory_agent_id("Basic_Agent".to_string())
         .with_factory_agent_description("An Agent that answer Basic Questions".to_string())
         .with_factory_agent_llm_provider_url(LlmProviderUrl::Groq)
         .with_factory_agent_llm_provider_api_key(agent_api_key)
         .with_factory_agent_llm_model_id("openai/gpt-oss-20b".to_string())
-        .with_mcp_runtime_config(mcp_config) // Associate MCP config
         .build().map_err(|e| anyhow::anyhow!("Failed to build FactoryAgentConfig: {}", e))?;
 
-    agent_factory.launch_agent(&factory_agent_config, AgentType::Specialist, "http://127.0.0.1:8080".to_string()).await?;
+    agent_factory.launch_agent_with_mcp(&factory_agent_config,&factory_mcp_runtime_config,AgentType::Specialist).await?;
+
 ```
 
 This capability is essential for creating adaptive systems that can scale their workforce based on the tasks at hand, ensuring proper integration and communication through the **MCP Runtime**.

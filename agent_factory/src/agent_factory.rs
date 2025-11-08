@@ -39,7 +39,7 @@ impl AgentFactory {
         }
     }
 
-    pub fn create_agent_config(&self, factory_agent_config: &FactoryAgentConfig, agent_http_endpoint:String) -> Result<AgentConfig> {
+    pub fn create_agent_config(&self, factory_agent_config: &FactoryAgentConfig) -> Result<AgentConfig> {
         info!("Creating AgentConfig for agent: {}", factory_agent_config.factory_agent_name);
 
         let mut builder = AgentConfig::builder()
@@ -57,8 +57,15 @@ impl AgentFactory {
         builder = builder.agent_llm_url(llm_url);
 
         // Set common defaults or values from factory_config
+        /* 
         builder = builder.agent_http_endpoint(agent_http_endpoint)
                          .agent_ws_endpoint("ws://127.0.0.1:9000".to_string());
+        */
+
+        builder = builder.agent_http_endpoint(factory_agent_config.factory_agent_url.clone())
+                        .agent_ws_endpoint("ws://127.0.0.1:9000".to_string());
+
+                         
 
         // Set agent-type specific defaults or logic
         match factory_agent_config.factory_agent_type {
@@ -168,9 +175,9 @@ impl AgentFactory {
 
 
     
-    pub async fn launch_agent(&self, factory_agent_config: &FactoryAgentConfig, agent_type:AgentType,agent_http_endpoint: String) -> Result<()> {
+    pub async fn launch_agent(&self, factory_agent_config: &FactoryAgentConfig, agent_type:AgentType) -> Result<()> {
         
-        let agent_config = self.create_agent_config(factory_agent_config, agent_http_endpoint).expect("Error Creating Agent Config from Factory");
+        let agent_config = self.create_agent_config(factory_agent_config).expect("Error Creating Agent Config from Factory");
         
         match agent_type {
             AgentType::Specialist => {
@@ -194,9 +201,9 @@ impl AgentFactory {
     }
 
     pub async fn launch_agent_with_mcp(&self, factory_agent_config: &FactoryAgentConfig, 
-        factory_mcp_runtime_config:&FactoryMcpRuntimeConfig, agent_type:AgentType,agent_http_endpoint: String) -> Result<()> {
+        factory_mcp_runtime_config:&FactoryMcpRuntimeConfig, agent_type:AgentType) -> Result<()> {
         
-        let agent_config = self.create_agent_config(factory_agent_config, agent_http_endpoint).expect("Error Creating Agent Config from Factory");
+        let agent_config = self.create_agent_config(factory_agent_config).expect("Error Creating Agent Config from Factory");
         let mcp_config=self.create_mcp_config(factory_mcp_runtime_config).expect("Error Creating MCP Config from Factory");
 
         let mcp_runtime_details=McpRuntimeDetails{

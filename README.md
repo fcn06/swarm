@@ -18,10 +18,10 @@ Building multi-agent systems is complex. You need to manage communication, seque
 Swarm's architecture is designed around a collaborative "conductor" and "specialist" model, facilitating efficient execution of complex tasks:
 
 1.  **User Request & Planning (Planner Agent - The Conductor, Part 1):**
-    *   A user initiates a request, which is received by the **Planner Agent**.
+    *   A user initiates a request, which is received by the **Planner Agent** (or an **Agent Factory** can directly launch an agent to handle the request).
     *   The Planner Agent, acting as the primary orchestrator, determines the optimal course of action. It can:
         *   Load a predefined plan ("static workflow") from a JSON file.
-        *   Dynamically generate a new plan ("dynamic workflow") by evaluating the capabilities of available **Domain Agents, Tools, or Tasks**.
+        *   Dynamically generate a new plan ("dynamic workflow") by evaluating the capabilities of available **Domain Agents, Tools, or Tasks** (or by instructing an **Agent Factory** to instantiate the necessary agents).
     *   Once a plan is established, it is passed to the **Executor Agent**.
 
 2.  **Execution & Evaluation (Executor Agent - The Doer; Planner Agent - The Conductor, Part 2):**
@@ -103,15 +103,21 @@ sh ./documentation/demo_planner_executor_management/terminate_all_agents_process
 
 ## **🏭 Agent Factory: Programmatic Agent Launch**
 
-Swarm provides an `AgentFactory` to dynamically launch and manage agents programmatically. This allows for creating flexible and scalable multi-agent systems where agents can be instantiated on-the-fly based on runtime conditions.
+Swarm provides an `AgentFactory` to dynamically launch and manage agents programmatically. This allows for creating flexible and scalable multi-agent systems where agents can be instantiated on-the-fly based on runtime conditions and specific needs.
 
-You can configure an agent's properties, such as its type, domain, name, description, and the LLM it uses, and then launch it with a single command.
+The `AgentFactory` leverages the **MCP Runtime** to manage the lifecycle and communication of the agents it spawns. When an agent is launched via the factory, its configuration, including how it interacts with the Model Context Protocol (MCP), is defined. This enables newly created agents to immediately integrate into the broader Swarm ecosystem and communicate with other services and tools.
 
-Here’s a code snippet illustrating how to launch a "Basic_Agent":
+You can configure an agent's properties, such as its type, domain, name, description, and the LLM it uses, as well as its `mcp_runtime` settings, and then launch it with a single command.
+
+Here’s a code snippet illustrating how to launch a "Basic_Agent" with `mcp_runtime` configuration:
 
 ```rust
     let agent_api_key = env::var("LLM_A2A_API_KEY").expect("LLM_A2A_API_KEY must be set");
 
+    let mcp_config = McpRuntimeConfig::builder()
+        .with_mcp_runtime_url("http://127.0.0.1:8081".to_string())
+        .with_mcp_runtime_api_key("your_mcp_api_key".to_string())
+        .build().map_err(|e| anyhow::anyhow!("Failed to build McpRuntimeConfig: {}", e))?;
 
     let factory_agent_config = FactoryAgentConfig::builder()
         .with_factory_agent_url("http://127.0.0.1:8080".to_string())
@@ -122,15 +128,13 @@ Here’s a code snippet illustrating how to launch a "Basic_Agent":
         .with_factory_agent_llm_provider_url(LlmProviderUrl::Groq)
         .with_factory_agent_llm_provider_api_key(agent_api_key)
         .with_factory_agent_llm_model_id("openai/gpt-oss-20b".to_string())
+        .with_mcp_runtime_config(mcp_config) // Associate MCP config
         .build().map_err(|e| anyhow::anyhow!("Failed to build FactoryAgentConfig: {}", e))?;
 
-        //todo: add mcp_config to factory_agent_config
-
-
-    agent_factory.launch_agent(&factory_agent_config,AgentType::Specialist,"http://127.0.0.1:8080".to_string()).await?;
+    agent_factory.launch_agent(&factory_agent_config, AgentType::Specialist, "http://127.0.0.1:8080".to_string()).await?;
 ```
 
-This capability is essential for creating adaptive systems that can scale their workforce based on the tasks at hand.
+This capability is essential for creating adaptive systems that can scale their workforce based on the tasks at hand, ensuring proper integration and communication through the **MCP Runtime**.
 
 ---
 
@@ -155,6 +159,7 @@ Swarm is composed of several modular and interconnected components that work tog
 *   **🗣️ Domain Agents (The Specialists):** These are specialized agents, each acting as an expert in a particular domain (e.g., weather forecasting, database queries, customer care). They execute specific tasks as directed by the Executor Agent.
 *   **✍️ Planner Agent (The Architect):** This specialized agent is the first part of the "Conductor." It focuses on generating detailed, step-by-step execution plans or workflows based on a high-level goal, which are then passed to the Executor Agent.
 *   **🏃 Executor Agent (The Doer):** Completing the "Conductor" role, this agent takes an execution plan from the Planner, carries out the individual tasks by interacting with tools and other agents, and integrates with the LLM-as-a-Judge system for continuous evaluation and potential workflow refinement.
+*   **🏭 Agent Factory (The Spawner):** This component allows for the dynamic, programmatic creation and management of agent instances at runtime, facilitating scalable and adaptive multi-agent systems.
 *   **🔗 Workflow Management Runtime (The Engine):** This flexible core is responsible for defining, validating, and executing multi-agent workflows and plans. It is the underlying mechanism leveraged by the Executor Agent to manage the execution of planned tasks.
 *   **🛠️ MCP Runtime (Model Context Protocol) (The Bridge):** This component facilitates seamless agent interaction with external services, tools, and diverse data sources, effectively extending the agents' capabilities to the outside world.
 *   **⚖️ LLM as a Judge (The Evaluator):** An autonomous Large Language Model-based service that critically assesses the performance and outcomes of both individual agent actions and complete workflow executions, providing essential feedback for iterative improvement.

@@ -185,7 +185,9 @@ Swarm is composed of several modular and interconnected components that work tog
 
 Swarm is an active project, and we are constantly working on improvements. Our roadmap includes:
 
-*   **Enhanced Workflow Features:** More advanced conditional logic.
+*   **Finalize and Fine Tune Agent Factory** Inject properly evaluation, memory, discovery services.
+*   **Make discovery service using embeddings** So that we can inject in agents the more relevant tools, tasks and domain agents in the prompt of the planner.
+*   **Enhanced Workflow Features** More advanced conditional logic.
 *   **Improved Observability:** Better logging, tracing, and monitoring.
 *   **Broader LLM Integration:** Compatibility with a wider range of LLMs.
 

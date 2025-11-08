@@ -34,6 +34,7 @@ impl FactoryConfig {
 // Contains agent level configuration
 /******************************************************************/
 
+// todo: property to define if it is going to be evaluated or not
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FactoryAgentConfig {
@@ -47,6 +48,7 @@ pub struct FactoryAgentConfig {
     pub factory_agent_llm_provider_api_key: String, // to be injected at runtime
     pub factory_agent_llm_model_id: String,
     pub factory_agent_mcp_runtime_config: Option<FactoryMcpRuntimeConfig>,
+    pub factory_agent_is_evaluated: bool,
 }
 
 impl FactoryAgentConfig {
@@ -66,6 +68,7 @@ pub struct FactoryAgentConfigBuilder {
     factory_agent_llm_provider_api_key: Option<String>,
     factory_agent_llm_model_id: Option<String>,
     factory_agent_mcp_runtime_config: Option<FactoryMcpRuntimeConfig>,
+    factory_agent_is_evaluated: bool,
 }
 
 impl FactoryAgentConfigBuilder {
@@ -81,6 +84,7 @@ impl FactoryAgentConfigBuilder {
             factory_agent_llm_provider_api_key: None,
             factory_agent_llm_model_id: None,
             factory_agent_mcp_runtime_config:None,
+            factory_agent_is_evaluated:false, // false by default
         }
     }
 
@@ -134,6 +138,10 @@ impl FactoryAgentConfigBuilder {
         self
     }
 
+    pub fn with_factory_agent_is_evaluated(mut self, factory_agent_is_evaluated: bool) -> Self {
+        self.factory_agent_is_evaluated = factory_agent_is_evaluated;
+        self
+    }
 
     pub fn build(self) -> Result<FactoryAgentConfig, String> {
         let factory_agent_url = self.factory_agent_url.ok_or_else(|| "factory_agent_url is not set".to_string())?;
@@ -156,6 +164,7 @@ impl FactoryAgentConfigBuilder {
             factory_agent_llm_provider_api_key,
             factory_agent_llm_model_id,
             factory_agent_mcp_runtime_config : self.factory_agent_mcp_runtime_config,
+            factory_agent_is_evaluated: self.factory_agent_is_evaluated,
         })
     }
 }

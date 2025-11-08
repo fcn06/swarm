@@ -56,12 +56,6 @@ impl AgentFactory {
         };
         builder = builder.agent_llm_url(llm_url);
 
-        // Set common defaults or values from factory_config
-        /* 
-        builder = builder.agent_http_endpoint(agent_http_endpoint)
-                         .agent_ws_endpoint("ws://127.0.0.1:9000".to_string());
-        */
-
         builder = builder.agent_http_endpoint(factory_agent_config.factory_agent_url.clone())
                         .agent_ws_endpoint("ws://127.0.0.1:9000".to_string());
 
@@ -107,7 +101,29 @@ impl AgentFactory {
                 }
             },
             AgentType::Planner => {
-                builder = builder.agent_system_prompt("You are a planner agent, capable of creating detailed plans.".to_string())
+                
+                let planner_system_prompt=r#"
+                You are an expert workflow generation AI. Your mission is to create highly efficient, well-structured, and accurate JSON workflow definitions for multi-agent systems. You have access to a specific set of agents, tools, and tasks. Your outputs must strictly adhere to the provided JSON schema and the following rules.
+
+                1. Maximize Agent Autonomy 🤝:
+                When an agent (e.g., Basic_Agent) has the inherent capability and tools to perform a sequence of related operations, consolidate these steps into a single delegation_agent activity.
+                Empower agents to handle their own internal logic and tool orchestration. Don't break a single logical action into multiple steps if one agent can handle it.
+                For example, if an agent can extract a location from a user request and then use that location with a weather tool, define this as a single delegation_agent activity.
+
+                2. Use agent_context for Dynamic Data 🧩:
+                NEVER embed variable references ({{...}}) directly into the description field. description is for a static, human-readable summary.
+                All dynamic data, especially outputs from previous activities, MUST be passed to a delegation_agent via its agent_context field. The agent will handle the processing internally.
+
+                3. Ensure Clear Dependencies 🔗:
+                Always specify dependencies correctly to reflect the execution and data flow.
+                If an activity relies on the output of a preceding activity, that dependency must be explicitly listed.
+
+                4. Be Concise & Accurate 🎯:
+                Keep activity description fields brief and focused on the objective.
+                Ensure all tool and agent IDs are from the provided list.
+                "#;
+
+                builder = builder.agent_system_prompt(planner_system_prompt.to_string())
                                  .agent_skill_id("planner_skill".to_string())
                                  .agent_skill_name("Planning Skill".to_string())
                                  .agent_skill_description("Creates multi-step plans for complex tasks.".to_string())
@@ -126,7 +142,6 @@ impl AgentFactory {
             },
         }
 
-        // todo:add mcp config
 
         // Additional defaults if not already set
         let final_config = builder.build()?;
@@ -136,7 +151,6 @@ impl AgentFactory {
 
 
     pub fn create_mcp_config(&self,factory_mcp_runtime_config:&FactoryMcpRuntimeConfig) -> Result<McpRuntimeConfig> {
-
 
         let mcp_runtime_system_prompt=r#"You are a helpful assistant that answers user requests. If you can answer a question using your general knowledge, do so. Otherwise, you can use one or more tools to find the answer. When you receive a message with a role called \"tool\", you must use the response from tools in order to build a final answer."#;
 
@@ -174,6 +188,7 @@ impl AgentFactory {
     }
 
 
+    // todo: adjust behaviour if flag is evaluated is true for planner agent
     
     pub async fn launch_agent(&self, factory_agent_config: &FactoryAgentConfig, agent_type:AgentType) -> Result<()> {
         

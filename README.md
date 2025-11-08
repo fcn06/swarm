@@ -186,7 +186,7 @@ Swarm is composed of several modular and interconnected components that work tog
 Swarm is an active project, and we are constantly working on improvements. Our roadmap includes:
 
 *   **Finalize and Fine Tune Agent Factory** Inject properly evaluation, memory, discovery services.
-*   **Make discovery service using embeddings** So that we can inject in agents the more relevant tools, tasks and domain agents in the prompt of the planner.
+*   **Make discovery service using embeddings, and use proper database** So that we can inject in agents the more relevant tools, tasks and domain agents in the prompt of the planner. This will be done in a separate project
 *   **Enhanced Workflow Features** More advanced conditional logic.
 *   **Improved Observability:** Better logging, tracing, and monitoring.
 *   **Broader LLM Integration:** Compatibility with a wider range of LLMs.
@@ -200,6 +200,7 @@ We welcome contributions! Whether you're a developer, a writer, or have a great 
 ## **⭐ Show Your Support**
 
 If you find Swarm useful, please consider starring our repository! Your support helps us grow.
+We plan to work on feature rich discovery, context/memory and evaluation services in a separate project
 
 ---
 

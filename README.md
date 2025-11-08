@@ -200,6 +200,7 @@ We welcome contributions! Whether you're a developer, a writer, or have a great 
 ## **⭐ Show Your Support**
 
 If you find Swarm useful, please consider starring our repository! Your support helps us grow.
+
 We plan to work on feature rich discovery, context/memory and evaluation services in a separate project
 
 ---

@@ -62,7 +62,6 @@ export LLM_A2A_API_KEY=<YOUR-LLM-API-KEY>       # For general Agent-to-Agent com
 export LLM_MCP_API_KEY=<YOUR-LLM-API-KEY>       # For Model Context Protocol interactions
 export LLM_JUDGE_API_KEY=<YOUR-LLM-API-KEY>     # For the LLM-as-a-Judge evaluation service
 export LLM_PLANNER_API_KEY=<YOUR-LLM-API-KEY>     # For the Planner Agent
-export LLM_EXECUTOR_API_KEY=<YOUR-LLM-API-KEY>     # For the Executor Agent 
 ```
 
 ### Step 3: Run the Demo

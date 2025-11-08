@@ -125,7 +125,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
 
     let agent_api_key = env::var("LLM_A2A_API_KEY").expect("LLM_A2A_API_KEY must be set");
 
-    // include McpRuntimeConfig
+    // todo:enable agent planner not to be evaluated, upon request
      
     let factory_mcp_runtime_config = FactoryMcpRuntimeConfig::builder()
         .with_factory_mcp_llm_provider_url(LlmProviderUrl::Groq)

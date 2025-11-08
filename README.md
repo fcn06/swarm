@@ -85,6 +85,11 @@ As an illustration, here is what we can define in a JSON workflow :
     <img width="20%" src="./documentation/graph_visualizer/Graphical_Workflow_Representation.png">
 </p>
 
+Which is a simplified graphical representation of :
+
+<p align="center" width="20%">
+    <img width="20%" src="./documentation/graph_visualizer/Snapshot_json_workflow.png">
+</p>
 
 **Important: Stopping the Demo Services**
 After running any of the above demos, it's crucial to stop all active agent processes to prevent resource consumption and conflicts.

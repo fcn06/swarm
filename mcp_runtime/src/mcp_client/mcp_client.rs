@@ -141,4 +141,3 @@ pub async fn execute_tool_call_v2(
 
     Ok(tool_result)
 }
-

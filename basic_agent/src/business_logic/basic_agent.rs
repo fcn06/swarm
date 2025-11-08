@@ -1,6 +1,9 @@
 use async_trait::async_trait;
 use uuid::Uuid;
-use configuration::{AgentConfig, McpRuntimeConfig};
+use configuration::AgentConfig;
+
+use agent_core::business_logic::mcp_runtime::McpRuntimeDetails;
+
 use llm_api::chat::{ChatLlmInteraction};
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -41,8 +44,7 @@ impl Agent for BasicAgent {
     async fn new(
         agent_config: AgentConfig,
         agent_api_key:String,
-        mcp_runtime_config: Option<McpRuntimeConfig>,
-        mcp_runtime_api_key:Option<String>,
+        mcp_runtime_details: Option<McpRuntimeDetails>,
         _evaluation_service: Option<Arc<dyn EvaluationService>>,
         _memory_service: Option<Arc<dyn MemoryService>>,
         _discovery_service: Option<Arc<dyn DiscoveryService>>,
@@ -64,14 +66,14 @@ impl Agent for BasicAgent {
             llm_a2a_api_key,
         );
 
-        let mcp_agent = if let (Some(config), Some(api_key)) = (mcp_runtime_config, mcp_runtime_api_key) {
-            // Case 1: Direct MCP config and API key provided to `new` function
-            Some(Arc::new(Mutex::new(McpAgent::new_v2(config, api_key).await?)))
+        let mcp_agent = if let Some(details) = mcp_runtime_details {
+            // Case 1: McpRuntimeDetails struct provided directly
+            Some(Arc::new(Mutex::new(McpAgent::new(details.config, Some(details.api_key)).await?)))
         } else if let Some(path) = agent_config.agent_mcp_config_path() {
-            // Case 2: MCP config path specified in AgentConfig
-            let agent_mcp_config = McpRuntimeConfig::load_agent_config(path.as_str())
+            // Case 2: MCP config path specified in AgentConfig (API key from environment)
+            let agent_mcp_config = configuration::McpRuntimeConfig::load_agent_config(path.as_str())
                 .context("Error loading MCP config for basic agent from agent_config.agent_mcp_config_path")?;
-            let mcp_agent = McpAgent::new(agent_mcp_config).await?;
+            let mcp_agent = McpAgent::new(agent_mcp_config, None).await?; // Pass None for API key to use environment variable
             Some(Arc::new(Mutex::new(mcp_agent)))
         } else {
             // Case 3: No MCP config provided in any way
@@ -123,11 +125,5 @@ impl Agent for BasicAgent {
      
          }
 
-
-}
-
-impl BasicAgent {
-    // The new_with_mcp function has been integrated into the `new` function of the Agent trait.
-    // This block can now be removed or repurposed if there are other BasicAgent-specific methods.
 
 }

@@ -7,7 +7,10 @@ use uuid::Uuid;
 
 use llm_api::chat::Message as LlmMessage;
 
-use configuration::{AgentConfig, McpRuntimeConfig};
+use configuration::{AgentConfig};
+use agent_core::business_logic::mcp_runtime::McpRuntimeDetails;
+
+
 use agent_core::business_logic::agent::Agent;
 use agent_core::business_logic::services::{DiscoveryService, MemoryService, EvaluationService, WorkflowServiceApi};
 
@@ -61,8 +64,7 @@ impl Agent for ExecutorAgent {
     async fn new(
         agent_config: AgentConfig,
         _agent_api_key:String,
-        _mcp_runtime_config: Option<McpRuntimeConfig>,
-        _mcp_runtime_api_key:Option<String>,
+        _mcp_runtime_details: Option<McpRuntimeDetails>,
         evaluation_service: Option<Arc<dyn EvaluationService>>,
         _memory_service: Option<Arc<dyn MemoryService>>,
         _discovery_service: Option<Arc<dyn DiscoveryService>>,

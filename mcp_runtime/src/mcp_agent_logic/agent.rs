@@ -49,6 +49,7 @@ impl McpAgent {
     ///
     /// * `agent_mcp_config` - Configuration settings for the MCP agent, including LLM details
     ///                        and MCP server information.
+    /// * `mcp_runtime_api_key` - Optional API key for the LLM. If `None`, it will attempt to load from environment variables.
     ///
     /// # Returns
     ///
@@ -56,54 +57,19 @@ impl McpAgent {
     /// - `Ok(Self)`: A new `McpAgent` instance if all initializations are successful.
     /// - `Err(anyhow::Error)`: An error if any configuration is missing, environment variables
     ///                          are not set, or communication with the MCP server fails.
-    pub async fn new(agent_mcp_config: McpRuntimeConfig) -> anyhow::Result<Self> {
+    pub async fn new(agent_mcp_config: McpRuntimeConfig, mcp_runtime_api_key: Option<String>) -> anyhow::Result<Self> {
         let model_id = agent_mcp_config.agent_mcp_model_id.clone();
         let system_message = agent_mcp_config.agent_mcp_system_prompt.clone();
 
-        let llm_mcp_api_key = if let Some(env_var_name) = &agent_mcp_config.agent_mcp_llm_api_key_env_var {
+        let llm_mcp_api_key = if let Some(api_key) = mcp_runtime_api_key {
+            api_key
+        } else if let Some(env_var_name) = &agent_mcp_config.agent_mcp_llm_api_key_env_var {
             env::var(env_var_name)
                 .context(format!("Environment variable '{}' for LLM API key must be set", env_var_name))?
         } else {
             env::var("LLM_MCP_API_KEY")
                 .context("LLM_MCP_API_KEY environment variable must be set")?
         };
-
-        let mcp_client = Arc::new(initialize_mcp_client_v2(agent_mcp_config.clone())
-            .await
-            .context("Failed to initialize MCP client")?);
-
-        let list_tools = get_tools_list_v2(mcp_client.clone())
-            .await
-            .context("Failed to retrieve tools list from MCP server")?;
-
-        let llm_all_tool = define_all_tools(list_tools)
-            .context("Failed to define tools from retrieved list")?;
-
-        let init_messages = vec![Message {
-            role: "system".to_string(),
-            content: Some(system_message),
-            tool_call_id: None,
-            tool_calls: None,
-        }];
-
-        Ok(Self {
-            llm_interaction: ChatLlmInteraction::new(
-                agent_mcp_config.agent_mcp_llm_url.clone(),
-                model_id,
-                llm_mcp_api_key,
-            ),
-            mcp_client,
-            messages: init_messages,
-            llm_all_tool,
-            agent_mcp_config,
-        })
-    }
-
-    pub async fn new_v2(agent_mcp_config: McpRuntimeConfig, mcp_runtime_api_key:String,) -> anyhow::Result<Self> {
-        let model_id = agent_mcp_config.agent_mcp_model_id.clone();
-        let system_message = agent_mcp_config.agent_mcp_system_prompt.clone();
-
-        let llm_mcp_api_key = mcp_runtime_api_key;
 
         let mcp_client = Arc::new(initialize_mcp_client_v2(agent_mcp_config.clone())
             .await

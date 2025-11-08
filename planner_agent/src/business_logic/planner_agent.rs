@@ -5,7 +5,10 @@ use tracing::{info, debug, error, warn};
 use anyhow::{Context, bail, Result};
 use serde_json::{Map, Value};
 use llm_api::chat::{ChatLlmInteraction, Message as LlmMessage};
-use configuration::{AgentConfig, McpRuntimeConfig};
+
+use configuration::{AgentConfig};
+use agent_core::business_logic::mcp_runtime::McpRuntimeDetails;
+
 use agent_core::business_logic::agent::Agent;
 use agent_core::business_logic::services::{DiscoveryService, MemoryService, EvaluationService, WorkflowServiceApi};
 use agent_models::graph::graph_definition::{WorkflowPlanInput, Graph};
@@ -40,8 +43,7 @@ impl Agent for PlannerAgent {
     async fn new(
         agent_config: AgentConfig,
         agent_api_key:String,
-        _mcp_runtime_config: Option<McpRuntimeConfig>,
-        _mcp_runtime_api_key:Option<String>,
+        _mcp_runtime_details: Option<McpRuntimeDetails>,
         evaluation_service: Option<Arc<dyn EvaluationService>>,
         _memory_service: Option<Arc<dyn MemoryService>>,
         discovery_service: Option<Arc<dyn DiscoveryService>>,

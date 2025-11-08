@@ -156,7 +156,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     /************************************************/
     /* Launch Workflow Agent                        */
     /************************************************/ 
-    let agent = ExecutorAgent::new(executor_agent_config.clone(),agent_api_key,None,None, evaluation_service, memory_service, discovery_service.clone(), workflow_invokers).await?;
+    let agent = ExecutorAgent::new(executor_agent_config.clone(),agent_api_key,None, evaluation_service, memory_service, discovery_service.clone(), workflow_invokers).await?;
 
 
     /************************************************/

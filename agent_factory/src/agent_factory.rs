@@ -4,6 +4,8 @@ use agent_models::factory::config::{AgentDomain, AgentType, FactoryAgentConfig, 
 use tracing::{info, debug};
 use std::sync::Arc;
 use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService};
+use agent_core::business_logic::mcp_runtime::McpRuntimeDetails;
+
 use agent_service_adapters::{AgentEvaluationServiceAdapter, AgentMemoryServiceAdapter,AgentDiscoveryServiceAdapter};
 use basic_agent::business_logic::basic_agent::BasicAgent;
 use planner_agent::business_logic::planner_agent::PlannerAgent;
@@ -172,17 +174,17 @@ impl AgentFactory {
         
         match agent_type {
             AgentType::Specialist => {
-                let agent = BasicAgent::new(agent_config.clone(), factory_agent_config.factory_agent_llm_provider_api_key.clone(),None,None, None, None, None, None).await?;
+                let agent = BasicAgent::new(agent_config.clone(), factory_agent_config.factory_agent_llm_provider_api_key.clone(),None, None, None, None, None).await?;
                 let server = AgentServer::<BasicAgent>::new(agent_config, agent, None).await?;
                 server.start_http().await.map_err(|e| anyhow::anyhow!("{}", e))?;
             },
             AgentType::Planner => {
-                let agent = PlannerAgent::new(agent_config.clone(), factory_agent_config.factory_agent_llm_provider_api_key.clone(),None,None ,None, None, None, None).await?;
+                let agent = PlannerAgent::new(agent_config.clone(), factory_agent_config.factory_agent_llm_provider_api_key.clone(),None ,None, None, None, None).await?;
                 let server = AgentServer::<PlannerAgent>::new(agent_config, agent, None).await?;
                 server.start_http().await.map_err(|e| anyhow::anyhow!("{}", e))?;
             },
             AgentType::Executor => {
-                let agent = ExecutorAgent::new(agent_config.clone(), factory_agent_config.factory_agent_llm_provider_api_key.clone(),None,None, None, None, None, None).await?;
+                let agent = ExecutorAgent::new(agent_config.clone(), factory_agent_config.factory_agent_llm_provider_api_key.clone(),None, None, None, None, None).await?;
                 let server = AgentServer::<ExecutorAgent>::new(agent_config, agent, None).await?;
                 server.start_http().await.map_err(|e| anyhow::anyhow!("{}", e))?;
             },
@@ -197,6 +199,11 @@ impl AgentFactory {
         let agent_config = self.create_agent_config(factory_agent_config, agent_http_endpoint).expect("Error Creating Agent Config from Factory");
         let mcp_config=self.create_mcp_config(factory_mcp_runtime_config).expect("Error Creating MCP Config from Factory");
 
+        let mcp_runtime_details=McpRuntimeDetails{
+            config:mcp_config.clone(),
+            api_key:factory_mcp_runtime_config.factory_mcp_llm_provider_api_key.clone(),
+        };
+
         debug!("Agent Config: {:?}", agent_config);
         debug!("MCP Config: {:?}", mcp_config);
 
@@ -206,20 +213,19 @@ impl AgentFactory {
                 //let agent = BasicAgent::new(agent_config.clone(), factory_agent_config.factory_agent_llm_provider_api_key.clone(), None, None, None, None).await?;
                 let agent = BasicAgent::new(agent_config.clone(), 
                     factory_agent_config.factory_agent_llm_provider_api_key.clone(), 
-                        Some(mcp_config.clone()),
-                        Some(factory_mcp_runtime_config.factory_mcp_llm_provider_api_key.clone()),
+                        Some(mcp_runtime_details.clone()),
                             None, None, None, None).await?;
                 
                 let server = AgentServer::<BasicAgent>::new(agent_config, agent, None).await?;
                 server.start_http().await.map_err(|e| anyhow::anyhow!("{}", e))?;
             },
             AgentType::Planner => {
-                let agent = PlannerAgent::new(agent_config.clone(), factory_agent_config.factory_agent_llm_provider_api_key.clone(),None,None, None, None, None, None).await?;
+                let agent = PlannerAgent::new(agent_config.clone(), factory_agent_config.factory_agent_llm_provider_api_key.clone(),None, None, None, None, None).await?;
                 let server = AgentServer::<PlannerAgent>::new(agent_config, agent, None).await?;
                 server.start_http().await.map_err(|e| anyhow::anyhow!("{}", e))?;
             },
             AgentType::Executor => {
-                let agent = ExecutorAgent::new(agent_config.clone(), factory_agent_config.factory_agent_llm_provider_api_key.clone(),None,None, None, None, None, None).await?;
+                let agent = ExecutorAgent::new(agent_config.clone(), factory_agent_config.factory_agent_llm_provider_api_key.clone(),None, None, None, None, None).await?;
                 let server = AgentServer::<ExecutorAgent>::new(agent_config, agent, None).await?;
                 server.start_http().await.map_err(|e| anyhow::anyhow!("{}", e))?;
             },

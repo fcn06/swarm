@@ -3,11 +3,9 @@
 echo "**************************************************************************"
 echo "THESE COMMANDS HAVE TO BE SENT FROM THE ROOT OF THE REPOSITORY"
 echo "Export LLM_A2A_API_KEY beforehand beforehand as API Key related to LLM controlling Domain Agents. Our configuration files are targetting Groq"
-echo "Export LLM_MCP_API_KEY beforehand beforehand as API Key related to LLM Controlling MCP Runtime. Our configurations are targetting Groq"
 echo "Export LLM_JUDGE_API_KEY  beforehand as the API Key related to LLM Controlling Evaluation Service ( LLM as a Judge).Our configurations are targetting GROQ"
 echo "So to summarize : "
 echo "export LLM_A2A_API_KEY=<YOUR GROQ API KEY>"
-echo "export LLM_MCP_API_KEY=<YOUR GROQ API KEY>"
 echo "export LLM_JUDGE_API_KEY=<YOUR GROQ API KEY>"
 echo "**************************************************************************"
 
@@ -56,20 +54,11 @@ echo $'\n'
 
 ./target/release/launch_factory --config-file "documentation/demo_factory/factory_config.toml"  --log-level "warn" &
 
-sleep 5
-echo $'\n'
-
 
 echo "##############################################################"
 echo $'\n'
 
-echo $'\n'
-read -n 1 -s -r -p "Press any key to continue..."
-echo $'\n'
 
-
-
-echo $'\n'
 
 echo "When it is finished..." 
 echo "* You can access registered agents:"

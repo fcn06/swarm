@@ -59,7 +59,9 @@ async fn register_tasks(discovery_service: Arc<dyn DiscoveryService>) -> anyhow:
     Ok(())
 }
 
-/// Register Agents in Discovery Service
+#[allow(unused)]
+/// Register Agents in Discovery Service. Should become useless as Domain specialist are self registrating. 
+/// May be used for planners if we want them to be discoverable for complex tasks 
 async fn register_agents(discovery_service: Arc<dyn DiscoveryService>) -> anyhow::Result<()> {
 
     let agent_definition=AgentDefinition {
@@ -116,7 +118,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     /* Set Up Registrations via discovery service           */
     /************************************************/ 
     register_tasks(agent_factory.factory_discovery_service.clone()).await?;
-    register_agents(agent_factory.factory_discovery_service.clone()).await?;
+    //register_agents(agent_factory.factory_discovery_service.clone()).await?; // Basics Agents Self Register
     register_tools(args.mcp_config_path.clone(),agent_factory.factory_discovery_service.clone()).await?;
 
     /************************************************/
@@ -153,7 +155,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
 
 
     //agent_factory.launch_agent(&factory_agent_config,AgentType::Specialist,"http://127.0.0.1:8080".to_string()).await?;
-    agent_factory.launch_agent_with_mcp(&factory_agent_config,&factory_mcp_runtime_config,AgentType::Specialist).await?;
+    //agent_factory.launch_agent_with_mcp(&factory_agent_config,&factory_mcp_runtime_config,AgentType::Specialist).await?;
+
+    agent_factory.launch_agent(&factory_agent_config, Some(&factory_mcp_runtime_config), AgentType::Specialist).await?;
+
 
     /************************************************/
     /* Agent  launched                              */

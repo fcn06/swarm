@@ -112,7 +112,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     /* Creating Agent Factory                       */
     /************************************************/ 
     let factory_config = FactoryConfig::load_factory_config(&args.config_file).expect("Incorrect Factory Config File");
-    let agent_factory=AgentFactory::new(factory_config);
+
+    // create resources_invokers
+    let agent_factory=AgentFactory::new(factory_config,None);
 
     /************************************************/
     /* Set Up Registrations via discovery service           */

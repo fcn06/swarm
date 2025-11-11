@@ -3,15 +3,18 @@ use configuration::{AgentConfig};
 use agent_models::factory::config::{AgentDomain, AgentType, FactoryAgentConfig, FactoryConfig, LlmProviderUrl};
 use tracing::{info, debug};
 use std::sync::Arc;
-use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService};
+
+use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService,WorkflowServiceApi};
 use agent_core::business_logic::mcp_runtime::McpRuntimeDetails;
+use agent_core::server::agent_server::AgentServer;
+use agent_core::business_logic::agent::Agent;
 
 use agent_service_adapters::{AgentEvaluationServiceAdapter, AgentMemoryServiceAdapter,AgentDiscoveryServiceAdapter};
+
 use basic_agent::business_logic::basic_agent::BasicAgent;
 use planner_agent::business_logic::planner_agent::PlannerAgent;
 use executor_agent::business_logic::executor_agent::ExecutorAgent;
-use agent_core::server::agent_server::AgentServer;
-use agent_core::business_logic::agent::Agent;
+
 use configuration::McpRuntimeConfig;
 use agent_models::factory::config::FactoryMcpRuntimeConfig;
 
@@ -27,15 +30,17 @@ pub struct AgentFactory {
     pub factory_discovery_service: Arc<dyn DiscoveryService>,
     pub factory_memory_service: Option<Arc<dyn MemoryService>>,
     pub factory_evaluation_service: Option<Arc<dyn EvaluationService>>,
+    pub workflow_service: Option<Arc<dyn WorkflowServiceApi>>
 }
 
 impl AgentFactory {
-    pub fn new(factory_config: FactoryConfig) -> Self {
+    pub fn new(factory_config: FactoryConfig,workflow_service: Option<Arc<dyn WorkflowServiceApi>>) -> Self {
         AgentFactory {
             factory_config:factory_config.clone(),
             factory_discovery_service: Arc::new(AgentDiscoveryServiceAdapter::new(&factory_config.factory_discovery_url.expect("Factory Discovery URL not set"))),
             factory_memory_service: Some(Arc::new(AgentMemoryServiceAdapter::new(&factory_config.factory_memory_service_url.expect("Factory Memory Service URL not set")))),
             factory_evaluation_service: Some(Arc::new(AgentEvaluationServiceAdapter::new(&factory_config.factory_evaluation_service_url.expect("Factory Evaluation Service URL not set")))),
+            workflow_service:workflow_service
         }
     }
 
@@ -220,6 +225,7 @@ impl AgentFactory {
                 let server = AgentServer::<BasicAgent>::new(agent_config, agent, Some(self.factory_discovery_service.clone())).await?;
                 server.start_http().await.map_err(|e| anyhow::anyhow!("{}", e))?;
             },
+
             AgentType::Planner => {
                 
                 if factory_agent_config.factory_agent_is_evaluated == true {
@@ -246,6 +252,7 @@ impl AgentFactory {
                 };
                 
             },
+            
             AgentType::Executor => {
                 // add invoker for executor agent
                 let agent = ExecutorAgent::new(agent_config.clone(), 

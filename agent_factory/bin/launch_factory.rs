@@ -128,8 +128,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     /************************************************/ 
 
     let agent_api_key = env::var("LLM_A2A_API_KEY").expect("LLM_A2A_API_KEY must be set");
-
-    // todo:enable agent planner not to be evaluated, upon request
+    
      
     let factory_mcp_runtime_config = FactoryMcpRuntimeConfig::builder()
         .with_factory_mcp_llm_provider_url(LlmProviderUrl::Groq)
@@ -140,7 +139,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
         .build().map_err(|e| anyhow::anyhow!("Failed to build FactoryMcpRuntimeConfig: {}", e))?;
     
     
-
+    // Config for Specialist Agent
     let factory_agent_config = FactoryAgentConfig::builder()
         .with_factory_agent_url("http://127.0.0.1:8080".to_string())
         .with_factory_agent_type(AgentType::Specialist)
@@ -149,18 +148,50 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
         .with_factory_agent_id("Basic_Agent".to_string())
         .with_factory_agent_description("An Agent that answer Basic Questions".to_string())
         .with_factory_agent_llm_provider_url(LlmProviderUrl::Groq)
-        .with_factory_agent_llm_provider_api_key(agent_api_key)
+        .with_factory_agent_llm_provider_api_key(agent_api_key.clone())
         .with_factory_agent_llm_model_id("openai/gpt-oss-20b".to_string())
         .build().map_err(|e| anyhow::anyhow!("Failed to build FactoryAgentConfig: {}", e))?;
 
-        //todo: add mcp_config to factory_agent_config
-
-
-    //agent_factory.launch_agent(&factory_agent_config,AgentType::Specialist,"http://127.0.0.1:8080".to_string()).await?;
-    //agent_factory.launch_agent_with_mcp(&factory_agent_config,&factory_mcp_runtime_config,AgentType::Specialist).await?;
-
     agent_factory.launch_agent(&factory_agent_config, Some(&factory_mcp_runtime_config), AgentType::Specialist).await?;
 
+
+    /* 
+
+    let agent_planner_api_key = env::var("LLM_PLANNER_API_KEY").expect("LLM_PLANNER_API_KEY must be set");
+
+    // Config for Executor Agent
+    let factory_agent_config_executor = FactoryAgentConfig::builder()
+        .with_factory_agent_url("http://127.0.0.1:9580".to_string())
+        .with_factory_agent_type(AgentType::Executor)
+        .with_factory_agent_domains(AgentDomain::General)
+        .with_factory_agent_name("Executor_Agent".to_string())
+        .with_factory_agent_id("Executor_Agent".to_string())
+        .with_factory_agent_description("An Agent that executes workflows".to_string())
+        .with_factory_agent_llm_provider_url(LlmProviderUrl::Groq)
+        .with_factory_agent_llm_provider_api_key(agent_api_key.clone())
+        .with_factory_agent_llm_model_id("openai/gpt-oss-20b".to_string())
+        .build().map_err(|e| anyhow::anyhow!("Failed to build FactoryAgentConfig for Executor: {}", e))?;
+
+    // Config for Planner Agent
+    let factory_agent_config_planner = FactoryAgentConfig::builder()
+        .with_factory_agent_url("http://127.0.0.1:9590".to_string())
+        .with_factory_agent_type(AgentType::Planner)
+        .with_factory_agent_domains(AgentDomain::General)
+        .with_factory_agent_name("Planner_Agent".to_string())
+        .with_factory_agent_id("Planner_Agent".to_string())
+        .with_factory_agent_description("An Agent that plans workflows".to_string())
+        .with_factory_agent_llm_provider_url(LlmProviderUrl::Groq)
+        .with_factory_agent_llm_provider_api_key(agent_planner_api_key)
+        .with_factory_agent_llm_model_id("openai/gpt-oss-20b".to_string())
+        .build().map_err(|e| anyhow::anyhow!("Failed to build FactoryAgentConfig for Planner: {}", e))?;
+
+    // Launch Executor Agent
+    agent_factory.launch_agent(&factory_agent_config_executor, Some(&factory_mcp_runtime_config), AgentType::Executor).await?;
+
+    // Launch Planner Agent
+    agent_factory.launch_agent(&factory_agent_config_planner, None, AgentType::Planner).await?;
+
+    */
 
     /************************************************/
     /* Agent  launched                              */

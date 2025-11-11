@@ -69,6 +69,8 @@ pub struct FactoryAgentConfigBuilder {
     factory_agent_llm_model_id: Option<String>,
     factory_agent_mcp_runtime_config: Option<FactoryMcpRuntimeConfig>,
     factory_agent_is_evaluated: bool,
+    // to add executor_url
+    //factory_agent_executor_url: Option<String>,
 }
 
 impl FactoryAgentConfigBuilder {

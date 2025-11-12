@@ -9,7 +9,7 @@ use agent_core::business_logic::mcp_runtime::McpRuntimeDetails;
 use agent_core::server::agent_server::AgentServer;
 use agent_core::business_logic::agent::Agent;
 
-use agent_service_adapters::{AgentEvaluationServiceAdapter, AgentMemoryServiceAdapter,AgentDiscoveryServiceAdapter};
+//use agent_service_adapters::{AgentEvaluationServiceAdapter, AgentMemoryServiceAdapter,AgentDiscoveryServiceAdapter};
 
 use basic_agent::business_logic::basic_agent::BasicAgent;
 use planner_agent::business_logic::planner_agent::PlannerAgent;
@@ -34,12 +34,16 @@ pub struct AgentFactory {
 }
 
 impl AgentFactory {
-    pub fn new(factory_config: FactoryConfig,workflow_service: Option<Arc<dyn WorkflowServiceApi>>) -> Self {
+    pub fn new(factory_config: FactoryConfig,
+            factory_discovery_service: Arc<dyn DiscoveryService>,
+                factory_memory_service: Option<Arc<dyn MemoryService>>,
+                    factory_evaluation_service: Option<Arc<dyn EvaluationService>>,
+                        workflow_service: Option<Arc<dyn WorkflowServiceApi>>) -> Self {
         AgentFactory {
             factory_config:factory_config.clone(),
-            factory_discovery_service: Arc::new(AgentDiscoveryServiceAdapter::new(&factory_config.factory_discovery_url.expect("Factory Discovery URL not set"))),
-            factory_memory_service: Some(Arc::new(AgentMemoryServiceAdapter::new(&factory_config.factory_memory_service_url.expect("Factory Memory Service URL not set")))),
-            factory_evaluation_service: Some(Arc::new(AgentEvaluationServiceAdapter::new(&factory_config.factory_evaluation_service_url.expect("Factory Evaluation Service URL not set")))),
+            factory_discovery_service:factory_discovery_service,
+            factory_memory_service: factory_memory_service,
+            factory_evaluation_service:factory_evaluation_service ,
             workflow_service:workflow_service
         }
     }

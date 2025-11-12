@@ -13,6 +13,7 @@ configuration={workspace=true}
 basic_agent={workspace=true}
 planner_agent={workspace=true}
 executor_agent={workspace=true}
+workflow_management={workspace=true}
 
 tokio= { workspace = true }
 async-trait = { workspace = true }

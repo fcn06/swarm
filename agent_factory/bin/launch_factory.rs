@@ -10,8 +10,6 @@ use serde_json::json;
 use agent_factory::agent_factory::AgentFactory;
 
 
-use agent_core::business_logic::services::{ DiscoveryService};
-
 // Registration via discovery service
 use agent_models::registry::registry_models::{TaskDefinition,AgentDefinition,ToolDefinition};
 use agent_models::factory::config::FactoryConfig;
@@ -22,6 +20,27 @@ use agent_models::factory::config::AgentType;
 use agent_models::factory::config::FactoryAgentConfig;
 
 use agent_models::factory::config::FactoryMcpRuntimeConfig;
+
+
+
+use resource_invoker::McpRuntimeToolInvoker;
+use resource_invoker::GreetTask;
+use resource_invoker::A2AAgentInvoker;
+use workflow_management::agent_communication::agent_invoker::AgentInvoker;
+use workflow_management::tasks::task_invoker::TaskInvoker;
+use workflow_management::tools::tool_invoker::ToolInvoker;
+
+//use agent_core::business_logic::agent::Agent;
+//use agent_core::server::agent_server::AgentServer;
+
+use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService,WorkflowServiceApi};
+use agent_service_adapters::{AgentEvaluationServiceAdapter, AgentMemoryServiceAdapter,AgentDiscoveryServiceAdapter};
+
+//todo:to check
+use executor_agent::business_logic::executor_agent::WorkFlowInvokers;
+
+use tracing::info;
+
 
 /// Command-line arguments
 #[derive(Parser, Debug)]
@@ -43,6 +62,69 @@ struct Args {
     #[clap(long, default_value = "http://127.0.0.1:7000")]
     evaluation_service_url: String,
 }
+
+/***********************************************************************************/
+// Initialization of evaluation, memory, discovery services
+/***********************************************************************************/
+
+async fn setup_evaluation_service(evaluation_service_url:&String) -> Option<Arc<dyn EvaluationService>> {
+    info!("Evaluation service configured at: {}", evaluation_service_url);
+    let adapter = AgentEvaluationServiceAdapter::new(&evaluation_service_url);
+    Some(Arc::new(adapter))
+
+}
+
+async fn setup_memory_service(memory_service_url:&String) -> Option<Arc<dyn MemoryService>> {
+    info!("Memory service configured at: {}", memory_service_url);
+    let adapter = AgentMemoryServiceAdapter::new(&memory_service_url);
+    Some(Arc::new(adapter))
+}
+
+async fn setup_discovery_service(discovery_service_url: &String) -> Arc<dyn DiscoveryService> {
+info!("Discovery service configured at: {}", discovery_service_url);
+let adapter = AgentDiscoveryServiceAdapter::new(&discovery_service_url);
+Arc::new(adapter)
+}
+
+/***********************************************************************************/
+// End of Services Initialization
+/***********************************************************************************/
+
+/***********************************************************************************/
+// Initialization of Invoker Services
+/***********************************************************************************/
+
+
+async fn setup_task_invoker() -> anyhow::Result<Arc<dyn TaskInvoker>> {
+    let greet_task_invoker = GreetTask::new()?;
+    let greet_task_invoker = Arc::new(greet_task_invoker);
+
+    Ok(greet_task_invoker)
+}
+
+async fn setup_tool_invoker(mcp_config_path: String) -> anyhow::Result<Arc<dyn ToolInvoker>> {
+    let mcp_tool_invoker = McpRuntimeToolInvoker::new(mcp_config_path).await?;
+    let mcp_tool_invoker = Arc::new(mcp_tool_invoker);
+
+    Ok(mcp_tool_invoker)
+}
+
+
+async fn setup_agent_invoker_v2( discovery_service_adapter: Arc<dyn DiscoveryService>) -> anyhow::Result<Arc<dyn AgentInvoker>> {
+    let a2a_agent_invoker = A2AAgentInvoker::new_with_discovery(None, None, discovery_service_adapter).await?;
+    let a2a_agent_invoker = Arc::new(a2a_agent_invoker);
+
+    Ok(a2a_agent_invoker)
+}
+
+/***********************************************************************************/
+// End of Initialization of Invoker Services
+/***********************************************************************************/
+
+
+/***********************************************************************************/
+// Registration Tasks
+/***********************************************************************************/
 
  
 /// Register Tasks in Discovery Service
@@ -99,6 +181,11 @@ async fn register_tools(mcp_config_path: String,discovery_service: Arc<dyn Disco
     Ok(())
 }
 
+/***********************************************************************************/
+// End of Registration Tasks
+/***********************************************************************************/
+
+
 
 
 #[tokio::main]
@@ -113,8 +200,44 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     /************************************************/ 
     let factory_config = FactoryConfig::load_factory_config(&args.config_file).expect("Incorrect Factory Config File");
 
-    // create resources_invokers
-    let agent_factory=AgentFactory::new(factory_config,None);
+    /************************************************/
+    /* Instantiate Memory, Evaluation and Discovery Services  */
+    /************************************************/ 
+    let evaluation_service = setup_evaluation_service(&factory_config.factory_evaluation_service_url.clone().expect("Factory Evaluation Service URL not set")).await;
+    let memory_service = setup_memory_service(&factory_config.factory_memory_service_url.clone().expect("Factory Memory Service URL not set")).await;
+    let discovery_service = setup_discovery_service(&factory_config.factory_discovery_url).await;
+   
+    /************************************************/
+    /* Set Up Invokers                               */
+    /************************************************/ 
+    let task_invoker= setup_task_invoker().await?;
+    let tool_invoker = setup_tool_invoker(args.mcp_config_path.clone()).await?;
+    let agent_invoker= setup_agent_invoker_v2(discovery_service.clone()).await?;
+
+    /************************************************/
+    /* Get a Workflow Invokers Instance           */
+    /************************************************/ 
+    let workflow_invokers = WorkFlowInvokers::init(
+        task_invoker.clone(),
+        agent_invoker.clone(),
+        tool_invoker.clone(),
+    ).await?;
+
+   // debug!("{}",workflow_invokers.list_available_resources());
+
+    let workflow_invokers: Option<Arc<dyn WorkflowServiceApi>> = Some(Arc::new(workflow_invokers));
+
+    /************************************************/
+    /* Launch Agent Factory                         */
+    /************************************************/ 
+
+    // Launch Agent Factory
+    //let agent_factory=AgentFactory::new(factory_config,None);
+    let agent_factory=AgentFactory::new(factory_config.clone(),
+                    discovery_service.clone(),
+                            memory_service,
+                                evaluation_service,
+                                    workflow_invokers);
 
     /************************************************/
     /* Set Up Registrations via discovery service           */

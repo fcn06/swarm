@@ -14,7 +14,7 @@ use toml;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FactoryConfig {
-    pub factory_discovery_url: Option<String>,
+    pub factory_discovery_url: String,
     pub factory_evaluation_service_url: Option<String>, // to remove from config and make it runtime
     pub factory_memory_service_url: Option<String>, // to remove from config and make it runtime
 }

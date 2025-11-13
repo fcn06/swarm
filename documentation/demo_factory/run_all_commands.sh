@@ -52,7 +52,7 @@ echo $'\n'
 echo "Factory Agent"
 echo $'\n'
 
-./target/release/launch_factory --config-file "documentation/demo_factory/factory_config.toml"  --log-level "warn" &
+./target/release/launch_factory --config-file "documentation/demo_factory/factory_config.toml"  --log-level "warn" 
 
 
 echo "##############################################################"

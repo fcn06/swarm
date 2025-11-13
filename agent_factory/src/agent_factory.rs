@@ -47,6 +47,9 @@ const EXECUTOR_SYSTEM_PROMPT: &str = "You are an executor agent that executes pr
 
 const MCP_RUNTIME_SYSTEM_PROMPT: &str = r#"You are a helpful assistant that answers user requests. If you can answer a question using your general knowledge, do so. Otherwise, you can use one or more tools to find the answer. When you receive a message with a role called "tool", you must use the response from tools in order to build a final answer."#;
 
+/********************************************************/
+// Configurator
+/********************************************************/
 
 /// Trait for configuring an AgentConfigBuilder based on agent type and domain.
 trait AgentConfigurator {
@@ -102,8 +105,9 @@ impl AgentConfigurator for SpecialistAgentConfigurator {
 struct PlannerAgentConfigurator;
 
 impl AgentConfigurator for PlannerAgentConfigurator {
-    fn configure_agent_defaults(&self, mut builder: AgentConfigBuilder, _factory_agent_config: &FactoryAgentConfig) -> Result<AgentConfigBuilder> {
+    fn configure_agent_defaults(&self, mut builder: AgentConfigBuilder, factory_agent_config: &FactoryAgentConfig) -> Result<AgentConfigBuilder> {
         builder = builder.agent_system_prompt(PLANNER_SYSTEM_PROMPT.to_string())
+                         .agent_executor_url(factory_agent_config.factory_agent_executor_url.clone().expect("Executor URL not set"))
                          .agent_skill_id("planner_skill".to_string())
                          .agent_skill_name("Planning Skill".to_string())
                          .agent_skill_description("Creates multi-step plans for complex tasks.".to_string())
@@ -129,6 +133,16 @@ impl AgentConfigurator for ExecutorAgentConfigurator {
         Ok(builder)
     }
 }
+
+
+/********************************************************/
+// End Configurator
+/********************************************************/
+
+
+/********************************************************/
+// Agent Factory
+/********************************************************/
 
 
 pub struct AgentFactory {
@@ -274,7 +288,7 @@ impl AgentFactory {
                         None ,
                             evaluation_service.clone(),  
                                 None, 
-                                    None, 
+                                Some(self.factory_discovery_service.clone()), 
                                         None).await?;
                 Self::launch_agent_server(agent_config, agent, None).await?;
             },
@@ -283,13 +297,19 @@ impl AgentFactory {
                 let agent = ExecutorAgent::new(agent_config.clone(), 
                     factory_agent_config.factory_agent_llm_provider_api_key.clone(),
                         None, 
-                        None, None, None, None).await?;
+                            None, None, 
+                            Some(self.factory_discovery_service.clone()),
+                                self.workflow_service.clone()).await?;
                 Self::launch_agent_server(agent_config, agent, None).await?;
             },
         }
 
         Ok(())
     }
+
+/********************************************************/
+// End Agent Factory
+/********************************************************/
 
 
 }

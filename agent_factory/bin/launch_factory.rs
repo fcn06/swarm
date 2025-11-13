@@ -252,7 +252,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
 
     let agent_api_key = env::var("LLM_A2A_API_KEY").expect("LLM_A2A_API_KEY must be set");
     
-     
+      
     let factory_mcp_runtime_config = FactoryMcpRuntimeConfig::builder()
         .with_factory_mcp_llm_provider_url(LlmProviderUrl::Groq)
         .with_factory_mcp_llm_provider_api_key(agent_api_key.clone())
@@ -277,8 +277,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
 
     agent_factory.launch_agent(&factory_agent_config, Some(&factory_mcp_runtime_config), AgentType::Specialist).await?;
 
-
-    /* 
+    
+    /* */
 
     let agent_planner_api_key = env::var("LLM_PLANNER_API_KEY").expect("LLM_PLANNER_API_KEY must be set");
 
@@ -306,15 +306,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
         .with_factory_agent_llm_provider_url(LlmProviderUrl::Groq)
         .with_factory_agent_llm_provider_api_key(agent_planner_api_key)
         .with_factory_agent_llm_model_id("openai/gpt-oss-20b".to_string())
+        .with_factory_agent_executor_url("http://127.0.0.1:9580".to_string())
         .build().map_err(|e| anyhow::anyhow!("Failed to build FactoryAgentConfig for Planner: {}", e))?;
 
     // Launch Executor Agent
-    agent_factory.launch_agent(&factory_agent_config_executor, Some(&factory_mcp_runtime_config), AgentType::Executor).await?;
+    agent_factory.launch_agent(&factory_agent_config_executor, None, AgentType::Executor).await?;
 
     // Launch Planner Agent
     agent_factory.launch_agent(&factory_agent_config_planner, None, AgentType::Planner).await?;
 
-    */
+    /* */
 
     /************************************************/
     /* Agent  launched                              */

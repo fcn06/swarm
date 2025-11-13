@@ -49,6 +49,7 @@ pub struct FactoryAgentConfig {
     pub factory_agent_llm_model_id: String,
     pub factory_agent_mcp_runtime_config: Option<FactoryMcpRuntimeConfig>,
     pub factory_agent_is_evaluated: bool,
+    pub factory_agent_executor_url: Option<String>,
 }
 
 impl FactoryAgentConfig {
@@ -69,8 +70,7 @@ pub struct FactoryAgentConfigBuilder {
     factory_agent_llm_model_id: Option<String>,
     factory_agent_mcp_runtime_config: Option<FactoryMcpRuntimeConfig>,
     factory_agent_is_evaluated: bool,
-    // to add executor_url
-    //factory_agent_executor_url: Option<String>,
+    factory_agent_executor_url: Option<String>,
 }
 
 impl FactoryAgentConfigBuilder {
@@ -87,6 +87,7 @@ impl FactoryAgentConfigBuilder {
             factory_agent_llm_model_id: None,
             factory_agent_mcp_runtime_config:None,
             factory_agent_is_evaluated:false, // false by default
+            factory_agent_executor_url: None,
         }
     }
 
@@ -145,6 +146,11 @@ impl FactoryAgentConfigBuilder {
         self
     }
 
+    pub fn with_factory_agent_executor_url(mut self, factory_agent_executor_url: String) -> Self {
+        self.factory_agent_executor_url = Some(factory_agent_executor_url);
+        self
+    }
+
     pub fn build(self) -> Result<FactoryAgentConfig, String> {
         let factory_agent_url = self.factory_agent_url.ok_or_else(|| "factory_agent_url is not set".to_string())?;
         let factory_agent_type = self.factory_agent_type.ok_or_else(|| "factory_agent_type is not set".to_string())?;
@@ -167,6 +173,7 @@ impl FactoryAgentConfigBuilder {
             factory_agent_llm_model_id,
             factory_agent_mcp_runtime_config : self.factory_agent_mcp_runtime_config,
             factory_agent_is_evaluated: self.factory_agent_is_evaluated,
+            factory_agent_executor_url: self.factory_agent_executor_url,
         })
     }
 }

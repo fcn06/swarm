@@ -10,7 +10,7 @@ pub struct AgentSkillDefinition {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AgentDefinition {
-    pub id: String,
+    pub id: String, // align with AgentReference
     pub name: String,
     pub description: String,
     pub agent_endpoint:String, 

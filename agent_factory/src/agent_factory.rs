@@ -3,6 +3,7 @@ use configuration::{AgentConfig, AgentConfigBuilder};
 use agent_models::factory::config::{AgentDomain, AgentType, FactoryAgentConfig, FactoryConfig, LlmProviderUrl};
 use tracing::{info, debug};
 use std::sync::Arc;
+use tokio::task::JoinHandle;
 
 use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService,WorkflowServiceApi};
 use agent_core::business_logic::mcp_runtime::McpRuntimeDetails;
@@ -239,16 +240,18 @@ impl AgentFactory {
         agent_config: AgentConfig,
         agent: A,
         discovery_service: Option<Arc<dyn DiscoveryService>>,
-    ) -> Result<()> {
-        let server = AgentServer::<A>::new(agent_config, agent, discovery_service).await?;
-        server.start_http().await.map_err(|e| anyhow::anyhow!("{}", e))
+    ) -> JoinHandle<Result<()>> {
+        tokio::spawn(async move {
+            let server = AgentServer::<A>::new(agent_config, agent, discovery_service).await?;
+            server.start_http().await.map_err(|e| anyhow::anyhow!("{}", e))
+        })
     }
 
 
     pub async fn launch_agent(&self, 
         factory_agent_config: &FactoryAgentConfig, 
         mcp_runtime_config: Option<&FactoryMcpRuntimeConfig>, 
-        agent_type:AgentType) -> Result<()> {
+        agent_type:AgentType) -> Result<JoinHandle<Result<()>>> {
         
         let agent_config = self.create_agent_config(factory_agent_config).expect("Error Creating Agent Config from Factory");
         
@@ -265,7 +268,7 @@ impl AgentFactory {
 
         debug!("Agent Config: {:?}", agent_config);
 
-        match agent_type {
+        let handle = match agent_type {
             AgentType::Specialist => {
                 let agent = BasicAgent::new(agent_config.clone(), 
                     factory_agent_config.factory_agent_llm_provider_api_key.clone(),
@@ -273,7 +276,7 @@ impl AgentFactory {
                                 None, None, 
                                     Some(self.factory_discovery_service.clone()), 
                                         None).await?;
-                Self::launch_agent_server(agent_config, agent, Some(self.factory_discovery_service.clone())).await?;
+                Self::launch_agent_server(agent_config, agent, Some(self.factory_discovery_service.clone())).await
             },
 
             AgentType::Planner => {
@@ -290,7 +293,7 @@ impl AgentFactory {
                                 None, 
                                 Some(self.factory_discovery_service.clone()), 
                                         None).await?;
-                Self::launch_agent_server(agent_config, agent, None).await?;
+                Self::launch_agent_server(agent_config, agent, None).await
             },
             
             AgentType::Executor => {
@@ -300,11 +303,11 @@ impl AgentFactory {
                             None, None, 
                             Some(self.factory_discovery_service.clone()),
                                 self.workflow_service.clone()).await?;
-                Self::launch_agent_server(agent_config, agent, None).await?;
+                Self::launch_agent_server(agent_config, agent, None).await
             },
-        }
+        };
 
-        Ok(())
+        Ok(handle)
     }
 
 /********************************************************/

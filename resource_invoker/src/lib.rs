@@ -56,6 +56,7 @@ impl AgentInvoker for A2AAgentInvoker {
 }
 
 impl A2AAgentInvoker {
+    /* 
     /// This function instantiate an A2AAgentInvoker 
     pub async fn new(
         agents_references: Vec<AgentReference>,
@@ -74,6 +75,7 @@ impl A2AAgentInvoker {
             discovery_service_client,
         })
     }
+    */
 
      /// Instantiates an A2AAgentInvoker by dynamically discovering agents.
     /// This version fetches agent definitions from the `discovery_service_client`
@@ -94,7 +96,7 @@ impl A2AAgentInvoker {
             info!("Found agent '{}' at {}", agent_def.name, agent_def.agent_endpoint);
             agents_references.push(AgentReference {
                 //name: agent_def.name.clone(),
-                name: agent_def.id.clone(),
+                id: agent_def.id.clone(),
                 url: agent_def.agent_endpoint.clone(),
                 is_default: None, // AgentDefinition does not provide 'is_default'
             });
@@ -126,10 +128,10 @@ impl A2AAgentInvoker {
 
             debug!(
                 "Connecting to agent \'{}\' at {}",
-                agent_details.name, agent_details.url
+                agent_details.id, agent_details.url
             );
 
-            match A2AAgentInteraction::new(agent_details.name.clone(), agent_details.url.clone())
+            match A2AAgentInteraction::new(agent_details.id.clone(), agent_details.url.clone())
                 .await
             {
                 Ok(client) => {
@@ -142,7 +144,7 @@ impl A2AAgentInvoker {
                 Err(e) => {
                     debug!(
                         "Warning: Failed to connect to A2A agent \'{}\' at {}: {}",
-                        agent_details.name, agent_details.url, e
+                        agent_details.id, agent_details.url, e
                     );
                 }
             }
@@ -177,7 +179,7 @@ impl A2AAgentInvoker {
              if agent_ref_config.is_default == Some(true) {
                  // We need to find the A2AClient instance associated with this default SimpleAgentReference
                  // We can do this by matching the name or ID. Assuming client.id is agent_reference.name
-                 if let Some(default_agent_client) = self.client_agents.get(&agent_ref_config.name) {
+                 if let Some(default_agent_client) = self.client_agents.get(&agent_ref_config.id) {
                      info!(
                          "WorkFlow Management: Found default agent \'{}\' as fallback.",
                          default_agent_client.id

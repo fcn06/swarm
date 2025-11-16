@@ -345,16 +345,16 @@ impl AgentConfigBuilder {
 //#[derive(Clone)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AgentReference {
-    pub name: String,
+    pub id: String,
     pub url: String,
     pub is_default:Option<bool>,
 }
 
 impl AgentReference {
-    pub fn new(name: String, url: String) -> anyhow::Result<AgentReference> {
+    pub fn new(id: String, url: String) -> anyhow::Result<AgentReference> {
         // Create the agent card
         Ok(AgentReference {
-            name: name,
+            id: id,
             url: url,
             is_default:None,
         })

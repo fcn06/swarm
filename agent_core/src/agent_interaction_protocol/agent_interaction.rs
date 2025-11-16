@@ -6,6 +6,7 @@ use a2a_rs::{
 use std::sync::Arc;
 use async_trait::async_trait;
 
+// describe how to interact with an agent
 
 #[async_trait]
 pub trait AgentInteraction: Send + Sync  + Clone + 'static {

@@ -24,6 +24,8 @@ use workflow_management::tasks::task_invoker::TaskInvoker;
 use workflow_management::tools::tool_invoker::ToolInvoker;
 use std::any::Any;
 
+use resource_invoker::A2AAgentInvoker; // Import A2AAgentInvoker for downcasting
+
 // TODO: Move this to a separate file if it grows
 #[derive(Clone)]
 pub struct WorkFlowInvokers {
@@ -46,9 +48,20 @@ impl WorkFlowInvokers {
     }
 }
 
+#[async_trait]
 impl WorkflowServiceApi for WorkFlowInvokers {
     fn as_any(&self) -> &dyn Any { self }
     fn as_any_mut(&mut self) -> &mut dyn Any { self }
+    
+    async fn refresh_agents(&self) -> anyhow::Result<()> {
+        // Attempt to downcast the agent_invoker to A2AAgentInvoker to call refresh_agents
+        if let Some(a2a_invoker) = self.agent_invoker.as_any().downcast_ref::<A2AAgentInvoker>() {
+            a2a_invoker.refresh_agents().await?;
+        } else {
+            warn!("WorkFlowInvokers::refresh_agents: agent_invoker is not an A2AAgentInvoker. Skipping agent refresh.");
+        }
+        Ok(())
+    }
 }
 
 #[allow(dead_code)]
@@ -71,13 +84,16 @@ impl Agent for ExecutorAgent {
         workflow_service: Option<Arc<dyn WorkflowServiceApi>>,
     ) -> anyhow::Result<Self> {
         
-        let workflow_invokers = workflow_service
-            .and_then(|ws| ws.as_any().downcast_ref::<WorkFlowInvokers>().map(|wr| Arc::new(wr.clone())))
+        let workflow_invokers_arc = workflow_service
+            .and_then(|ws_api_arc| {
+                // Downcast Arc<dyn WorkflowServiceApi> to Arc<WorkFlowInvokers>
+                ws_api_arc.as_ref().as_any().downcast_ref::<WorkFlowInvokers>().map(|wr| Arc::new(wr.clone()))
+            })
             .ok_or_else(|| anyhow::anyhow!("WorkFlowInvokers not provided or invalid type"))?;
 
         Ok(Self {
             agent_config: Arc::new(agent_config),
-            workflow_invokers,
+            workflow_invokers: workflow_invokers_arc,
             evaluation_service,
         })
     }

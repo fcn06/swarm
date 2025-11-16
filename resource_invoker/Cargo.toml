@@ -16,3 +16,4 @@ mcp_runtime = { workspace = true }
 workflow_management = { workspace = true }
 agent_models = { workspace = true }
 llm_api = { workspace = true }
+tokio = { workspace = true }

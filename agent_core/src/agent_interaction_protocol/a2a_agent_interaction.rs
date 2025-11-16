@@ -25,6 +25,8 @@ pub struct A2AAgentInteraction {
     client: Arc<HttpClient>, // Assuming HttpClient is part of a2a_rs or defined elsewhere
 }
 
+// implementation of the interactions with an A2A agent
+
 #[async_trait]
 impl AgentInteraction for A2AAgentInteraction {
     // Connect to an A2A server agent and potentially fetch its skills.

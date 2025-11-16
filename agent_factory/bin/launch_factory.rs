@@ -209,6 +209,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     let discovery_service = setup_discovery_service(&factory_config.factory_discovery_url).await;
    
 
+    /* 
+
     /************************************************/
     /* Launch Agent Factory 1                       */
     /************************************************/ 
@@ -259,6 +261,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
         },
         Err(e) => error!("Failed to launch Basic Agent: {:?}", e),
     }
+    */
 
     /************************************************/
     /* Launch Planner and Executor  Agents from Factory                   */
@@ -297,7 +300,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
 
     // Launch Agent Factory
     //let agent_factory=AgentFactory::new(factory_config,None);
-    let agent_factory_2=AgentFactory::new(factory_config.clone(),
+    let agent_factory=AgentFactory::new(factory_config.clone(),
                     discovery_service.clone(),
                             memory_service,
                                 evaluation_service,
@@ -306,17 +309,52 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     /************************************************/
     /* Set Up Registrations via discovery service           */
     /************************************************/ 
-    register_tasks(agent_factory_2.factory_discovery_service.clone()).await?;
-    //register_agents(agent_factory.factory_discovery_service.clone()).await?; // Basics Agents Self Register
-    register_tools(args.mcp_config_path.clone(),agent_factory_2.factory_discovery_service.clone()).await?;
+    register_tasks(agent_factory.factory_discovery_service.clone()).await?;
+    //register_agents(agent_factory.factory_discovery_service.clone()).await?; // Domain Self Register
+    register_tools(args.mcp_config_path.clone(),agent_factory.factory_discovery_service.clone()).await?;
 
     /************************************************/
     /* Launch Planner and Executor Agents from Factory             */
     /************************************************/ 
 
+    let mut handles = vec![];
     
     let agent_api_key = env::var("LLM_A2A_API_KEY").expect("LLM_A2A_API_KEY must be set");
     
+ 
+    let factory_mcp_runtime_config = FactoryMcpRuntimeConfig::builder()
+        .with_factory_mcp_llm_provider_url(LlmProviderUrl::Groq)
+        .with_factory_mcp_llm_provider_api_key(agent_api_key.clone())
+        .with_factory_mcp_llm_model_id("openai/gpt-oss-20b".to_string())
+        .with_factory_mcp_server_url("http://localhost:8000/sse".to_string())
+        .with_factory_mcp_server_api_key("".to_string())
+        .build().map_err(|e| anyhow::anyhow!("Failed to build FactoryMcpRuntimeConfig: {}", e))?;
+    
+    
+    // Config for Specialist Agent
+    let factory_agent_config = FactoryAgentConfig::builder()
+        .with_factory_agent_url("http://127.0.0.1:8080".to_string())
+        .with_factory_agent_type(AgentType::Specialist)
+        .with_factory_agent_domains(AgentDomain::General)
+        .with_factory_agent_name("Basic_Agent".to_string())
+        .with_factory_agent_id("Basic_Agent".to_string())
+        .with_factory_agent_description("An Agent that answer Basic Questions".to_string())
+        .with_factory_agent_llm_provider_url(LlmProviderUrl::Groq)
+        .with_factory_agent_llm_provider_api_key(agent_api_key.clone())
+        .with_factory_agent_llm_model_id("openai/gpt-oss-20b".to_string())
+        .build().map_err(|e| anyhow::anyhow!("Failed to build FactoryAgentConfig: {}", e))?;
+
+
+
+    match agent_factory.launch_agent(&factory_agent_config, Some(&factory_mcp_runtime_config), AgentType::Specialist).await {
+        Ok(handle) => {
+            info!("Successfully launched Basic Agent");
+            handles.push(handle);
+        },
+        Err(e) => error!("Failed to launch Basic Agent: {:?}", e),
+    }
+    
+
 
     let agent_planner_api_key = env::var("LLM_PLANNER_API_KEY").expect("LLM_PLANNER_API_KEY must be set");
 
@@ -348,7 +386,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
         .build().map_err(|e| anyhow::anyhow!("Failed to build FactoryAgentConfig for Planner: {}", e))?;
 
     // Launch Executor Agent
-    match agent_factory_2.launch_agent(&factory_agent_config_executor, None, AgentType::Executor).await {
+    match agent_factory.launch_agent(&factory_agent_config_executor, None, AgentType::Executor).await {
         Ok(handle) => {
             info!("Successfully launched Executor Agent");
             handles.push(handle);
@@ -359,7 +397,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     println!("\n");
 
     // Launch Planner Agent
-    match agent_factory_2.launch_agent(&factory_agent_config_planner, None, AgentType::Planner).await {
+    match agent_factory.launch_agent(&factory_agent_config_planner, None, AgentType::Planner).await {
         Ok(handle) => {
             info!("Successfully launched Planner Agent");
             handles.push(handle);

@@ -5,7 +5,7 @@ use tracing::{info, debug};
 use std::sync::Arc;
 use tokio::task::JoinHandle;
 
-use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService,WorkflowServiceApi};
+use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService, WorkflowServiceApi};
 use agent_core::business_logic::mcp_runtime::McpRuntimeDetails;
 use agent_core::server::agent_server::AgentServer;
 use agent_core::business_logic::agent::Agent;
@@ -16,6 +16,8 @@ use executor_agent::business_logic::executor_agent::ExecutorAgent;
 
 use configuration::McpRuntimeConfig;
 use agent_models::factory::config::FactoryMcpRuntimeConfig;
+
+use executor_agent::business_logic::executor_agent::WorkFlowInvokers;
 
 // Constants for LLM API endpoints
 const GROQ_CHAT_COMPLETION_ENDPOINT: &str = "https://api.groq.com/openai/v1/chat/completions";
@@ -151,21 +153,23 @@ pub struct AgentFactory {
     pub factory_discovery_service: Arc<dyn DiscoveryService>,
     pub factory_memory_service: Option<Arc<dyn MemoryService>>,
     pub factory_evaluation_service: Option<Arc<dyn EvaluationService>>,
-    pub workflow_service: Option<Arc<dyn WorkflowServiceApi>>
+    pub workflow_service: Option<Arc<dyn WorkflowServiceApi>>, // Reverted to WorkflowServiceApi
 }
 
 impl AgentFactory {
-    pub fn new(factory_config: FactoryConfig,
-            factory_discovery_service: Arc<dyn DiscoveryService>,
-                factory_memory_service: Option<Arc<dyn MemoryService>>,
-                    factory_evaluation_service: Option<Arc<dyn EvaluationService>>,
-                        workflow_service: Option<Arc<dyn WorkflowServiceApi>>) -> Self {
+    pub fn new(
+        factory_config: FactoryConfig,
+        factory_discovery_service: Arc<dyn DiscoveryService>,
+        factory_memory_service: Option<Arc<dyn MemoryService>>,
+        factory_evaluation_service: Option<Arc<dyn EvaluationService>>,
+        workflow_service: Option<Arc<dyn WorkflowServiceApi>>, // Reverted to WorkflowServiceApi
+    ) -> Self {
         AgentFactory {
-            factory_config:factory_config.clone(),
-            factory_discovery_service:factory_discovery_service,
-            factory_memory_service: factory_memory_service,
-            factory_evaluation_service:factory_evaluation_service ,
-            workflow_service:workflow_service
+            factory_config: factory_config.clone(),
+            factory_discovery_service,
+            factory_memory_service,
+            factory_evaluation_service,
+            workflow_service, // Stored directly
         }
     }
 
@@ -291,7 +295,7 @@ impl AgentFactory {
                         None ,
                             evaluation_service.clone(),  
                                 None, 
-                                Some(self.factory_discovery_service.clone()), 
+                                    Some(self.factory_discovery_service.clone()), 
                                         None).await?;
                 Self::launch_agent_server(agent_config, agent, None).await
             },
@@ -306,6 +310,17 @@ impl AgentFactory {
                 Self::launch_agent_server(agent_config, agent, None).await
             },
         };
+
+
+        if let Some(ws_arc) = &self.workflow_service {
+            // Downcast the Arc<dyn WorkflowServiceApi> to get a reference to WorkFlowInvokers
+            let workflow_service_invoker = ws_arc.as_ref() // Get &dyn WorkflowServiceApi
+                                      .as_any()   // Convert to &dyn Any
+                                      .downcast_ref::<WorkFlowInvokers>() // Attempt to downcast to &WorkFlowInvokers
+                                      .expect("WorkflowServiceApi is not a WorkFlowInvokers. Cannot refresh agents correctly.");
+            workflow_service_invoker.refresh_agents().await?;
+        }
+
 
         Ok(handle)
     }

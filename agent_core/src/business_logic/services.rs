@@ -7,6 +7,7 @@ use agent_models::evaluation::evaluation_models::{AgentEvaluationLogData,JudgeEv
 use agent_models::memory::memory_models::Role;
 
 use std::any::Any;
+
 //use agent_discovery_service::model::models::{AgentDefinition, TaskDefinition, ToolDefinition};
 use agent_models::registry::registry_models::{AgentDefinition, TaskDefinition, ToolDefinition};
 
@@ -37,7 +38,9 @@ pub trait DiscoveryService: Send + Sync {
 }
 
 // New trait for workflow related services
+#[async_trait]
 pub trait WorkflowServiceApi: Send + Sync + 'static  + Any {
     fn as_any(&self) -> &dyn Any;
     fn as_any_mut(&mut self) -> &mut dyn Any;
+    async fn refresh_agents(&self) -> anyhow::Result<()>; // Re-added refresh_agents
 }

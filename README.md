@@ -142,7 +142,17 @@ Here’s a code snippet illustrating how to launch a "Basic_Agent" with `mcp_run
 
 ```
 
+To onboard you more easily, we also made available a script
+
+```bash
+# Demo of Agent Factory. Will launch one Domain Agent ( with MCP), One Planner ( connected to agents, tools and tasks) 
+# and one Executor
+sh ./documentation/demo_factory/run_all_commands.sh 
+```
+
+
 This capability is essential for creating adaptive systems that can scale their workforce based on the tasks at hand, ensuring proper integration and communication through the **MCP Runtime**.
+
 
 ---
 

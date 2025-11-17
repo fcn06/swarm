@@ -12,6 +12,10 @@ use tokio::time::{sleep, Duration};
 
 use super::agent_interaction::AgentInteraction;
 
+// implementation of the AgentInteraction with an A2A agent
+// Protocol to interact with a single agent
+
+
 /// This structure enable Interaction with an A2A enabled single Agent
 #[derive(Clone)]
 pub struct A2AAgentInteraction {
@@ -25,7 +29,6 @@ pub struct A2AAgentInteraction {
     client: Arc<HttpClient>, // Assuming HttpClient is part of a2a_rs or defined elsewhere
 }
 
-// implementation of the interactions with an A2A agent
 
 #[async_trait]
 impl AgentInteraction for A2AAgentInteraction {

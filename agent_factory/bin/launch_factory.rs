@@ -3,6 +3,7 @@ use std::env;
 
 use clap::Parser;
 use std::sync::Arc;
+// use tracing::debug;
 
 use configuration::{setup_logging};
 
@@ -11,7 +12,7 @@ use agent_factory::agent_factory::AgentFactory;
 
 
 // Registration via discovery service
-use agent_models::registry::registry_models::{TaskDefinition,AgentDefinition,ToolDefinition};
+use agent_models::registry::registry_models::{TaskDefinition,ToolDefinition};
 use agent_models::factory::config::FactoryConfig;
 
 use agent_models::factory::config::LlmProviderUrl;
@@ -30,8 +31,6 @@ use workflow_management::agent_communication::agent_invoker::AgentInvoker;
 use workflow_management::tasks::task_invoker::TaskInvoker;
 use workflow_management::tools::tool_invoker::ToolInvoker;
 
-//use agent_core::business_logic::agent::Agent;
-//use agent_core::server::agent_server::AgentServer;
 
 use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService,WorkflowServiceApi};
 use agent_service_adapters::{AgentEvaluationServiceAdapter, AgentMemoryServiceAdapter,AgentDiscoveryServiceAdapter};
@@ -124,7 +123,7 @@ async fn setup_agent_invoker_v2( discovery_service_adapter: Arc<dyn DiscoverySer
 
 
 /***********************************************************************************/
-// Registration Tasks
+// Registration Tasks and tools
 /***********************************************************************************/
 
  
@@ -142,25 +141,8 @@ async fn register_tasks(discovery_service: Arc<dyn DiscoveryService>) -> anyhow:
     Ok(())
 }
 
-#[allow(unused)]
-/// Register Agents in Discovery Service. Should become useless as Domain specialist are self registrating. 
-/// May be used for planners if we want them to be discoverable for complex tasks 
-async fn register_agents(discovery_service: Arc<dyn DiscoveryService>) -> anyhow::Result<()> {
 
-    let agent_definition=AgentDefinition {
-        id: "Basic_Agent".to_string(),
-        name: "Basic Agent".to_string(),
-        description: "Retrieve Weather in a Location, Get customer details and other General Requests".to_string(),
-        agent_endpoint: "http://localhost:8080".to_string(),
-        skills: Vec::new(),
-    };
-
-
-    discovery_service.register_agent(&agent_definition).await?;
-    Ok(())
-}
-
-/// Register Agents in Discovery Service
+/// Register Tools in Discovery Service
 async fn register_tools(mcp_config_path: String,discovery_service: Arc<dyn DiscoveryService>) -> anyhow::Result<()> {
 
     let mcp_tools = McpRuntimeTools::new(mcp_config_path).await?;
@@ -183,10 +165,8 @@ async fn register_tools(mcp_config_path: String,discovery_service: Arc<dyn Disco
 }
 
 /***********************************************************************************/
-// End of Registration Tasks
+// End of Registration Tasks and Tools
 /***********************************************************************************/
-
-
 
 
 #[tokio::main]
@@ -208,71 +188,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     let memory_service = setup_memory_service(&factory_config.factory_memory_service_url.clone().expect("Factory Memory Service URL not set")).await;
     let discovery_service = setup_discovery_service(&factory_config.factory_discovery_url).await;
    
-
-    /* 
+    /************************************************/
+    /* Set Up Registrations via discovery service   */
+    /* Only Tasks and Tools need to be registered   */
+    /* Agents Self Register at Launch               */
+    /************************************************/ 
+    register_tasks(discovery_service.clone()).await?;
+    register_tools(args.mcp_config_path.clone(),discovery_service.clone()).await?;
 
     /************************************************/
-    /* Launch Agent Factory 1                       */
+    /* Launch Agents from Factory                   */
     /************************************************/ 
-    // Launch Agent Factory
-    let agent_factory_1=AgentFactory::new(factory_config.clone(),
-                    discovery_service.clone(),
-                            memory_service.clone(),
-                                evaluation_service.clone(),
-                                    None); // No workflow Invokers
-
-    /************************************************/
-    /* Launch Domain Agents from Factory                   */
-    /************************************************/ 
-
-    let mut handles = vec![];
-    
-    let agent_api_key = env::var("LLM_A2A_API_KEY").expect("LLM_A2A_API_KEY must be set");
-    
- 
-    let factory_mcp_runtime_config = FactoryMcpRuntimeConfig::builder()
-        .with_factory_mcp_llm_provider_url(LlmProviderUrl::Groq)
-        .with_factory_mcp_llm_provider_api_key(agent_api_key.clone())
-        .with_factory_mcp_llm_model_id("openai/gpt-oss-20b".to_string())
-        .with_factory_mcp_server_url("http://localhost:8000/sse".to_string())
-        .with_factory_mcp_server_api_key("".to_string())
-        .build().map_err(|e| anyhow::anyhow!("Failed to build FactoryMcpRuntimeConfig: {}", e))?;
-    
-    
-    // Config for Specialist Agent
-    let factory_agent_config = FactoryAgentConfig::builder()
-        .with_factory_agent_url("http://127.0.0.1:8080".to_string())
-        .with_factory_agent_type(AgentType::Specialist)
-        .with_factory_agent_domains(AgentDomain::General)
-        .with_factory_agent_name("Basic_Agent".to_string())
-        .with_factory_agent_id("Basic_Agent".to_string())
-        .with_factory_agent_description("An Agent that answer Basic Questions".to_string())
-        .with_factory_agent_llm_provider_url(LlmProviderUrl::Groq)
-        .with_factory_agent_llm_provider_api_key(agent_api_key.clone())
-        .with_factory_agent_llm_model_id("openai/gpt-oss-20b".to_string())
-        .build().map_err(|e| anyhow::anyhow!("Failed to build FactoryAgentConfig: {}", e))?;
-
-
-
-    match agent_factory_1.launch_agent(&factory_agent_config, Some(&factory_mcp_runtime_config), AgentType::Specialist).await {
-        Ok(handle) => {
-            info!("Successfully launched Basic Agent");
-            handles.push(handle);
-        },
-        Err(e) => error!("Failed to launch Basic Agent: {:?}", e),
-    }
-    */
-
-    /************************************************/
-    /* Launch Planner and Executor  Agents from Factory                   */
-    /************************************************/ 
-
-
-    // TODO : Make agent_invoker dynamic
-    // so that it is updated potentially each time a new Domain agent is launched
-    // Because it is static, I have for now to use one agent factory to launch domain agents
-    // and another one for planner and executor
-    // this needs to be fixed
 
     /************************************************/
     /* Set Up Invokers                               */
@@ -290,8 +216,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
         tool_invoker.clone(),
     ).await?;
 
-   // debug!("{}",workflow_invokers.list_available_resources());
-
     let workflow_invokers: Option<Arc<dyn WorkflowServiceApi>> = Some(Arc::new(workflow_invokers));
 
     /************************************************/
@@ -299,7 +223,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     /************************************************/ 
 
     // Launch Agent Factory
-    //let agent_factory=AgentFactory::new(factory_config,None);
     let agent_factory=AgentFactory::new(factory_config.clone(),
                     discovery_service.clone(),
                             memory_service,
@@ -309,9 +232,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     /************************************************/
     /* Set Up Registrations via discovery service           */
     /************************************************/ 
-    register_tasks(agent_factory.factory_discovery_service.clone()).await?;
-    //register_agents(agent_factory.factory_discovery_service.clone()).await?; // Domain Self Register
-    register_tools(args.mcp_config_path.clone(),agent_factory.factory_discovery_service.clone()).await?;
+    //register_tasks(agent_factory.factory_discovery_service.clone()).await?;
+    //register_tools(args.mcp_config_path.clone(),agent_factory.factory_discovery_service.clone()).await?;
 
     /************************************************/
     /* Launch Planner and Executor Agents from Factory             */
@@ -320,8 +242,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     let mut handles = vec![];
     
     let agent_api_key = env::var("LLM_A2A_API_KEY").expect("LLM_A2A_API_KEY must be set");
-    
- 
+
+        /************************************************/
+        /* Launch Domain Agent with MCP                 */
+        /************************************************/ 
+
+
     let factory_mcp_runtime_config = FactoryMcpRuntimeConfig::builder()
         .with_factory_mcp_llm_provider_url(LlmProviderUrl::Groq)
         .with_factory_mcp_llm_provider_api_key(agent_api_key.clone())
@@ -354,6 +280,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
         Err(e) => error!("Failed to launch Basic Agent: {:?}", e),
     }
     
+        /************************************************/
+        /* Launch Planner and Executor                  */
+        /************************************************/ 
 
 
     let agent_planner_api_key = env::var("LLM_PLANNER_API_KEY").expect("LLM_PLANNER_API_KEY must be set");
@@ -406,6 +335,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     }
 
     println!("\n");
+
+        /************************************************/
+        /* Join Handles                                 */
+        /************************************************/ 
+
     
     // Wait for all agents to complete
     let results = join_all(handles).await;
@@ -417,6 +351,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
             Err(e) => error!("Agent task panicked: {:?}", e),
         }
     }
+
+    /************************************************/
+    /* End Launch Agents from Factory               */
+    /************************************************/ 
+
 
     Ok(())
 }

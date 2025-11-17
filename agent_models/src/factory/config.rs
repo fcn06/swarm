@@ -6,7 +6,6 @@ use toml;
 // Store factory parameters in databases
 
 
-
 /******************************************************************/
 // Factory Configuration
 // Contains framework level configuration

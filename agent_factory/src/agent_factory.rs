@@ -312,6 +312,7 @@ impl AgentFactory {
         };
 
 
+        // Refresh Agents after each agent launched
         if let Some(ws_arc) = &self.workflow_service {
             // Downcast the Arc<dyn WorkflowServiceApi> to get a reference to WorkFlowInvokers
             let workflow_service_invoker = ws_arc.as_ref() // Get &dyn WorkflowServiceApi

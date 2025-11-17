@@ -92,7 +92,7 @@ As an illustration, here is what we can define in a JSON workflow :
 Which is a simplified graphical representation of :
 
 <p align="center" width="20%">
-    <img width="20%" src="./documentation/graph_visualizer/Snapshot_json_workflow.png">
+    <img width="20%" src="./documentation/graph_visualizer/Workflow_Sample.png">
 </p>
 
 **Important: Stopping Services for Path 1**

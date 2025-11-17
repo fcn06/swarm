@@ -56,7 +56,7 @@ cargo build --release
 The quickstart demo utilizes LLMs for various agent roles. For simplicity, you can use the *same* API key for all roles, especially when starting with Groq.
 
 ```bash
-# Replace <YOUR-LLM-API-KEY> with your actual API key. 
+# Replace <YOUR-LLM-API-KEY> with your actual API key.
 # For the pre configured demo below, we use groq provider. ( https://groq.com/)
 export LLM_A2A_API_KEY=<YOUR-LLM-API-KEY>       # For general Agent-to-Agent communication
 export LLM_MCP_API_KEY=<YOUR-LLM-API-KEY>       # For Model Context Protocol interactions
@@ -64,9 +64,13 @@ export LLM_JUDGE_API_KEY=<YOUR-LLM-API-KEY>     # For the LLM-as-a-Judge evaluat
 export LLM_PLANNER_API_KEY=<YOUR-LLM-API-KEY>     # For the Planner Agent
 ```
 
-### Step 3: Run the Demo
+### **Step 3: Explore Swarm's Power - Two Paths to Orchestration!**
 
-Our primary demo showcases Swarm's workflow management capabilities, integrating direct tool calls and delegated actions to specialized agents. You can run it in three modes:
+Swarm offers you two primary ways to experience its agent orchestration capabilities, both designed for quick experimentation. Think of them as two sides of the same coin, each with a dedicated quickstart script to get you up and running instantly.
+
+#### **Path 1: Workflow-Driven Orchestration (The Planner & Executor in Action)**
+
+This path showcases Swarm's robust workflow management, where a Planner Agent designs tasks and an Executor Agent brings them to life. You can either use a predefined "static" plan or witness the Planner dynamically generate a workflow based on your query and the available agents' skills.
 
 *   **Dynamic Workflow Generation:** This mode dynamically generates an execution plan based on your query and the skills of available agents. It highlights Swarm's adaptive planning capabilities.
     ```bash
@@ -91,33 +95,23 @@ Which is a simplified graphical representation of :
     <img width="20%" src="./documentation/graph_visualizer/Snapshot_json_workflow.png">
 </p>
 
-**Important: Stopping the Demo Services**
-After running any of the above demos, it's crucial to stop all active agent processes to prevent resource consumption and conflicts.
+**Important: Stopping Services for Path 1**
+After running the workflow-driven orchestration demo, use this command to stop all active agent processes:
 
 ```bash
 # This command must be run from the root of the swarm project
 sh ./documentation/demo_planner_executor_management/terminate_all_agents_process.sh
 ```
 
----
+#### **Path 2: Agent Factory - Programmatic Agent Launch**
 
-**Congratulations, you've just run your first swarm!**
-
----
-
-## **🏭 Agent Factory: Programmatic Agent Launch**
-
-Swarm provides an `AgentFactory` to dynamically launch and manage agents programmatically. This allows for creating flexible and scalable multi-agent systems where agents can be instantiated on-the-fly based on runtime conditions and specific needs.
-
-The `AgentFactory` leverages the **MCP Runtime** to manage the lifecycle and communication of the agents it spawns. When an agent is launched via the factory, its configuration, including how it interacts with the Model Context Protocol (MCP), is defined. This enables newly created agents to immediately integrate into the broader Swarm ecosystem and communicate with other services and tools.
-
-You can configure an agent's properties, such as its type, domain, name, description, and the LLM it uses, as well as its `mcp_runtime` settings, and then launch it with a single command.
+Dive into the heart of dynamic agent creation with the `AgentFactory`! This path lets you programmatically launch and manage agents on-the-fly, giving you the power to build flexible and scalable multi-agent systems where agents can be instantiated as needed. The `AgentFactory` seamlessly integrates with the **MCP Runtime**, ensuring newly created agents instantly become part of your Swarm ecosystem.
 
 Here’s a code snippet illustrating how to launch a "Basic_Agent" with `mcp_runtime` configuration:
 
 ```rust
       let agent_api_key = env::var("LLM_A2A_API_KEY").expect("LLM_A2A_API_KEY must be set");
-     
+
     let factory_mcp_runtime_config = FactoryMcpRuntimeConfig::builder()
         .with_factory_mcp_llm_provider_url(LlmProviderUrl::Groq)
         .with_factory_mcp_llm_provider_api_key(agent_api_key.clone())
@@ -142,17 +136,27 @@ Here’s a code snippet illustrating how to launch a "Basic_Agent" with `mcp_run
 
 ```
 
-To onboard you more easily, we also made available a script
+**Quickstart Script for Agent Factory:** To get a taste of this dynamic agent creation, we've provided a script that launches a self-sustainable ecosystem with a Domain Agent, a Planner, and an Executor – all orchestrated by the Agent Factory.
 
 ```bash
-# Demo of Agent Factory. Will launch one Domain Agent ( with MCP), One Planner ( connected to agents, tools and tasks) 
+# Demo of Agent Factory. Will launch one Domain Agent ( with MCP), One Planner ( connected to agents, tools and tasks)
 # and one Executor
-sh ./documentation/demo_factory/run_all_commands.sh 
+sh ./documentation/demo_factory/run_all_commands.sh
 ```
-
 
 This capability is essential for creating adaptive systems that can scale their workforce based on the tasks at hand, ensuring proper integration and communication through the **MCP Runtime**.
 
+**Important: Stopping Services for Path 2**
+After running the Agent Factory demo, use this command to stop all active agent processes:
+
+```bash
+# This command must be run from the root of the swarm project
+sh ./documentation/demo_factory/terminate_all_agents_process.sh
+```
+
+---
+
+**Congratulations, you've just run your first swarm!**
 
 ---
 

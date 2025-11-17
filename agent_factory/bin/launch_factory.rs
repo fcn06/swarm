@@ -1,45 +1,41 @@
-use resource_invoker::McpRuntimeToolInvoker as McpRuntimeTools;
 use std::env;
+use std::sync::Arc;
 
 use clap::Parser;
-use std::sync::Arc;
-// use tracing::debug;
+
+use tracing::{info,error};
+use futures::future::join_all;
+use serde_json::json;
 
 use configuration::{setup_logging};
 
-use serde_json::json;
 use agent_factory::agent_factory::AgentFactory;
 
+use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService,WorkflowServiceApi};
 
 // Registration via discovery service
 use agent_models::registry::registry_models::{TaskDefinition,ToolDefinition};
-use agent_models::factory::config::FactoryConfig;
 
+use agent_models::factory::config::FactoryConfig;
 use agent_models::factory::config::LlmProviderUrl;
 use agent_models::factory::config::AgentDomain;
 use agent_models::factory::config::AgentType;
 use agent_models::factory::config::FactoryAgentConfig;
-
 use agent_models::factory::config::FactoryMcpRuntimeConfig;
 
-
-
+// Invokers
 use resource_invoker::McpRuntimeToolInvoker;
 use resource_invoker::GreetTask;
 use resource_invoker::A2AAgentInvoker;
+use resource_invoker::McpRuntimeToolInvoker as McpRuntimeTools;
+
 use workflow_management::agent_communication::agent_invoker::AgentInvoker;
 use workflow_management::tasks::task_invoker::TaskInvoker;
 use workflow_management::tools::tool_invoker::ToolInvoker;
-
-
-use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService,WorkflowServiceApi};
-use agent_service_adapters::{AgentEvaluationServiceAdapter, AgentMemoryServiceAdapter,AgentDiscoveryServiceAdapter};
-
-//todo:to check
 use executor_agent::business_logic::executor_agent::WorkFlowInvokers;
 
-use tracing::{info,error};
-use futures::future::join_all;
+use agent_service_adapters::{AgentEvaluationServiceAdapter, AgentMemoryServiceAdapter,AgentDiscoveryServiceAdapter};
+
 
 
 /// Command-line arguments

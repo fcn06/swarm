@@ -148,6 +148,8 @@ Here’s a code snippet illustrating how to launch a "Basic_Agent" with `mcp_run
 sh ./documentation/demo_factory/run_all_commands.sh
 ```
 
+There is also another repository called **swarm_factory** [https://github.com/fcn06/swarm_factory](https://github.com/fcn06/swarm_factory) that demonstrate how you can use swarm to kickstart and manage an agent factory
+
 This capability is essential for creating adaptive systems that can scale their workforce based on the tasks at hand, ensuring proper integration and communication through the **MCP Runtime**.
 
 **Important: Stopping Services for Path 2**

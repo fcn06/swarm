@@ -2,13 +2,17 @@
 
 > **Swarm** is a Rust framework for creating and managing a network of specialized, intelligent agents that collaborate through flexible workflows. It acts as a central nervous system for your digital workforce, allowing you to orchestrate complex tasks, either by executing predefined plans or by generating them dynamically.
 
+*   **Self-Correcting Workflows:** Automated planning and execution, refined through a built-in LLM-as-a-Judge evaluation system.
+*   **Dynamic Scaling:** Use the Agent Factory to programmatically instantiate and manage specialist agents at runtime.
+*   **Open Standards Focus:** Built around the Model Context Protocol (MCP) and Agent-to-Agent (A2A) protocols for robust, interoperable communication.
+
 <p align="center" width="60%">
     <img width="60%" src="./documentation/illustrations/Swarm_Agent_Factory_Illustration.png">
 </p>
 
 ## **Why Swarm?**
 
-Building multi-agent systems is complex. You need to manage communication, sequence tasks, and integrate external tools. Swarm simplifies this by providing the backbone for agents to collaborate seamlessly, allowing you to focus on building intelligent solutions, not on the plumbing.
+Building multi-agent systems is complex... Swarm simplifies this by providing the backbone for agents to collaborate seamlessly, allowing you to focus on building intelligent solutions, not on the plumbing. Built in Rust, Swarm delivers the memory safety, concurrency, and performance essential for scalable, production-grade AI services.
 
 ---
 
@@ -85,14 +89,8 @@ This path showcases Swarm's robust workflow management, where a Planner Agent de
     ```
 As an illustration, here is what we can define in a JSON workflow :
 
-<p align="center" width="20%">
-    <img width="20%" src="./documentation/graph_visualizer/Graphical_Workflow_Representation.png">
-</p>
-
-Which is a simplified graphical representation of :
-
-<p align="center" width="20%">
-    <img width="20%" src="./documentation/graph_visualizer/Workflow_Sample.png">
+<p align="center" width="60%">
+    <img width="60%" src="./documentation/graph_visualizer/Workflow_Sample.png">
 </p>
 
 **Important: Stopping Services for Path 1**
@@ -176,22 +174,22 @@ You can find concrete example of workflow in [./documentation/Sample_Scenarios/m
 
 ## **💡 Core Components of Swarm**
 
-Swarm is composed of several modular and interconnected components that work together to enable intelligent agent orchestration:
-
-*   **🗣️ Domain Agents (The Specialists):** These are specialized agents, each acting as an expert in a particular domain (e.g., weather forecasting, database queries, customer care). They execute specific tasks as directed by the Executor Agent.
+### Orchestration & Logic (The Brains)
 *   **✍️ Planner Agent (The Architect):** This specialized agent is the first part of the "Conductor." It focuses on generating detailed, step-by-step execution plans or workflows based on a high-level goal, which are then passed to the Executor Agent.
+*   **🔗 Workflow Mgmt Runtime (The Engine):** This flexible core is responsible for defining, validating, and executing multi-agent workflows and plans. It is the underlying mechanism leveraged by the Executor Agent to manage the execution of planned tasks.
+
+### Execution & Infrastructure (The Body)
 *   **🏃 Executor Agent (The Doer):** Completing the "Conductor" role, this agent takes an execution plan from the Planner, carries out the individual tasks by interacting with tools and other agents, and integrates with the LLM-as-a-Judge system for continuous evaluation and potential workflow refinement.
 *   **🏭 Agent Factory (The Spawner):** This component allows for the dynamic, programmatic creation and management of agent instances at runtime, facilitating scalable and adaptive multi-agent systems.
-*   **🔗 Workflow Management Runtime (The Engine):** This flexible core is responsible for defining, validating, and executing multi-agent workflows and plans. It is the underlying mechanism leveraged by the Executor Agent to manage the execution of planned tasks.
-*   **🛠️ MCP Runtime (Model Context Protocol) (The Bridge):** This component facilitates seamless agent interaction with external services, tools, and diverse data sources, effectively extending the agents' capabilities to the outside world.
-*   **⚖️ LLM as a Judge (The Evaluator):** An autonomous Large Language Model-based service that critically assesses the performance and outcomes of both individual agent actions and complete workflow executions, providing essential feedback for iterative improvement.
+*   **🗣️ Domain Agents (The Specialists):** These are specialized agents, each acting as an expert in a particular domain (e.g., weather forecasting, database queries, customer care). They execute specific tasks as directed by the Executor Agent.
+*   **🛠️ MCP Runtime (The Bridge):** This component facilitates seamless agent interaction with external services, tools, and diverse data sources, effectively extending the agents' capabilities to the outside world.
 *   **🔌 Agent Service Adapters (The Communicators):** These client-side implementations provide the necessary interfaces for agents to interact with core Swarm services like discovery, memory, and evaluation, ensuring robust inter-agent and inter-service communication.
-*   **🗳️ Agent Discovery Service:** An HTTP service enabling agents to register themselves and discover other available agents.
+
+### Evaluation & Context (The Feedback)
+*   **⚖️ LLM as a Judge (The Evaluator):** An autonomous Large Language Model-based service that critically assesses the performance and outcomes of both individual agent actions and complete workflow executions, providing essential feedback for iterative improvement.
 *   **🧠 Agent Memory Service:** A service designed to manage and share conversational history and contextual information among agents.
-*   **📊 Agent Evaluation Service:** Implements the "LLM as a Judge" functionality to evaluate agent and workflow execution outcomes.
-*   **⚙️ Configuration:** Stores default configuration files, prompts, and agent definitions.
-*   **📚 Documentation:** Contains example configuration files, guides, and architectural illustrations.
-*   **💡 Examples:** Provides illustrative code examples, including a test MCP server with web scraping and Wikipedia search capabilities.
+*   **🗳️ Agent Discovery Service:** An HTTP service enabling agents to register themselves and discover other available agents.
+
 
 ---
 

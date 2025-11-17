@@ -93,6 +93,12 @@ As an illustration, here is what we can define in a JSON workflow :
     <img width="60%" src="./documentation/graph_visualizer/Workflow_Sample.png">
 </p>
 
+Which can be visually represented by :
+
+<p align="center" width="20%">
+    <img width="20%" src="./documentation/graph_visualizer/Graphical_Workflow_Representation.png">
+</p>
+
 **Important: Stopping Services for Path 1**
 After running the workflow-driven orchestration demo, use this command to stop all active agent processes:
 

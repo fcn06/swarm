@@ -82,6 +82,11 @@ This path showcases Swarm's robust workflow management, where a Planner Agent de
     sh ./documentation/demo_planner_executor_management/run_all_commands.sh --dynamic-generation
     ```
 
+    Once the agents are launched, to interact with them, you can use a simple A2A client, that passes the appropriate metadata to initiate workflow generation mechanism. You will need to adjust the port to your planner agent.
+    ```bash
+    ./target/release/simple_workflow_agent_client --port 9580 --log-level "warn" --generation-type "dynamic_generation" --user-query "Compare Bach and Vivaldi ?"
+    ```
+
 *   **Static Workflow (Default):** This executes a predefined workflow loaded from a JSON file. Ideal for predictable and repeatable processes.
     ```bash
     # This command must be run from the root of the swarm project

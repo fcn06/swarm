@@ -290,6 +290,8 @@ impl AgentFactory {
                     None
                 };
 
+                info!("Evaluation Service Absent for Planner Agent: {:?}", evaluation_service.is_none());
+
                 let agent = PlannerAgent::new(agent_config.clone(), 
                     factory_agent_config.factory_agent_llm_provider_api_key.clone(),
                         None ,

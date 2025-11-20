@@ -1,10 +1,13 @@
 use llm_api::chat::{ChatLlmInteraction};
-use anyhow::{Context, Result};
-use std::fs;
+//use anyhow::{Context, Result};
+use anyhow::{Result};
+
 use tracing::trace;
 use configuration::AgentConfig;
 use agent_models::evaluation::evaluation_models::{AgentEvaluationLogData,JudgeEvaluation};
 
+
+const JUDGE_AGENT_PROMPT_TEMPLATE: &str = include_str!("../../../configuration/prompts/judge_agent_prompt.txt");
 
 /// Modern A2A server setup 
 #[derive(Clone)]
@@ -43,8 +46,7 @@ impl JudgeAgent {
     pub async fn evaluate_agent_output(&self,log_data: AgentEvaluationLogData) -> Result<JudgeEvaluation> {
 
         // Read the prompt template from the file
-        let prompt_template = fs::read_to_string("./configuration/prompts/judge_agent_prompt.txt")
-            .context("Failed to read judge_agent_prompt.txt")?;
+        let prompt_template = JUDGE_AGENT_PROMPT_TEMPLATE;
 
         let prompt = prompt_template
             .replacen("{}", &log_data.original_user_query, 1)

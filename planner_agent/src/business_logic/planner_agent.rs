@@ -16,14 +16,13 @@ use agent_models::execution::execution_result::ExecutionResult;
 use a2a_rs::{HttpClient, domain::{Message, Part, Role, TaskState}};
 use uuid::Uuid;
 use a2a_rs::services::AsyncA2AClient;
-use tokio::fs as async_fs;
 use std::collections::HashMap;
 
 use workflow_management::graph::config::load_graph_from_file;
 use agent_models::evaluation::evaluation_models::{AgentEvaluationLogData};
 
-const DEFAULT_WORKFLOW_PROMPT_TEMPLATE: &str = "./configuration/prompts/detailed_workflow_agent_prompt.txt";
-const DEFAULT_HIGH_LEVEL_PLAN_PROMPT_TEMPLATE: &str = "./configuration/prompts/high_level_plan_workflow_agent_prompt.txt";
+const DEFAULT_WORKFLOW_PROMPT_TEMPLATE: &str = include_str!("../../../configuration/prompts/detailed_workflow_agent_prompt.txt");
+const DEFAULT_HIGH_LEVEL_PLAN_PROMPT_TEMPLATE: &str = include_str!("../../../configuration/prompts/high_level_plan_workflow_agent_prompt.txt");
 const A2A_TIMEOUT_SECONDS: u32 = 50;
 const MAX_RETRIES: u8 = 3;
 const TRIGGER_RETRY: u8 = 3;
@@ -353,8 +352,7 @@ impl PlannerAgent {
         let capabilities = self.discovery_service.list_available_resources().await?;
         debug!("Capabilities for plan creation: \n {}", capabilities);
 
-        let prompt_template = async_fs::read_to_string(DEFAULT_WORKFLOW_PROMPT_TEMPLATE).await
-                .context("Failed to read workflow_agent_prompt.txt")?;
+        let prompt_template = DEFAULT_WORKFLOW_PROMPT_TEMPLATE;
 
         let prompt = prompt_template
             .replacen("{}", user_query, 1)
@@ -362,7 +360,7 @@ impl PlannerAgent {
 
         debug!("Prompt for Plan creation : {}", prompt);
 
-        let response_content = self.llm_interaction.call_api_simple_v2("user".to_string(), prompt).await?
+        let response_content = self.llm_interaction.call_api_simple_v2("user".to_string(), prompt.to_string()).await?
             .context("LLM returned no content")?;
         info!("LLM responded with plan content: {:?}", response_content);
 
@@ -378,8 +376,7 @@ impl PlannerAgent {
         let capabilities = self.get_available_capabilities().await?;
         debug!("Capabilities for high-level plan creation: \n {}", capabilities);
 
-        let prompt_template = async_fs::read_to_string(DEFAULT_HIGH_LEVEL_PLAN_PROMPT_TEMPLATE).await
-                .context("Failed to read high_level_plan_agent_prompt.txt")?;
+        let prompt_template = DEFAULT_HIGH_LEVEL_PLAN_PROMPT_TEMPLATE;
 
         let prompt = prompt_template
             .replacen("{}", user_query, 1)
@@ -387,7 +384,7 @@ impl PlannerAgent {
 
         debug!("Prompt for high-level plan creation: {}", prompt);
 
-        let response_content = self.llm_interaction.call_api_simple_v2("user".to_string(), prompt).await?
+        let response_content = self.llm_interaction.call_api_simple_v2("user".to_string(), prompt.to_string()).await?
             .context("LLM returned no content")?;
         info!("LLM responded with high level plan content: {:?}", response_content);
         

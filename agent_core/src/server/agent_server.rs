@@ -3,7 +3,6 @@ use a2a_rs::adapter::{
     DefaultRequestProcessor, HttpServer, InMemoryTaskStorage,
     NoopPushNotificationSender, SimpleAgentInfo,
 };
-//use a2a_rs::services::AgentInfoProvider;
 
 use crate::business_logic::agent::{Agent};
 
@@ -12,8 +11,6 @@ use configuration::AgentConfig;
 use crate::server::agent_handler::AgentHandler;
 use std::sync::Arc;
 use crate::business_logic::services::DiscoveryService;
-
-// Removed direct dependency on AgentDiscoveryServiceClient
 
 use anyhow::Result;
 

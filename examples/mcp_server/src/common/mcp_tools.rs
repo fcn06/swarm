@@ -80,6 +80,8 @@ impl McpTools {
         Ok(CallToolResult::success(vec![Content::text(body)]))
     }
 
+    // Limit the size of the search query to 400 tokens
+
     #[tool(description = "Search for an entity on wikipedia.")]
     pub async fn search(
         Parameters(StructRequestSearch { search_query }): Parameters<StructRequestSearch>

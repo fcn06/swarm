@@ -6,7 +6,8 @@ members = [
                 "configuration",
                 "agent_factory",
                 "llm_api",
-                "agent_discovery_service","agent_memory_service",
+                "agent_discovery_service",
+                "agent_memory_service",
                 "agent_evaluation_service",
                 "agent_core",
                 "basic_agent",
@@ -35,9 +36,9 @@ executor_agent = { path = "./executor_agent" }
 basic_agent = { path = "./basic_agent" }
 
 agent_models = { path = "./agent_models" }
-agent_service_adapters = { path = "./agent_service_adapters" }
-
 resource_invoker={ path = "./resource_invoker" }
+
+agent_service_adapters = { path = "./agent_service_adapters" }
 
 # For rmcp and a2a-rs, in the future, I have to pin a revision number because this crate is evolving rapidly with significant number of breaking changes
 # Update to the latest revision of rmcp on 2025, October the 18th. Pinning specific release of rmcp and a2a-rs ensure stability of swarm

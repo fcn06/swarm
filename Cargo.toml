@@ -3,42 +3,54 @@ resolver = "3"
 
 # Used while refactoring to add agent_protocol_backbone
 members = [ 
-                "configuration",
+#                "configuration",
+#                "agent_core",
+#                "llm_api",
+#                "agent_models",
+#                "agent_service_adapters",
+#                "agent_discovery_service",
+#                "agent_memory_service",
+#                "agent_evaluation_service",
                 "agent_factory",
-                "llm_api",
-                "agent_discovery_service",
-                "agent_memory_service",
-                "agent_evaluation_service",
-                "agent_core",
                 "basic_agent",
                 "mcp_runtime",
                 "workflow_management",
                 "planner_agent",
                 "executor_agent",
                 "examples/a2a_agent_endpoint","examples/mcp_runtime_endpoint","examples/mcp_server","examples/mcp_client",
-                "agent_models",
-                "agent_service_adapters",
                 "resource_invoker"]
 
 [workspace.dependencies]
-configuration = { path = "./configuration" }
-agent_core = { path = "./agent_core" }
-llm_api = { path = "./llm_api" }
-agent_evaluation_service = { path = "./agent_evaluation_service" }
-agent_memory_service = { path = "./agent_memory_service" }
-agent_discovery_service = { path = "./agent_discovery_service" }
 
 mcp_runtime = { path = "./mcp_runtime" }
 workflow_management = { path = "./workflow_management" }
-
 planner_agent = { path = "./planner_agent" }
 executor_agent = { path = "./executor_agent" }
 basic_agent = { path = "./basic_agent" }
-
-agent_models = { path = "./agent_models" }
 resource_invoker={ path = "./resource_invoker" }
 
-agent_service_adapters = { path = "./agent_service_adapters" }
+# Moved to swarm_commons
+#agent_core = { path = "./agent_core" }
+#configuration = { path = "./configuration" }
+#llm_api = { path = "./llm_api" }
+#agent_models = { path = "./agent_models" }
+
+agent_core={ git = "https://github.com/fcn06/swarm_commons.git" }
+configuration={ git = "https://github.com/fcn06/swarm_commons.git" }
+llm_api={ git = "https://github.com/fcn06/swarm_commons.git" }
+agent_models = {  git = "https://github.com/fcn06/swarm_commons.git" }
+
+# Moved to swarm_services
+#agent_service_adapters = { path = "./agent_service_adapters" }
+#agent_evaluation_service = { path = "./agent_evaluation_service" }
+#agent_memory_service = { path = "./agent_memory_service" }
+#agent_discovery_service = { path = "./agent_discovery_service" }
+
+agent_service_adapters = { git = "https://github.com/fcn06/swarm_services.git" }
+#agent_evaluation_service = { git = "https://github.com/fcn06/swarm_services.git" }
+#agent_memory_service = { git = "https://github.com/fcn06/swarm_services.git" }
+#agent_discovery_service = { git = "https://github.com/fcn06/swarm_services.git" }
+
 
 # For rmcp and a2a-rs, in the future, I have to pin a revision number because this crate is evolving rapidly with significant number of breaking changes
 # Update to the latest revision of rmcp on 2025, October the 18th. Pinning specific release of rmcp and a2a-rs ensure stability of swarm
@@ -67,7 +79,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter","fmt"] }
 
 axum = "0.8"
 
-jsonwebtoken = { version = "9.3" }
+jsonwebtoken = { version = "10" }
 oauth2 = { version = "5" }
 openidconnect = { version = "4" }
 

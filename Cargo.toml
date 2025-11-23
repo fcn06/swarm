@@ -13,12 +13,12 @@ members = [
                 "resource_invoker"]
 
 [workspace.dependencies]
-
+basic_agent = { path = "./basic_agent" }
 mcp_runtime = { path = "./mcp_runtime" }
 workflow_management = { path = "./workflow_management" }
 planner_agent = { path = "./planner_agent" }
 executor_agent = { path = "./executor_agent" }
-basic_agent = { path = "./basic_agent" }
+
 resource_invoker={ path = "./resource_invoker" }
 
 # Moved to swarm_commons

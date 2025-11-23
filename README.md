@@ -30,7 +30,7 @@ Swarm's architecture is designed around a collaborative "conductor" and "special
 
 2.  **Execution & Evaluation (Executor Agent - The Doer; Planner Agent - The Conductor, Part 2):**
     *   The **Executor Agent** receives the plan from the Planner Agent and meticulously executes each step. This involves coordinating with **Domain Agents** and utilizing various tools through the **MCP Runtime**. The Executor Agent reports the outcome of the execution back to the Planner Agent.
-    *   For **dynamic plans**, the **Planner Agent** then takes this outcome and, using an integrated **LLM-as-a-Judge** system via the **Evaluation Service**, critically assesses the execution's success. If the evaluation score is unsatisfactory, the Planner Agent can leverage this feedback to refine the plan, potentially regenerating and re-executing an improved workflow. This creates a powerful feedback loop for continuous improvement in dynamic scenarios.
+    *   For **dynamic plans**, the **Planner Agent** then takes this outcome and, using an integrated **LLM-as-a-Judge** system via the **Evaluation Service** (provided by `swarm_services`), critically assesses the execution's success. If the evaluation score is unsatisfactory, the Planner Agent can leverage this feedback to refine the plan, potentially regenerating and re-executing an improved workflow. This creates a powerful feedback loop for continuous improvement in dynamic scenarios.
 
 3.  **Specialized Task Handling (Domain Agents - The Specialists):**
     *   **Domain Agents** are the core "workers," each specializing in a particular domain (e.g., customer care, weather forecasting, data analysis).
@@ -116,7 +116,7 @@ sh ./documentation/demo_planner_executor_management/terminate_all_agents_process
 
 Dive into the heart of dynamic agent creation with the `AgentFactory`! This path lets you programmatically launch and manage agents on-the-fly, giving you the power to build flexible and scalable multi-agent systems where agents can be instantiated as needed. The `AgentFactory` seamlessly integrates with the **MCP Runtime**, ensuring newly created agents instantly become part of your Swarm ecosystem.
 
-Here’s a code snippet illustrating how to launch a "Basic_Agent" with `mcp_runtime` configuration:
+Here's a code snippet illustrating how to launch a "Basic_Agent" with `mcp_runtime` configuration:
 
 ```rust
       let agent_api_key = env::var("LLM_A2A_API_KEY").expect("LLM_A2A_API_KEY must be set");
@@ -187,22 +187,34 @@ You can find concrete example of workflow in [./documentation/Sample_Scenarios/m
 
 ## **💡 Core Components of Swarm**
 
-### Orchestration & Logic (The Brains)
+Swarm leverages a modular architecture, building upon shared foundational crates and dedicated infrastructure services to enable robust multi-agent systems.
+
+### Foundational Building Blocks (from `swarm_commons`)
+For core abstractions, common models, configuration, and LLM interaction, Swarm relies on the `swarm_commons` project.
+*   **Agent Core Logic:** Fundamental traits and business logic for agents.
+*   **Agent Models:** Shared data structures for communication and state.
+*   **Configuration:** Centralized management of settings and prompts.
+*   **LLM API Integration:** Standardized interfaces for interacting with Large Language Models.
+[Learn more about Swarm Commons here.](./codebase/swarm_commons/README.md)
+
+### Core Infrastructure Services (from `swarm_services`)
+For essential backend functionalities that enable agents to collaborate, discover each other, manage memory, and evaluate performance, Swarm integrates with `swarm_services`.
+*   **Agent Discovery Service:** Enables agents to register and discover others.
+*   **Agent Memory Service:** Manages shared conversational history and context.
+*   **Agent Evaluation Service (LLM as a Judge):** Critically assesses agent performance and workflow outcomes.
+*   **Agent Service Adapters:** Client implementations for agents to interact with these services.
+[Learn more about Swarm Services here.](./codebase/swarm_services/README.md)
+
+
+### Orchestration & Logic (The Brains - within `Swarm` itself)
 *   **✍️ Planner Agent (The Architect):** This specialized agent is the first part of the "Conductor." It focuses on generating detailed, step-by-step execution plans or workflows based on a high-level goal, which are then passed to the Executor Agent.
 *   **🔗 Workflow Mgmt Runtime (The Engine):** This flexible core is responsible for defining, validating, and executing multi-agent workflows and plans. It is the underlying mechanism leveraged by the Executor Agent to manage the execution of planned tasks.
 
-### Execution & Infrastructure (The Body)
-*   **🏃 Executor Agent (The Doer):** Completing the "Conductor" role, this agent takes an execution plan from the Planner, carries out the individual tasks by interacting with tools and other agents, and integrates with the LLM-as-a-Judge system for continuous evaluation and potential workflow refinement.
+### Execution & Agent Types (The Body - within `Swarm` itself)
+*   **🏃 Executor Agent (The Doer):** Completing the "Conductor" role, this agent takes an execution plan from the Planner, carries out the individual tasks by interacting with tools and other agents, and integrates with the LLM-as-a-Judge system (via `swarm_services`) for continuous evaluation and potential workflow refinement.
 *   **🏭 Agent Factory (The Spawner):** This component allows for the dynamic, programmatic creation and management of agent instances at runtime, facilitating scalable and adaptive multi-agent systems.
 *   **🗣️ Domain Agents (The Specialists):** These are specialized agents, each acting as an expert in a particular domain (e.g., weather forecasting, database queries, customer care). They execute specific tasks as directed by the Executor Agent.
 *   **🛠️ MCP Runtime (The Bridge):** This component facilitates seamless agent interaction with external services, tools, and diverse data sources, effectively extending the agents' capabilities to the outside world.
-*   **🔌 Agent Service Adapters (The Communicators):** These client-side implementations provide the necessary interfaces for agents to interact with core Swarm services like discovery, memory, and evaluation, ensuring robust inter-agent and inter-service communication.
-
-### Evaluation & Context (The Feedback)
-*   **⚖️ LLM as a Judge (The Evaluator):** An autonomous Large Language Model-based service that critically assesses the performance and outcomes of both individual agent actions and complete workflow executions, providing essential feedback for iterative improvement.
-*   **🧠 Agent Memory Service:** A service designed to manage and share conversational history and contextual information among agents.
-*   **🗳️ Agent Discovery Service:** An HTTP service enabling agents to register themselves and discover other available agents.
-
 
 ---
 
@@ -210,8 +222,7 @@ You can find concrete example of workflow in [./documentation/Sample_Scenarios/m
 
 Swarm is an active project, and we are constantly working on improvements. Our roadmap includes:
 
-*   **Improve enablers** Have Discovery service, memory service and evaluation service resilients ( connected to a database,using embeddings for example). This will be done in a separate project, through a premium feature.
-*   **Enhanced Workflow Features** More advanced conditional logic.
+*   **Enhanced Workflow Features:** More advanced conditional logic.
 *   **Improved Observability:** Better logging, tracing, and monitoring.
 *   **Broader LLM Integration:** Compatibility with a wider range of LLMs.
 
@@ -224,8 +235,6 @@ We welcome contributions! Whether you're a developer, a writer, or have a great 
 ## **⭐ Show Your Support**
 
 If you find Swarm useful, please consider starring our repository! Your support helps us grow.
-
-We plan to work on feature rich discovery, context/memory and evaluation services in a separate project
 
 ---
 

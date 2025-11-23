@@ -3,14 +3,6 @@ resolver = "3"
 
 # Used while refactoring to add agent_protocol_backbone
 members = [ 
-#                "configuration",
-#                "agent_core",
-#                "llm_api",
-#                "agent_models",
-#                "agent_service_adapters",
-#                "agent_discovery_service",
-#                "agent_memory_service",
-#                "agent_evaluation_service",
                 "agent_factory",
                 "basic_agent",
                 "mcp_runtime",
@@ -30,26 +22,13 @@ basic_agent = { path = "./basic_agent" }
 resource_invoker={ path = "./resource_invoker" }
 
 # Moved to swarm_commons
-#agent_core = { path = "./agent_core" }
-#configuration = { path = "./configuration" }
-#llm_api = { path = "./llm_api" }
-#agent_models = { path = "./agent_models" }
-
 agent_core={ git = "https://github.com/fcn06/swarm_commons.git" }
 configuration={ git = "https://github.com/fcn06/swarm_commons.git" }
 llm_api={ git = "https://github.com/fcn06/swarm_commons.git" }
 agent_models = {  git = "https://github.com/fcn06/swarm_commons.git" }
 
 # Moved to swarm_services
-#agent_service_adapters = { path = "./agent_service_adapters" }
-#agent_evaluation_service = { path = "./agent_evaluation_service" }
-#agent_memory_service = { path = "./agent_memory_service" }
-#agent_discovery_service = { path = "./agent_discovery_service" }
-
 agent_service_adapters = { git = "https://github.com/fcn06/swarm_services.git" }
-#agent_evaluation_service = { git = "https://github.com/fcn06/swarm_services.git" }
-#agent_memory_service = { git = "https://github.com/fcn06/swarm_services.git" }
-#agent_discovery_service = { git = "https://github.com/fcn06/swarm_services.git" }
 
 
 # For rmcp and a2a-rs, in the future, I have to pin a revision number because this crate is evolving rapidly with significant number of breaking changes

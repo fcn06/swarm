@@ -29,7 +29,7 @@ struct Args {
     port: String,
     #[clap(long, default_value = "warn")]
     log_level: String,
-    #[clap(long, default_value = "./documentation/demo_workflow_management/mix_agent_tools_workflow.json")]
+    #[clap(long, default_value = "./documentation/demo_planner_executor_management/mix_agent_tools_workflow.json")]
     graph_file: String,
     #[clap(long, default_value = "load_workflow")]
     generation_type: String,

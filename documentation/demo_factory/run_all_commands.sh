@@ -24,17 +24,17 @@ echo "##############################################################"
 echo $'\n'
 
 echo "C) Launch discovery Service so that agents can self register"
-./target/release/discovery_service  --log-level "warn" &
+../swarm_services/target/release/discovery_service  --log-level "warn" &
 sleep 3
 echo $'\n'
 
 echo "C) Launch Evaluation Service so that agents can have their output evaluated ( LLM as a Judge)"
-./target/release/evaluation_service --config-file "documentation/demo_planner_executor_management/agent_judge_config.toml"  --log-level "warn" &
+../swarm_services/target/release/evaluation_service --config-file "documentation/demo_planner_executor_management/agent_judge_config.toml"  --log-level "warn" &
 sleep 3
 echo $'\n'
 
 echo "C) Launch Memory Service so that agents can have log their conversation and plan"
-./target/release/memory_service  --log-level "warn" &
+../swarm_services/target/release/memory_service  --log-level "warn" &
 sleep 3
 echo $'\n'
 

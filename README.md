@@ -223,6 +223,7 @@ For essential backend functionalities that enable agents to collaborate, discove
 Swarm is an active project, and we are constantly working on improvements. Our roadmap includes:
 
 *   **Enhanced Workflow Features:** More advanced conditional logic.
+*   **Create an Identity Agent, using Self Sovereign Identity:** This agent would be able to sign a request, validate a signed request, pass the validated request to another agent for execution. Probably will be in a separate and dedicated crate
 *   **Improved Observability:** Better logging, tracing, and monitoring.
 *   **Broader LLM Integration:** Compatibility with a wider range of LLMs.
 

@@ -33,9 +33,13 @@ agent_service_adapters = { git = "https://github.com/fcn06/swarm_services.git" }
 
 # For rmcp and a2a-rs, in the future, I have to pin a revision number because this crate is evolving rapidly with significant number of breaking changes
 # Update to the latest revision of rmcp on 2025, October the 18th. Pinning specific release of rmcp and a2a-rs ensure stability of swarm
-rmcp= { git = "https://github.com/modelcontextprotocol/rust-sdk.git", features = ["client","transport-sse-client", "transport-child-process","reqwest","transport-sse-client-reqwest","auth"] ,rev="11093bc830d77717b8f24813d888238a12d7eefe" }
+#rmcp= { git = "https://github.com/modelcontextprotocol/rust-sdk.git", features = ["client","transport-sse-client", "transport-child-process","reqwest","transport-sse-client-reqwest","auth"] ,rev="11093bc830d77717b8f24813d888238a12d7eefe" }
+#a2a-rs= { git = "https://github.com/EmilLindfors/a2a-rs.git" , features=["server","http-server","client","http-client","tracing"] , rev="2cf954129de8b4cc3b3146780877e508fa34c00c" }
 
-a2a-rs= { git = "https://github.com/EmilLindfors/a2a-rs.git" , features=["server","http-server","client","http-client","tracing"] , rev="2cf954129de8b4cc3b3146780877e508fa34c00c" }
+rmcp= { git = "https://github.com/modelcontextprotocol/rust-sdk.git", features = ["client","transport-sse-client", "transport-child-process","reqwest","transport-sse-client-reqwest","auth"] ,rev="94428d543f9b97ff2d208800454131a8dc5ce1ea" }
+a2a-rs= { git = "https://github.com/EmilLindfors/a2a-rs.git" , features=["server","http-server","client","http-client","tracing"] , rev="b2d8dbf9ef0c4e5a317b63e1bbb2e092d61c0e04" }
+
+
 
 
 reqwest = { version = "0.12", features = ["json","rustls-tls"] }

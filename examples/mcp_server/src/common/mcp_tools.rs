@@ -7,7 +7,14 @@ use rmcp::{
 
 use serde_json::json;
 
-static WIKIPEDIA_SEARCH_URL: &str = "https://en.wikipedia.org/api/rest_v1/page/summary";
+//static WIKIPEDIA_SEARCH_URL: &str = "https://en.wikipedia.org/api/rest_v1/page/summary";
+
+static DUCKDUCK_SEARCH_URL_PART1: &str = r#"https://api.duckduckgo.com/?q="#;
+
+static DUCKDUCK_SEARCH_URL_PART2: &str = r#"&format=json"#;
+
+
+
 static JINA_AI_URL: &str = "https://r.jina.ai";
 
 
@@ -81,7 +88,7 @@ impl McpTools {
     }
 
     // Limit the size of the search query to 400 tokens
-
+    /* 
     #[tool(description = "Search for an entity on wikipedia.")]
     pub async fn search(
         Parameters(StructRequestSearch { search_query }): Parameters<StructRequestSearch>
@@ -108,4 +115,38 @@ impl McpTools {
         Ok(CallToolResult::success(vec![Content::text(result)]))
 
     }
+    */
+
+    #[tool(description = "Search for an entity on wikipedia.")]
+    pub async fn search(
+        Parameters(StructRequestSearch { search_query }): Parameters<StructRequestSearch>
+    ) -> Result<CallToolResult, McpError> {
+
+        //let duckduckgo_url = format!("https://api.duckduckgo.com/?q={}&format=json", &search_query);
+
+        let duckduckgo_url = format!("{}{}{}",DUCKDUCK_SEARCH_URL_PART1, &search_query,DUCKDUCK_SEARCH_URL_PART2);
+
+        let client = reqwest::Client::new();
+
+        let response =client
+        .get(&duckduckgo_url)
+        .send()
+        .await
+        .map_err(|e| McpError::invalid_request(e.to_string(),Some(json!({"messages": duckduckgo_url.to_string()}))))?;
+
+        let parsed_json_response: serde_json::Value = response.json().await.map_err(|e| McpError::invalid_request(e.to_string(),Some(json!({"messages": duckduckgo_url.to_string()}))))?;
+
+        let extract_from_response=    if let Some(extract_text) = parsed_json_response["Abstract"].as_str() {
+                extract_text
+            } else {
+                "'extract' field not found or not a string."
+            };
+
+        let result = format!("Search result for '{}' : '{}' ", search_query, extract_from_response);
+
+        Ok(CallToolResult::success(vec![Content::text(result)]))
+
+    }
+
+
 }

@@ -150,9 +150,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("This is a task that needs to be sent to two different agents to be adressed...\n");
     println!("Sending message to agents to process tasks ...\n");
 
+    // THIS IS CAUSING WARNING
+    // WARN a2a_rs::adapter::storage::task_storage: ⚠️  No WebSocket subscribers found for task task_id=task-001dac70-baf9-4665-89a2-a35e3f0c9aca
+
     let task_3 = client
         .send_task_message(&task_id_3, &message_3, None, Some(50))
         .await?;
+
     println!("\nGot response with status: {:?}", task_3.status.state);
 
     if let Some(response_message_3) = task_3.status.message {

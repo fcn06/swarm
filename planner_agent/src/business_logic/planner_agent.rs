@@ -262,6 +262,10 @@ impl PlannerAgent {
             .context("agent_executor_url not found in configuration")?;
         debug!("Sending plan to executor agent at: {}. Task ID: {}", executor_agent_url, task_id);
         
+
+        // Since A2A v0.3, THIS IS CAUSING WARNING
+        // WARN a2a_rs::adapter::storage::task_storage: ⚠️  No WebSocket subscribers found for task task_id=task-001dac70-baf9-4665-89a2-a35e3f0c9aca
+
         let task_response = self.client
             .send_task_message(&task_id, &a2a_message, None, Some(A2A_TIMEOUT_SECONDS))
             .await

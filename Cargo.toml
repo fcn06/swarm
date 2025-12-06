@@ -37,7 +37,7 @@ agent_service_adapters = { git = "https://github.com/fcn06/swarm_services.git" }
 #a2a-rs= { git = "https://github.com/EmilLindfors/a2a-rs.git" , features=["server","http-server","client","http-client","tracing"] , rev="2cf954129de8b4cc3b3146780877e508fa34c00c" }
 
 rmcp= { git = "https://github.com/modelcontextprotocol/rust-sdk.git", features = ["client","transport-sse-client", "transport-child-process","reqwest","transport-sse-client-reqwest","auth"] ,rev="94428d543f9b97ff2d208800454131a8dc5ce1ea" }
-a2a-rs= { git = "https://github.com/EmilLindfors/a2a-rs.git" , features=["server","http-server","client","http-client","tracing"] , rev="b2d8dbf9ef0c4e5a317b63e1bbb2e092d61c0e04" }
+a2a-rs= { git = "https://github.com/EmilLindfors/a2a-rs.git" , features=["server","http-server","client","http-client","tracing","ws-server"] , rev="b2d8dbf9ef0c4e5a317b63e1bbb2e092d61c0e04" }
 
 
 

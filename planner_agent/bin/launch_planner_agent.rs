@@ -122,7 +122,11 @@ async fn register_tools(mcp_config_path: String,discovery_service: Arc<dyn Disco
 async fn main() -> Result<(), Box<dyn std::error::Error>>{
 
     let args = Args::parse();
+    /************************************************/
+    /* Setting proper log level                     */
+    /************************************************/ 
     setup_logging(&args.log_level);
+    
 
     /************************************************/
     /* Loading A2A Config File and launching        */

@@ -7,13 +7,7 @@ use agent_core::business_logic::agent::Agent;
 use clap::Parser;
 use std::env;
 
-use tracing::{ Level};
-use tracing_subscriber::{
-    prelude::*,
-    fmt,
-    layer::Layer,
-    Registry, filter
-};
+use configuration::setup_logging;
 
 /// Command-line arguments for the reimbursement server
 #[derive(Parser, Debug)]
@@ -33,27 +27,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
 
     /************************************************/
-    /* Setting proper log level. Default is INFO    */
+    /* Setting proper log level                     */
     /************************************************/ 
-    let log_level = match args.log_level.as_str() {
-        "trace" => Level::TRACE,
-        "debug" => Level::DEBUG,
-        "info" => Level::INFO,
-        "warn" => Level::WARN,
-        "error" => Level::ERROR,
-        _ => Level::WARN,
-    };
-
-    let subscriber = Registry::default()
-    .with(
-        // stdout layer, to view everything in the console
-        fmt::layer()
-            .compact()
-            .with_ansi(true)
-            .with_filter(filter::LevelFilter::from_level(log_level))
-    );
-
-    tracing::subscriber::set_global_default(subscriber).unwrap();
+    setup_logging(&args.log_level);
 
     /************************************************/
     /* End of Setting proper log level              */

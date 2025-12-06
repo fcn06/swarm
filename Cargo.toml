@@ -40,7 +40,7 @@ rmcp= { git = "https://github.com/modelcontextprotocol/rust-sdk.git", features =
 
 #a2a-rs= { git = "https://github.com/EmilLindfors/a2a-rs.git" , features=["server","http-server","client","http-client","tracing","ws-server"] , rev="b2d8dbf9ef0c4e5a317b63e1bbb2e092d61c0e04" }
 # https://github.com/EmilLindfors/a2a-rs/blob/b2d8dbf9ef0c4e5a317b63e1bbb2e092d61c0e04/a2a-rs/src/adapter/storage/task_storage.rs#L28
-a2a-rs= { git = "https://github.com/EmilLindfors/a2a-rs.git" , features=["server","http-server","client","http-client"] , default-features = false , rev="b2d8dbf9ef0c4e5a317b63e1bbb2e092d61c0e04" }
+a2a-rs= { git = "https://github.com/EmilLindfors/a2a-rs.git" , features=["server","http-server","client","http-client","tracing"]  , rev="b2d8dbf9ef0c4e5a317b63e1bbb2e092d61c0e04" }
 
 
 

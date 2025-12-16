@@ -1,0 +1,54 @@
+#################################################################
+# Config for A2A Agent, that can embed a MCP agent
+#################################################################
+
+#################################################################
+# General parameters
+#################################################################
+agent_id="Identity_Agent"
+agent_name="Identity_Agent"
+agent_http_endpoint="http://127.0.0.1:8082" # Changed port to avoid conflict
+agent_ws_endpoint="ws://127.0.0.1:8083" # Changed port to avoid conflict
+
+#################################################################
+# Future use : It would make sense to have a discovery service
+# so that planner agent can dynamically discover agents to
+# connect to
+#################################################################
+agent_discovery_url="http://127.0.0.1:4000"
+
+
+#################################################################
+# Purpose and high level skills
+# The agent will use the A2A protocol for his interactions
+#################################################################
+agent_system_prompt="You are an identity verification agent. Your primary role is to authenticate users and provide verified identity information upon successful authentication."
+agent_skill_id="identity_verification"
+agent_skill_name="Identity Verification and Authentication"
+agent_skill_description="Authenticates users and provides verified identity information."
+agent_version="1.0.0"
+agent_description="An agent that handles user authentication and provides identity details."
+agent_doc_url="/docs"
+agent_tags=["authentication","identity","verification","security"]
+agent_examples=["Authenticate user John Doe with credentials", "Verify identity for token XYZ", "Provide user details for authenticated session"]
+
+#################################################################
+# Define her the url of openai compatible endpoint 
+# as well as the model to use
+#################################################################
+# Use this if you use a model from Google
+#agent_model_id="gemini-2.0-flash"
+#agent_llm_url="https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+# Use this if you use a model from Groq
+#agent_model_id="qwen/qwen3-32b"
+agent_model_id="openai/gpt-oss-20b"
+agent_llm_url="https://api.groq.com/openai/v1/chat/completions"
+# Use this if you use a local model run for example from llama.cpp on port 2000
+#agent_model_id="LFM2-350M-Math"
+#agent_llm_url="http://localhost:2000/v1/chat/completions"
+
+#################################################################
+# You can say the agent to include a MCP runtime agent
+# you just define the configuration file to use
+#################################################################
+agent_mcp_config_path="configuration/mcp_runtime_config.toml"

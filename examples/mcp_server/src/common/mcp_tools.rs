@@ -4,16 +4,13 @@ use rmcp::{
     handler::server::wrapper::Parameters,
 };
 
-
 use serde_json::json;
 
-//static WIKIPEDIA_SEARCH_URL: &str = "https://en.wikipedia.org/api/rest_v1/page/summary";
+use lopdf::{Document, Object};
 
 static DUCKDUCK_SEARCH_URL_PART1: &str = r#"https://api.duckduckgo.com/?q="#;
 
 static DUCKDUCK_SEARCH_URL_PART2: &str = r#"&format=json"#;
-
-
 
 static JINA_AI_URL: &str = "https://r.jina.ai";
 
@@ -44,6 +41,12 @@ pub struct StructRequestSearch {
     pub search_query: String,
 }
 
+#[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
+pub struct StructPdfExtraction {
+    #[schemars(description = "An Url from a pdf you want to extract data from")]
+    pub pdf_url: String,
+}
+
 
 pub struct McpTools;
 
@@ -59,7 +62,6 @@ impl McpTools {
             "description": "Sunny"
         });
         Ok(CallToolResult::success(vec![Content::text(result_value.to_string())]))
-        //Ok(CallToolResult::success(vec![Content::json(result_value)]))
     }
 
 
@@ -73,10 +75,9 @@ impl McpTools {
             "address": "Sunny Street BOSTON"
         });
         Ok(CallToolResult::success(vec![Content::text(result_value.to_string())]))
-        //Ok(CallToolResult::success(vec![Content::json(result_value)]))
     }
 
-    #[tool(description = "Scrapes a given URL using Jina AI's web scraping service.")]
+    #[tool(description = "Scrapes a given URL using Jina AI's web scraping service")]
     pub async fn scrape_url(
         Parameters(StructRequestUrlToScrape { url_to_scrape }): Parameters<StructRequestUrlToScrape>
     ) -> Result<CallToolResult, McpError> {
@@ -87,43 +88,12 @@ impl McpTools {
         Ok(CallToolResult::success(vec![Content::text(body)]))
     }
 
-    // Limit the size of the search query to 400 tokens
-    /* 
-    #[tool(description = "Search for an entity on wikipedia.")]
+    // Limit the size of the search query to 1000 tokens
+    #[tool(description = "Search for an entity on the internet")]
     pub async fn search(
         Parameters(StructRequestSearch { search_query }): Parameters<StructRequestSearch>
     ) -> Result<CallToolResult, McpError> {
-
-        let wikipedia_media_url = format!("{}/{}",WIKIPEDIA_SEARCH_URL,&search_query );
-
-        let client = reqwest::Client::new();
-
-        let response = client.get(wikipedia_media_url.clone())
-            .header("User-Agent", "MyRustApp/1.0 (contact@example.com)")
-            .send().await.map_err(|e| McpError::invalid_request(e.to_string(),Some(json!({"messages": wikipedia_media_url.to_string()}))))?;
-
-        let parsed_json_response: serde_json::Value = response.json().await.map_err(|e| McpError::invalid_request(e.to_string(),Some(json!({"messages": wikipedia_media_url.to_string()}))))?;
-
-        let extract_from_response=    if let Some(extract_text) = parsed_json_response["extract"].as_str() {
-                extract_text
-            } else {
-                "'extract' field not found or not a string."
-            };
-
-        let result = format!("Search result for '{}' : '{}' ", search_query, extract_from_response);
-
-        Ok(CallToolResult::success(vec![Content::text(result)]))
-
-    }
-    */
-
-    #[tool(description = "Search for an entity on wikipedia.")]
-    pub async fn search(
-        Parameters(StructRequestSearch { search_query }): Parameters<StructRequestSearch>
-    ) -> Result<CallToolResult, McpError> {
-
-        //let duckduckgo_url = format!("https://api.duckduckgo.com/?q={}&format=json", &search_query);
-
+    
         let duckduckgo_url = format!("{}{}{}",DUCKDUCK_SEARCH_URL_PART1, &search_query,DUCKDUCK_SEARCH_URL_PART2);
 
         let client = reqwest::Client::new();
@@ -146,6 +116,24 @@ impl McpTools {
 
         Ok(CallToolResult::success(vec![Content::text(result)]))
 
+    }
+
+    #[tool(description = "Scrapes a given URL using Jina AI's web scraping service")]
+    pub async fn pdf_extract( Parameters(StructPdfExtraction { pdf_url }): Parameters<StructPdfExtraction> ) -> Result<CallToolResult, McpError> {
+
+        let doc = Document::load(&pdf_url)
+            .map_err(|e| McpError::invalid_request(e.to_string(),Some(json!({"messages": pdf_url.to_string()}))))?;
+
+        let mut pdf_text = String::new();
+        let pages = doc.get_pages();
+        for (page_number, page_id) in pages.iter() {
+            // Placeholder: just output the page number and object ID
+            let page_text = format!("Page {} object ID: {:?}", page_number, page_id);
+            pdf_text.push_str(&page_text);
+            pdf_text.push('\n');
+        };
+
+        Ok(CallToolResult::success(vec![Content::text(pdf_text)]))
     }
 
 

@@ -31,6 +31,7 @@ tower-http = { version = "0.6", features = ["cors"] }
 hyper = { version = "1" }
 hyper-util = { version = "0", features = ["server"] }
 
+lopdf = "0.38"
 
 [[example]]
 name = "main-server"

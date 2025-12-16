@@ -6,29 +6,30 @@ use rmcp::{
 
 use crate::common::mcp_tools::McpTools;
 
+
 #[derive(Clone)]
-pub struct SearchMcpService {
+pub struct PdfMcpService {
     tool_router: ToolRouter<Self>,
 }
 
 #[tool_router]
-impl SearchMcpService {
+impl PdfExtractionMcpService {
     pub fn new() -> Self {
         Self {
             tool_router: Self::tool_router(),
         }
     }
 
-    #[tool(description = "Performs a simple search in the internet")]
-    async fn search(
-        &self, params: Parameters<crate::common::mcp_tools::StructRequestSearch>
+    #[tool(description = "Extract Data ( text/metaata) from a pdf defined by its url")]
+    async fn pdf_extract(
+        &self, params: Parameters<crate::common::mcp_tools::StructPdfExtraction>
     ) -> Result<CallToolResult, McpError> {
-        McpTools::search(params).await
+        McpTools::pdf_extract(params).await
     }
 }
 
 #[tool_handler]
-impl ServerHandler for SearchMcpService {
+impl ServerHandler for PdfExtractionMcpService {
     fn get_info(&self) -> ServerInfo {
         ServerInfo {
             protocol_version: ProtocolVersion::V_2024_11_05,
@@ -36,7 +37,7 @@ impl ServerHandler for SearchMcpService {
                 .enable_tools()
                 .build(),
             server_info: Implementation::from_build_env(),
-            instructions: Some("This server provides a 'search' function from internet".to_string()),
+            instructions: Some("This server provides a function to extract data ( text and metadata) from pdf".to_string()),
         }
     }
 }

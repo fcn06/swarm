@@ -41,7 +41,7 @@ impl GeneralMcpService {
         McpTools::scrape_url(params).await
     }
 
-    #[tool(description = "Search for an entity on wikipedia.")]
+    #[tool(description = "Search for an entity in the internet")]
     async fn search(
         &self, params: Parameters<crate::common::mcp_tools::StructRequestSearch>
     ) -> Result<CallToolResult, McpError> {
@@ -61,7 +61,7 @@ impl ServerHandler for GeneralMcpService {
                 .enable_tools()
                 .build(),
             server_info: Implementation::from_build_env(),
-            instructions: Some("This server provides  a function 'get_current_weather' to retrieve weather from a specific location,  'get_customer_details' to get info about a customer, 'scrape_url' to scrape a given URL, and 'search' to search for an entity ( Name, Country, Animal,..)  on wikipedia content.".to_string()),
+            instructions: Some("This server provides  a function 'get_current_weather' to retrieve weather from a specific location,  'get_customer_details' to get info about a customer, 'scrape_url' to scrape a given URL, and 'search' to search for an entity ( Name, Country, Animal,..) in Internet.".to_string()),
         }
     }
 

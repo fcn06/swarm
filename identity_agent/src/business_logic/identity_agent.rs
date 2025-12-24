@@ -98,8 +98,8 @@ impl Agent for IdentityAgent {
             let request_id=uuid::Uuid::new_v4().to_string();
             let conversation_id = Uuid::new_v4().to_string();
      
-            // Placeholder for authentication check
-            // In a real scenario, this would involve validating tokens, checking permissions, etc.
+            // Replaced by authentication on the header of agent server
+            /* 
             let is_authenticated = if let Some(metadata) = _metadata {
                 metadata.get("authenticated").and_then(|v| v.as_bool()).unwrap_or(false)
             } else {
@@ -114,6 +114,7 @@ impl Agent for IdentityAgent {
                     output: Value::String("Authentication required.".to_string()),
                 });
             }
+            */
 
              // use MCP LLM to answer if there is a MCP runtime, Agent LLM otherwise 
              let response =if self.mcp_agent.is_none() {

@@ -66,7 +66,9 @@ tracing-subscriber = { version = "0.3", features = ["env-filter","fmt"] }
 
 axum = "0.8"
 
-jsonwebtoken = { version = "10" }
+#jsonwebtoken = { version = "10" }
+jsonwebtoken = { version = "10", features = ["aws_lc_rs"] }
+
 oauth2 = { version = "5" }
 openidconnect = { version = "4" }
 

@@ -9,7 +9,6 @@ members = [
                 "workflow_management",
                 "planner_agent",
                 "executor_agent",
-                "identity_agent",
                 "examples/a2a_agent_endpoint","examples/mcp_runtime_endpoint","examples/mcp_server","examples/mcp_client",
                 "resource_invoker"]
 

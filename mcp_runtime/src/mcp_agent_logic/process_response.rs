@@ -47,17 +47,15 @@ pub fn process_response(
         }
         "tool_calls" => {
             // Case 2: Model requested tool calls
-            // todo:Bug to be fixed about tools_call_id
             if let Some(tool_calls) = &choice.message.tool_calls {
                 let tool_call_message = Message {
                     role: "assistant".to_string(),
-                    content: None, // Content is None for tool_calls messages
-                    tool_call_id: None, // todo : register the right tool_call_id
+                    content: choice.message.content.clone(), // Preserve content if any (e.g. reasoning or explanation)
+                    tool_call_id: None,
                     tool_calls: Some(tool_calls.clone()),
                 };
                 
                 // this assistant message requesting to make a call for tools needs to be recorded in message history
-                // this is requested by gemini to work
                 messages.push(tool_call_message.clone());
 
                 AgentResponse {

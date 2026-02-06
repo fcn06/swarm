@@ -49,6 +49,8 @@ Ensure all tool and agent IDs are from the provided list.
 const EXECUTOR_SYSTEM_PROMPT: &str = "You are an executor agent that executes precsiley workflow that you are delegated.";
 
 const MCP_RUNTIME_SYSTEM_PROMPT: &str = r#"You are a helpful assistant that answers user requests. If you can answer a question using your general knowledge, do so. Otherwise, you can use one or more tools to find the answer. When you receive a message with a role called "tool", you must use the response from tools in order to build a final answer."#;
+const MCP_RUNTIME_EVALUATION_PROMPT: &str = r#"You are a helpful assistant that answers user requests. If you can answer a question using your general knowledge, do so. Otherwise, you can use one or more tools to find the answer. When you receive a message with a role called "tool", you must use the response from tools in order to build a final answer."#;
+const MCP_RUNTIME_CORRECTION_PROMPT: &str = r#"You are a helpful assistant that answers user requests. If you can answer a question using your general knowledge, do so. Otherwise, you can use one or more tools to find the answer. When you receive a message with a role called "tool", you must use the response from tools in order to build a final answer."#;
 
 /********************************************************/
 // Configurator
@@ -227,6 +229,8 @@ impl AgentFactory {
                 agent_mcp_llm_url: llm_mcp_url, 
                 agent_mcp_llm_api_key_env_var: Some(factory_mcp_runtime_config.factory_mcp_llm_provider_api_key.clone()), 
                 agent_mcp_system_prompt: MCP_RUNTIME_SYSTEM_PROMPT.to_string(),
+                agent_mcp_evaluation_prompt: MCP_RUNTIME_EVALUATION_PROMPT.to_string(),
+                agent_mcp_correction_prompt: MCP_RUNTIME_CORRECTION_PROMPT.to_string(),
                 agent_mcp_endpoint_url: None, 
             }
         )

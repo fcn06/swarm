@@ -13,6 +13,9 @@ agent_mcp_finish_reason_tool_calls = "tool_calls"
 agent_mcp_finish_reason_stop = "stop"
 # max number of loops that the agent will execute
 agent_mcp_max_loops = 5
+agent_mcp_evaluation_prompt = "Please evaluate the previous tool results. If the results are satisfactory, respond with 'OK'. If they are unsatisfactory, provide a brief explanation of the issue."
+agent_mcp_correction_prompt = "The previous tool execution failed. Please analyze the issue and try to correct it."
+
 
 #################################################################
 # Parameters of the MCP middleware to connect to

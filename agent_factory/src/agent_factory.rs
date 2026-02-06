@@ -49,8 +49,11 @@ Ensure all tool and agent IDs are from the provided list.
 const EXECUTOR_SYSTEM_PROMPT: &str = "You are an executor agent that executes precsiley workflow that you are delegated.";
 
 const MCP_RUNTIME_SYSTEM_PROMPT: &str = r#"You are a helpful assistant that answers user requests. If you can answer a question using your general knowledge, do so. Otherwise, you can use one or more tools to find the answer. When you receive a message with a role called "tool", you must use the response from tools in order to build a final answer."#;
-const MCP_RUNTIME_EVALUATION_PROMPT: &str = r#"You are a helpful assistant that answers user requests. If you can answer a question using your general knowledge, do so. Otherwise, you can use one or more tools to find the answer. When you receive a message with a role called "tool", you must use the response from tools in order to build a final answer."#;
-const MCP_RUNTIME_CORRECTION_PROMPT: &str = r#"You are a helpful assistant that answers user requests. If you can answer a question using your general knowledge, do so. Otherwise, you can use one or more tools to find the answer. When you receive a message with a role called "tool", you must use the response from tools in order to build a final answer."#;
+
+const MCP_RUNTIME_EVALUATION_PROMPT: &str = r#"Please evaluate the previous tool results. If the results are satisfactory, respond with 'OK'. If they are unsatisfactory, provide a brief explanation of the issue."#;
+
+const MCP_RUNTIME_CORRECTION_PROMPT: &str = r#"The previous tool execution failed. Please analyze the issue and try to correct it."#;
+
 
 /********************************************************/
 // Configurator

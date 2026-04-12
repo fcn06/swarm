@@ -228,6 +228,7 @@ impl AgentFactory {
                 agent_mcp_max_loops: 5, // Use appropriate type
                 agent_mcp_server_url: Some(factory_mcp_runtime_config.factory_mcp_server_url.clone()),
                 agent_mcp_server_api_key:Some(factory_mcp_runtime_config.factory_mcp_server_api_key.clone()),
+                agent_mcp_sanitizer_model_id: Some(factory_mcp_runtime_config.factory_mcp_llm_model_id.clone()),  // to be modified
                 agent_mcp_model_id: factory_mcp_runtime_config.factory_mcp_llm_model_id.clone(),
                 agent_mcp_llm_url: llm_mcp_url, 
                 agent_mcp_llm_api_key_env_var: Some(factory_mcp_runtime_config.factory_mcp_llm_provider_api_key.clone()), 

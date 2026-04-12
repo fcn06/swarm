@@ -6,7 +6,7 @@ edition = "2024"
 # https://github.com/modelcontextprotocol/rust-sdk/tree/main/examples/servers/src
 
 [dependencies]
-rmcp = { workspace = true, features = ["transport-sse-server","auth"] }
+rmcp = { workspace = true, features = ["transport-streamable-http-server", "server-side-http", "auth"] }
 
 tokio = { workspace = true }
 serde = { workspace = true }

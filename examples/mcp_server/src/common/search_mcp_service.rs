@@ -30,13 +30,9 @@ impl SearchMcpService {
 #[tool_handler]
 impl ServerHandler for SearchMcpService {
     fn get_info(&self) -> ServerInfo {
-        ServerInfo {
-            protocol_version: ProtocolVersion::V_2024_11_05,
-            capabilities: ServerCapabilities::builder()
+        ServerInfo::new(ServerCapabilities::builder()
                 .enable_tools()
-                .build(),
-            server_info: Implementation::from_build_env(),
-            instructions: Some("This server provides a 'search' function from internet".to_string()),
-        }
+                .build())
+            .with_instructions("This server provides a 'search' function from internet")
     }
 }

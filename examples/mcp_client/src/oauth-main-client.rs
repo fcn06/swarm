@@ -11,9 +11,8 @@ use rmcp::{
     ServiceExt,
     model::ClientInfo,
     transport::{
-        SseClientTransport,
+        streamable_http_client::{StreamableHttpClientTransport, StreamableHttpClientTransportConfig},
         auth::{AuthClient, OAuthState},
-        sse_client::SseClientConfig,
     },
 };
 use serde::Deserialize;
@@ -150,14 +149,8 @@ async fn main() -> Result<()> {
         .into_authorization_manager()
         .ok_or_else(|| anyhow::anyhow!("Failed to get authorization manager"))?;
     let client = AuthClient::new(reqwest::Client::default(), am);
-    let transport = SseClientTransport::start_with_client(
-        client,
-        SseClientConfig {
-            sse_endpoint: MCP_SSE_URL.into(),
-            ..Default::default()
-        },
-    )
-    .await?;
+    let config = StreamableHttpClientTransportConfig::with_uri(MCP_SSE_URL);
+    let transport = StreamableHttpClientTransport::with_client(client, config);
 
     // Create client and connect to MCP server
     let client_service = ClientInfo::default();

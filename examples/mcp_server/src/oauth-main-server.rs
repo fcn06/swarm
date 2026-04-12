@@ -1,4 +1,4 @@
-use rmcp::transport::sse_server::SseServer;
+use rmcp::transport::streamable_http_server::{StreamableHttpServerConfig, StreamableHttpService, session::local::LocalSessionManager};
 use tracing_subscriber::{
     layer::SubscriberExt,
     {self},
@@ -37,12 +37,9 @@ use axum::{
     routing::{get, post},
 };
 use rand::{Rng, distr::Alphanumeric};
-use rmcp::transport::{
-    auth::{
-        AuthorizationMetadata, ClientRegistrationRequest, ClientRegistrationResponse,
-        OAuthClientConfig,
-    },
-    sse_server::SseServerConfig,
+use rmcp::transport::auth::{
+    AuthorizationMetadata, ClientRegistrationRequest, ClientRegistrationResponse,
+    OAuthClientConfig,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -683,6 +680,23 @@ struct AppState {
 }
 
 
+/// Helper: create an axum Router from a StreamableHttpService
+fn make_sse_router<F, S>(factory: F, session_manager: Arc<LocalSessionManager>, config: StreamableHttpServerConfig) -> axum::Router
+where
+    F: Fn() -> Result<S, std::io::Error> + Send + Sync + Clone + 'static,
+    S: rmcp::ServerHandler + Send + 'static,
+{
+    let service = StreamableHttpService::new(factory, session_manager, config);
+    axum::Router::new()
+        .route("/mcp/sse", axum::routing::any({
+            let svc = service.clone();
+            move |req: axum::extract::Request| {
+                let svc = svc.clone();
+                async move { svc.handle(req).await }
+            }
+        }))
+}
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
 
@@ -736,17 +750,17 @@ async fn main() -> anyhow::Result<()> {
     let addr = bind_address_str.parse::<SocketAddr>()?;
     println!("MCP Server listening on: {} with command: {:?}", bind_address_str, args.command);
 
-    // Create SSE server configuration for MCP
-    let sse_config = SseServerConfig {
-        bind: addr,
-        sse_path: "/mcp/sse".to_string(),
-        post_path: "/mcp/message".to_string(),
-        ct: CancellationToken::new(),
-        sse_keep_alive: Some(Duration::from_secs(15)),
-    };
+    let sse_config = StreamableHttpServerConfig::default();
+    let session_manager = Arc::new(LocalSessionManager::default());
 
-      // Create SSE server
-      let (sse_server, sse_router) = SseServer::new(sse_config);
+    // Start SSE server with appropriate service router
+    let sse_router = match args.command {
+        Commands::Weather => make_sse_router(|| Ok(WeatherMcpService::new()), session_manager.clone(), sse_config),
+        Commands::Customer => make_sse_router(|| Ok(CustomerMcpService::new()), session_manager.clone(), sse_config),
+        Commands::Scrape => make_sse_router(|| Ok(ScrapeMcpService::new()), session_manager.clone(), sse_config),
+        Commands::Search => make_sse_router(|| Ok(SearchMcpService::new()), session_manager.clone(), sse_config),
+        Commands::All => make_sse_router(|| Ok(GeneralMcpService::new()), session_manager.clone(), sse_config),
+    };
 
       // Create protected SSE routes (require authorization)
       let protected_sse_router = sse_router.layer(middleware::from_fn_with_state(
@@ -788,24 +802,10 @@ async fn main() -> anyhow::Result<()> {
       let app = app.merge(protected_sse_router);
 
       // Register token validation middleware for SSE
-      let cancel_token = sse_server.config.ct.clone();
+      let cancel_token = CancellationToken::new();
 
       // Handle Ctrl+C
-      let cancel_token2 = sse_server.config.ct.clone();
-
-
-    /************************************************/
-    /*  Select appropriate service                  */
-    /************************************************/ 
-
-    // Start SSE server with appropriate service
-    let _ct = match args.command {
-        Commands::Weather => sse_server.with_service(WeatherMcpService::new),
-        Commands::Customer => sse_server.with_service(CustomerMcpService::new),
-        Commands::Scrape => sse_server.with_service(ScrapeMcpService::new),
-        Commands::Search => sse_server.with_service(SearchMcpService::new),
-        Commands::All => sse_server.with_service(GeneralMcpService::new),
-    };
+      let cancel_token2 = cancel_token.clone();
 
     /************************************************/
     /*  Launch                                      */

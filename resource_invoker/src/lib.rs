@@ -13,7 +13,7 @@ use agent_core::agent_interaction_protocol::a2a_agent_interaction::A2AAgentInter
 use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService, WorkflowServiceApi};
 use configuration::{AgentReference, McpRuntimeConfig};
 
-use rmcp::model::CallToolRequestParam;
+use rmcp::model::CallToolRequestParams;
 use mcp_runtime::runtime::mcp_runtime::{McpRuntime};
 
 // Re-export the traits from workflow_management for convenience
@@ -295,10 +295,8 @@ impl ToolInvoker for McpRuntimeToolInvoker  {
     async fn invoke(&self, tool_id:String,params: &Value) -> anyhow::Result<serde_json::Value>  {
         let arguments_map = from_value(params.clone())?;
 
-        let call_tool_request_param = CallToolRequestParam {
-            name: tool_id.into(),
-            arguments: Some(arguments_map),
-        };
+        let call_tool_request_param = CallToolRequestParams::new(tool_id)
+            .with_arguments(arguments_map);
 
         let tool_result = self.mcp_runtime.get_client()?.call_tool(call_tool_request_param).await?;
         

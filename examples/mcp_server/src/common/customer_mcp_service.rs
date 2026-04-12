@@ -31,15 +31,11 @@ impl CustomerMcpService {
 #[tool_handler]
 impl ServerHandler for CustomerMcpService {
     fn get_info(&self) -> ServerInfo {
-        ServerInfo {
-            protocol_version: ProtocolVersion::V_2024_11_05,
-            capabilities: ServerCapabilities::builder()
+        ServerInfo::new(ServerCapabilities::builder()
                 .enable_prompts()
                 .enable_resources()
                 .enable_tools()
-                .build(),
-            server_info: Implementation::from_build_env(),
-            instructions: Some("This server provides a function 'get_customer_details' to get info about a customer.".to_string()),
-        }
+                .build())
+            .with_instructions("This server provides a function 'get_customer_details' to get info about a customer.")
     }
 }

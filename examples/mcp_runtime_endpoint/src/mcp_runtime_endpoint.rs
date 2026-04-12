@@ -86,7 +86,8 @@ let args = Args::parse();
         }
     };
 
-    let mcp_agent = McpAgent::new(agent_mcp_config.clone()).await?;
+    let api_key = agent_mcp_config.agent_mcp_server_api_key.clone();
+    let mcp_agent = McpAgent::new(agent_mcp_config.clone(), api_key).await?;
 
     /************************************************/
     /* MCP Agent Launched                           */

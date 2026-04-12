@@ -1,5 +1,4 @@
-//#[cfg(feature = "transport-sse-server")]
-use rmcp::transport::sse_server::SseServer;
+use rmcp::transport::streamable_http_server::{StreamableHttpServerConfig, StreamableHttpService, session::local::LocalSessionManager};
 
 use tracing_subscriber::{
     layer::SubscriberExt,
@@ -22,6 +21,7 @@ use common::weather_mcp_service::WeatherMcpService;
 use common::search_mcp_service::SearchMcpService;
 
 use clap::{Parser, Subcommand};
+use std::sync::Arc;
 
 /// Command-line arguments for the reimbursement server
 #[derive(Parser, Debug)]
@@ -53,9 +53,25 @@ enum Commands {
     All,
 }
 
+/// Helper: create an axum Router from a StreamableHttpService
+fn make_app<F, S>(factory: F, session_manager: Arc<LocalSessionManager>, config: StreamableHttpServerConfig) -> axum::Router
+where
+    F: Fn() -> Result<S, std::io::Error> + Send + Sync + Clone + 'static,
+    S: rmcp::ServerHandler + Send + 'static,
+{
+    let service = StreamableHttpService::new(factory, session_manager, config);
+    axum::Router::new()
+        .route("/mcp", axum::routing::any({
+            let svc = service.clone();
+            move |req: axum::extract::Request| {
+                let svc = svc.clone();
+                async move { svc.handle(req).await }
+            }
+        }))
+}
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-
 
     // Parse command-line arguments
     let args = Args::parse();
@@ -99,29 +115,24 @@ async fn main() -> anyhow::Result<()> {
     /*  Defining which tools to enable , and launch */
     /************************************************/ 
 
-    let ct = match args.command {
-        Commands::Weather => SseServer::serve(bind_address.parse()?)
-            .await?
-            .with_service(WeatherMcpService::new),
-        Commands::Customer => SseServer::serve(bind_address.parse()?)
-            .await?
-            .with_service(CustomerMcpService::new),
-        Commands::Scrape => SseServer::serve(bind_address.parse()?)
-            .await?
-            .with_service(ScrapeMcpService::new),
-        Commands::Search => SseServer::serve(bind_address.parse()?)
-            .await?
-            .with_service(SearchMcpService::new),
-        Commands::All => SseServer::serve(bind_address.parse()?)
-            .await?
-            .with_service(GeneralMcpService::new),
+    let sse_config = StreamableHttpServerConfig::default();
+    let session_manager = Arc::new(LocalSessionManager::default());
+
+    let app = match args.command {
+        Commands::Weather => make_app(|| Ok(WeatherMcpService::new()), session_manager, sse_config),
+        Commands::Customer => make_app(|| Ok(CustomerMcpService::new()), session_manager, sse_config),
+        Commands::Scrape => make_app(|| Ok(ScrapeMcpService::new()), session_manager, sse_config),
+        Commands::Search => make_app(|| Ok(SearchMcpService::new()), session_manager, sse_config),
+        Commands::All => make_app(|| Ok(GeneralMcpService::new()), session_manager, sse_config),
     };
+
+    let listener = tokio::net::TcpListener::bind(bind_address).await?;
     
     /************************************************/
     /*  Server launched                             */
     /************************************************/ 
 
-    tokio::signal::ctrl_c().await?;
-    ct.cancel();
+    axum::serve(listener, app).await?;
+    
     Ok(())
 }

@@ -53,16 +53,12 @@ impl GeneralMcpService {
 #[tool_handler]
 impl ServerHandler for GeneralMcpService {
     fn get_info(&self) -> ServerInfo {
-        ServerInfo {
-            protocol_version: ProtocolVersion::V_2024_11_05,
-            capabilities: ServerCapabilities::builder()
+        ServerInfo::new(ServerCapabilities::builder()
                 .enable_prompts()
                 .enable_resources()
                 .enable_tools()
-                .build(),
-            server_info: Implementation::from_build_env(),
-            instructions: Some("This server provides  a function 'get_current_weather' to retrieve weather from a specific location,  'get_customer_details' to get info about a customer, 'scrape_url' to scrape a given URL, and 'search' to search for an entity ( Name, Country, Animal,..) in Internet.".to_string()),
-        }
+                .build())
+            .with_instructions("This server provides  a function 'get_current_weather' to retrieve weather from a specific location,  'get_customer_details' to get info about a customer, 'scrape_url' to scrape a given URL, and 'search' to search for an entity ( Name, Country, Animal,..) in Internet.")
     }
 
   

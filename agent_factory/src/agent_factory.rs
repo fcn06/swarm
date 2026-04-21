@@ -236,6 +236,9 @@ impl AgentFactory {
                 agent_mcp_evaluation_prompt: MCP_RUNTIME_EVALUATION_PROMPT.to_string(),
                 agent_mcp_correction_prompt: MCP_RUNTIME_CORRECTION_PROMPT.to_string(),
                 agent_mcp_endpoint_url: None, 
+                agent_mcp_nats_url: None,
+                agent_mcp_nats_dispatch_subject: None,
+                agent_mcp_enable_evaluation: None,
             }
         )
 

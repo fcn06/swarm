@@ -73,6 +73,7 @@ In this mode, `swarm_server` acts as a unified model gateway for client applicat
 
 - **OpenAI-Compatible Chat Completions (`POST /v1/chat/completions`)**: Backward-compatible with standard developer tools, IDE extensions, and OpenAI SDKs.
 - **Open Responses Standard (`POST /v1/responses`)**: Modern stateful API with multi-turn conversation chaining (`previous_response_id`) and SSE streaming.
+- **Dynamic Target URL & Provider Configuration**: Configurable target URLs for Groq, Google Gemini, OpenAI, and local OpenAI-compatible endpoints (Ollama, vLLM, llama.cpp) via [`gateway_kickstart/config_files/gateway_config.toml`](gateway_kickstart/config_files/gateway_config.toml).
 
 ### Quickstart (Mode 2)
 
@@ -91,6 +92,8 @@ cd swarm
 # 4. Stop the Gateway Server:
 ./gateway_kickstart/04_terminate_gateway.sh
 ```
+
+All configurations for Mode 2 are located in [`gateway_kickstart/config_files/`](gateway_kickstart/config_files).
 
 ---
 

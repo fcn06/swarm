@@ -13,6 +13,34 @@ Standalone, self-contained suite for building, launching, testing, and managing 
 
 ---
 
+## ⚙️ Target URL & Provider Configuration
+
+All gateway settings, default models, and provider target URLs are configured in [`config_files/gateway_config.toml`](config_files/gateway_config.toml):
+
+```toml
+[server]
+bind_address = "0.0.0.0:8080"
+log_level = "info"
+
+[models]
+default_model = "openai/gpt-oss-20b"
+
+[providers.groq]
+api_url = "https://api.groq.com/openai/v1/chat/completions"
+
+[providers.google]
+api_url = "https://generativelanguage.googleapis.com/v1beta/models"
+
+[providers.openai]
+api_url = "https://api.openai.com/v1/chat/completions"
+
+[providers.custom]
+# For local LLMs or custom proxies (Ollama / vLLM / llama.cpp / LocalAI)
+# api_url = "http://127.0.0.1:11434/v1/chat/completions"
+```
+
+---
+
 ## 📁 Directory Layout
 
 ```
@@ -23,7 +51,7 @@ swarm/gateway_kickstart/
 ├── 04_terminate_gateway.sh        # Stops the running gateway server
 ├── README.md                      # Documentation
 └── config_files/                  # Localized configuration & payload templates
-    ├── gateway_config.toml
+    ├── gateway_config.toml        # Server bind, default model & provider URLs
     ├── chat_completions_request.json
     ├── open_responses_request.json
     └── open_responses_followup_request.json
@@ -50,7 +78,7 @@ export OPENAI_API_KEY="sk-..."
 ```bash
 cd swarm
 
-# 1. Launch the Gateway Server (default port 8080):
+# 1. Launch the Gateway Server (configured via gateway_config.toml):
 ./gateway_kickstart/01_launch_gateway.sh
 
 # 2. Test Chat Completions:

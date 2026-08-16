@@ -16,7 +16,7 @@ session_timeout_seconds = 3600
 
 [models]
 # Default model to use when not specified in the client request
-default_model = "groq/llama-3.3-70b-versatile"
+default_model = "openai/gpt-oss-20b"
 
 [providers.groq]
 api_url = "https://api.groq.com/openai/v1/chat/completions"

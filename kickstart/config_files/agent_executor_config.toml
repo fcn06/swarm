@@ -1,0 +1,44 @@
+#################################################################
+# Config for A2A Executor Agent
+#################################################################
+
+#################################################################
+# General parameters
+#################################################################
+agent_id="Executor_Agent"
+agent_name="Executor_Agent"
+agent_http_endpoint="http://127.0.0.1:9580"
+agent_ws_endpoint="ws://127.0.0.1:9581"
+
+#################################################################
+# Discovery Service URL
+#################################################################
+agent_discovery_url="http://127.0.0.1:4000"
+agent_discoverable=false
+
+#################################################################
+# Purpose and high level skills
+#################################################################
+agent_system_prompt="""
+You are an executor agent that executes precisely the workflow that you are delegated.
+"""
+
+agent_skill_id="workflow_execution"
+agent_skill_name="Execute Strictly Defined Workflow"
+agent_skill_description="Receives a workflow definition as an input and executes it"
+agent_version="1.0.0"
+agent_description="An agent that only executes strictly defined workflows."
+agent_doc_url="/docs"
+agent_tags=["execute plan"]
+agent_examples=["execute this plan"]
+
+#################################################################
+# LLM Endpoint & Model
+#################################################################
+agent_model_id="openai/gpt-oss-20b"
+agent_llm_url="https://api.groq.com/openai/v1/chat/completions"
+
+#################################################################
+# MCP Runtime Configuration Path
+#################################################################
+agent_mcp_config_path="kickstart/config_files/mcp_runtime_config.toml"

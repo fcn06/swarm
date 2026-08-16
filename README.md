@@ -101,174 +101,134 @@ This modular and iterative structure enables the creation of sophisticated multi
 
 ---
 
-## **🚀 Quickstart: Launch Your First Swarm in 5 Minutes**
+## **🚀 Quickstart: Launch Swarm in 3 Simple Steps**
 
 ### Prerequisites
 
-1.  **Install Rust**: If you don't have it already, download and install it from [rust-lang.org](https://www.rust-lang.org/tools/install).
-2.  **Get an LLM API Key**: Swarm agents require an LLM to function. We recommend obtaining a free API key from [Groq](https://console.groq.com/keys) or [Google AI Studio (for Gemini)](https://aistudio.google.com/app/apikey). It can also connect to a local llama.cpp openai compatible server instance
+1. **Install Rust**: If you don't have it already, download and install it from [rust-lang.org](https://www.rust-lang.org/tools/install).
+2. **Get a Groq API Key**: Swarm agents use high-performance LLMs. Obtain a free API key from [Groq Console](https://console.groq.com/keys).
 
-### Step 1: Clone and Build the Project
+---
+
+### Step 1: Export Your API Key
+
+Set your Groq API key in your terminal:
 
 ```bash
-git clone https://github.com/fcn06/swarm.git
+export GROQ_API_KEY="gsk_your_groq_api_key_here"
+```
+
+*(The kickstart scripts automatically configure and propagate `GROQ_API_KEY` across all specialist agents, planner, and MCP runtime)*
+
+---
+
+### Step 2: Launch All Multi-Agent Services
+
+From the `swarm/` directory, launch the automated kickstart script:
+
+```bash
 cd swarm
-cargo build --release
+./kickstart/01_launch_all.sh
 ```
 
-### Step 2: Set Your LLM API Keys
+This single command:
+1. Verifies your GROQ API environment variables.
+2. Compiles all services and agents in release mode.
+3. Spawns and interconnects the full agent cluster in the background:
+   - **Discovery Service** (`http://127.0.0.1:4000`): Service discovery & registry.
+   - **Memory Service** (`http://127.0.0.1:5000`): Task state & conversational memory.
+   - **MCP Tools Server** (`http://127.0.0.1:8000/sse`): Serves `weather`, `customer`, `scrape`, and `search` tools.
+   - **Basic Domain Agent with MCP** (`http://127.0.0.1:8080`): A2A domain agent that executes MCP tools.
+   - **Planner Agent Orchestrator** (`http://127.0.0.1:8280`): Generates dynamic execution graphs.
+   - **Executor Agent** (`http://127.0.0.1:9580`): Executes planned workflows across agents.
 
-The quickstart demo utilizes LLMs for various agent roles. For simplicity, you can use the *same* API key for all roles, especially when starting with Groq.
+All configurations are localized in [`kickstart/config_files/`](file:///home/fred/Agents_Projects/Antigravity/agent_workspace/swarm/kickstart/config_files).
+
+---
+
+### Step 3: Run a Sample Query with MCP Tools
+
+In another terminal, test a real query:
 
 ```bash
-# Replace <YOUR-LLM-API-KEY> with your actual API key.
-# For the pre configured demo below, we use groq provider. ( https://groq.com/)
-export LLM_A2A_API_KEY=<YOUR-LLM-API-KEY>       # For general Agent-to-Agent communication
-export LLM_MCP_API_KEY=<YOUR-LLM-API-KEY>       # For Model Context Protocol interactions
-export LLM_JUDGE_API_KEY=<YOUR-LLM-API-KEY>     # For the LLM-as-a-Judge evaluation service
-export LLM_PLANNER_API_KEY=<YOUR-LLM-API-KEY>     # For the Planner Agent
+./kickstart/02_test_weather_query.sh
 ```
 
-### **Step 3: Explore Swarm's Power - Two Paths to Orchestration!**
-
-Swarm offers you two primary ways to experience its agent orchestration capabilities, both designed for quick experimentation. Think of them as two sides of the same coin, each with a dedicated quickstart script to get you up and running instantly.
-
-#### **Path 1: Workflow-Driven Orchestration (The Planner & Executor in Action)**
-
-This path showcases Swarm's robust workflow management, where a Planner Agent designs tasks and an Executor Agent brings them to life. You can either use a predefined "static" plan or witness the Planner dynamically generate a workflow based on your query and the available agents' skills.
-
-*   **Dynamic Workflow Generation:** This mode dynamically generates an execution plan based on your query and the skills of available agents. It highlights Swarm's adaptive planning capabilities.
-    ```bash
-    # This command must be run from the root of the swarm project
-    sh ./documentation/demo_planner_executor_management/run_all_commands.sh --dynamic-generation
-    ```
-
-    Once the agents are launched, to interact with them, you can use a simple A2A client, that passes the appropriate metadata to initiate workflow generation mechanism. You will need to adjust the port to your planner agent.
-    ```bash
-    ./target/release/simple_workflow_agent_client --port 9580 --log-level "warn" --generation-type "dynamic_generation" --user-query "Compare Bach and Vivaldi ?"
-    ```
-
-*   **Static Workflow (Default):** This executes a predefined workflow loaded from a JSON file. Ideal for predictable and repeatable processes.
-    ```bash
-    # This command must be run from the root of the swarm project
-    sh ./documentation/demo_planner_executor_management/run_all_commands.sh
-    ```
-As an illustration, here is what we can define in a JSON workflow :
-
-<p align="center" width="60%">
-    <img width="60%" src="./documentation/graph_visualizer/Workflow_Sample.png">
-</p>
-
-Which can be visually represented by :
-
-<p align="center" width="20%">
-    <img width="20%" src="./documentation/graph_visualizer/Graphical_Workflow_Representation.png">
-</p>
-
-**Important: Stopping Services for Path 1**
-After running the workflow-driven orchestration demo, use this command to stop all active agent processes:
+You can also pass custom queries:
 
 ```bash
-# This command must be run from the root of the swarm project
-sh ./documentation/demo_planner_executor_management/terminate_all_agents_process.sh
+./kickstart/02_test_weather_query.sh "What is the weather like in Boston ?"
+./kickstart/02_test_weather_query.sh "Compare Bach and Vivaldi ?"
 ```
 
-#### **Path 2: Agent Factory - Programmatic Agent Launch**
+**What happens behind the scenes:**
+1. The client sends your query to the **Planner Agent** (port 8280).
+2. The Planner dynamically creates an execution plan and routes the task to the **Basic Domain Agent** (port 8080).
+3. The Domain Agent connects to the **MCP Tools Server** (port 8000) to fetch live tool data (e.g. weather).
+4. The final synthesized answer is returned to your terminal.
 
-Dive into the heart of dynamic agent creation with the `AgentFactory`! This path lets you programmatically launch and manage agents on-the-fly, giving you the power to build flexible and scalable multi-agent systems where agents can be instantiated as needed. The `AgentFactory` seamlessly integrates with the **MCP Runtime**, ensuring newly created agents instantly become part of your Swarm ecosystem.
+---
 
-Here's a code snippet illustrating how to launch a "Basic_Agent" with `mcp_runtime` configuration:
+### Stopping the Services
 
-```rust
-      let agent_api_key = env::var("LLM_A2A_API_KEY").expect("LLM_A2A_API_KEY must be set");
-
-    let factory_mcp_runtime_config = FactoryMcpRuntimeConfig::builder()
-        .with_factory_mcp_llm_provider_url(LlmProviderUrl::Groq)
-        .with_factory_mcp_llm_provider_api_key(agent_api_key.clone())
-        .with_factory_mcp_llm_model_id("openai/gpt-oss-20b".to_string())
-        .with_factory_mcp_server_url("http://localhost:8000/sse".to_string())
-        .with_factory_mcp_server_api_key("".to_string())
-        .build().map_err(|e| anyhow::anyhow!("Failed to build FactoryMcpRuntimeConfig: {}", e))?;
-
-    let factory_agent_config = FactoryAgentConfig::builder()
-        .with_factory_agent_url("http://127.0.0.1:8080".to_string())
-        .with_factory_agent_type(AgentType::Specialist)
-        .with_factory_agent_domains(AgentDomain::General)
-        .with_factory_agent_name("Basic_Agent".to_string())
-        .with_factory_agent_id("Basic_Agent".to_string())
-        .with_factory_agent_description("An Agent that answer Basic Questions".to_string())
-        .with_factory_agent_llm_provider_url(LlmProviderUrl::Groq)
-        .with_factory_agent_llm_provider_api_key(agent_api_key)
-        .with_factory_agent_llm_model_id("openai/gpt-oss-20b".to_string())
-        .build().map_err(|e| anyhow::anyhow!("Failed to build FactoryAgentConfig: {}", e))?;
-
-    agent_factory.launch_agent_with_mcp(&factory_agent_config,&factory_mcp_runtime_config,AgentType::Specialist).await?;
-
-```
-
-**Quickstart Script for Agent Factory:** To get a taste of this dynamic agent creation, we've provided a script that launches a self-sustainable ecosystem with a Domain Agent, a Planner, and an Executor – all orchestrated by the Agent Factory.
+When you're finished, terminate all running background processes with:
 
 ```bash
-# Demo of Agent Factory. Will launch one Domain Agent ( with MCP), One Planner ( connected to agents, tools and tasks)
-# and one Executor
-sh ./documentation/demo_factory/run_all_commands.sh
+./kickstart/03_terminate_all.sh
 ```
 
-There is also another repository called **swarm_factory** [https://github.com/fcn06/swarm_factory](https://github.com/fcn06/swarm_factory) that demonstrate how you can use swarm to kickstart and manage an agent factory
+---
 
-This capability is essential for creating adaptive systems that can scale their workforce based on the tasks at hand, ensuring proper integration and communication through the **MCP Runtime**.
+## **🌐 Standalone Gateway Server (`swarm_server`)**
 
-**Important: Stopping Services for Path 2**
-After running the Agent Factory demo, use this command to stop all active agent processes:
-
-```bash
-# This command must be run from the root of the swarm project
-sh ./documentation/demo_factory/terminate_all_agents_process.sh
-```
-
-#### **Path 3: Running the Stateful Multi-Model Gateway Server (`swarm_server`)**
-
-This path launches the unified gateway server supporting both modern Open Responses (`/v1/responses`) and backward-compatible Chat Completions (`/v1/chat/completions`) with outbound adaptation for Google Gemini `/v1/interactions`.
+Swarm also provides a standalone gateway server supporting Open Responses (`/v1/responses`) and backward-compatible Chat Completions (`/v1/chat/completions`):
 
 ```bash
 # 1. Launch the gateway server
 cargo run --release --bin swarm_server -- --bind-address 0.0.0.0:8080
 
-# 2. In another terminal, test Open Responses endpoint (SSE streaming mode):
-curl -N -X POST http://127.0.0.1:8080/v1/responses \
+# 2. Test Open Responses (Stateful session):
+curl -X POST http://127.0.0.1:8080/v1/responses \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "gemini-2.0-flash",
+    "model": "groq/llama-3.3-70b-versatile",
     "input": "Explain the role of the Planner Agent in Swarm",
-    "stream": true
+    "stream": false
   }'
 
-# 3. Test backward-compatible OpenAI chat completions:
+# 3. Test OpenAI-compatible Chat Completions:
 curl -X POST http://127.0.0.1:8080/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "groq/llama-3.3-70b-versatile",
-    "messages": [{"role": "user", "content": "Hello from an IDE extension!"}]
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hello from an IDE extension!"
+      }
+    ]
   }'
 ```
 
 ---
 
-**Congratulations, you've just run your first swarm!**
+## **📁 Kickstart Directory Layout**
 
----
-
-## **💡 Other Examples**
-
-You can interact with your agent system through a UI , and will find examples in [./documentation/Sample_Scenarios/scenario_ui.txt](./documentation/Sample_Scenarios/scenario_ui.txt)
-
-<p align="center" width="60%">
-    <img width="60%" src="./documentation/Sample_Scenarios/UI_Chat_Agent_System.png">
-</p>
-
-You can find other real world scenarios in [./documentation/Sample_Scenarios/scenario_1.txt](./documentation/Sample_Scenarios/scenario_1.txt)
-
-You can find concrete example of workflow in [./documentation/Sample_Scenarios/mix_agent_tools_workflow.json](./documentation/Sample_Scenarios/mix_agent_tools_workflow.json)
+```
+swarm/kickstart/
+├── 01_launch_all.sh           # Builds and launches Discovery, Memory, MCP server, and Agents
+├── 02_test_weather_query.sh   # Sends queries to the planner agent and prints responses
+├── 03_terminate_all.sh        # Stops all background agent and service processes
+├── README.md                  # Detailed kickstart guide
+└── config_files/              # Agent and MCP runtime configuration files
+    ├── agent_basic_config.toml
+    ├── agent_planner_config.toml
+    ├── agent_executor_config.toml
+    ├── mcp_runtime_config.toml
+    ├── factory_config.toml
+    ├── mix_agent_tools_workflow.json
+    └── mix_agent_tools_workflow_with_email_step.json
+```
 
 ---
 

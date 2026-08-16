@@ -422,9 +422,29 @@ impl PlannerAgent {
     }
 
     fn extract_json_from_response(&self, response: &str) -> Result<String> {
-        // The markdown block should already be removed by llm_api::chat::remove_think_tags
-        // so we just need to parse the response as a JSON string.
-        Ok(response.trim().to_string())
+        let trimmed = response.trim();
+
+        // 1. If wrapped in markdown code fence: ```json ... ``` or ``` ... ```
+        if let Some(start) = trimmed.find("```json") {
+            let after_start = &trimmed[start + 7..];
+            if let Some(end) = after_start.rfind("```") {
+                return Ok(after_start[..end].trim().to_string());
+            }
+        } else if let Some(start) = trimmed.find("```") {
+            let after_start = &trimmed[start + 3..];
+            if let Some(end) = after_start.rfind("```") {
+                return Ok(after_start[..end].trim().to_string());
+            }
+        }
+
+        // 2. Find outermost balanced or first/last { and }
+        if let (Some(first_brace), Some(last_brace)) = (trimmed.find('{'), trimmed.rfind('}')) {
+            if first_brace <= last_brace {
+                return Ok(trimmed[first_brace..=last_brace].trim().to_string());
+            }
+        }
+
+        Ok(trimmed.to_string())
     }
 
     fn determine_planning_strategy(&self, metadata: &Option<Map<String, Value>>) -> Result<PlanningStrategy> {

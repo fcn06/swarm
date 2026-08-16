@@ -1,0 +1,62 @@
+#################################################################
+# Config for A2A Planner Agent
+#################################################################
+
+#################################################################
+# General parameters
+#################################################################
+agent_id="Planner_Agent"
+agent_name="Planner_Agent"
+agent_http_endpoint="http://127.0.0.1:8280"
+agent_ws_endpoint="ws://127.0.0.1:8281"
+
+#################################################################
+# Discovery Service & Executor Agent URLs
+#################################################################
+agent_discovery_url="http://127.0.0.1:4000"
+agent_discoverable=false
+agent_executor_url="http://127.0.0.1:9580"
+
+#################################################################
+# Purpose and high level skills
+#################################################################
+agent_system_prompt="""
+You are an expert workflow generation AI. Your mission is to create highly efficient, well-structured, and accurate JSON workflow definitions for multi-agent systems. You have access to a specific set of agents, tools, and tasks. Your outputs must strictly adhere to the provided JSON schema and the following rules.
+
+1. Maximize Agent Autonomy 🤝:
+When an agent (e.g., Basic_Agent) has the inherent capability and tools to perform a sequence of related operations, consolidate these steps into a single delegation_agent activity.
+Empower agents to handle their own internal logic and tool orchestration. Don't break a single logical action into multiple steps if one agent can handle it.
+For example, if an agent can extract a location from a user request and then use that location with a weather tool, define this as a single delegation_agent activity.
+
+2. Use agent_context for Dynamic Data 🧩:
+NEVER embed variable references ({{...}}) directly into the description field. description is for a static, human-readable summary.
+All dynamic data, especially outputs from previous activities, MUST be passed to a delegation_agent via its agent_context field. The agent will handle the processing internally.
+
+3. Ensure Clear Dependencies 🔗:
+Always specify dependencies correctly to reflect the execution and data flow.
+If an activity relies on the output of a preceding activity, that dependency must be explicitly listed.
+
+4. Be Concise & Accurate 🎯:
+Keep activity description fields brief and focused on the objective.
+Ensure all tool and agent IDs are from the provided list.
+"""
+
+agent_skill_id="workflow_generation"
+agent_skill_name="Create Dynamic Workflows for Multi-Agent Systems"
+agent_skill_description="Receives a user query and generates a complete, valid JSON workflow plan."
+agent_version="1.0.0"
+agent_description="An agent that creates workflows to be executed by an executor agent."
+agent_doc_url="/docs"
+agent_tags=["plan dynamic workflow"]
+agent_examples=["plan this workflow"]
+
+#################################################################
+# LLM Endpoint & Model
+#################################################################
+agent_model_id="openai/gpt-oss-20b"
+agent_llm_url="https://api.groq.com/openai/v1/chat/completions"
+
+#################################################################
+# MCP Runtime Configuration Path (if needed)
+#################################################################
+agent_mcp_config_path="kickstart/config_files/mcp_runtime_config.toml"

@@ -143,22 +143,31 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     match serde_json::from_str::<Value>(&text) {
                         Ok(Value::Object(map)) => {
                             if let Some(text_value) = map.get("text_response") {
-                                if let Some(s) = text_value.as_str() {
-                                    // Remove any leading/trailing quotes that might be part of the string value itself
-                                    let cleaned_s = s.trim_matches('"');
-                                    println!("  {}", cleaned_s);
-                                } else {
-                                    println!("  [Non-string text_response value] {}", text_value);
+                                match text_value {
+                                    Value::String(s) => {
+                                        let cleaned_s = s.trim_matches('"').replace("\\n", "\n");
+                                        println!("  {}", cleaned_s);
+                                    },
+                                    Value::Array(arr) => {
+                                        for item in arr {
+                                            if let Some(txt) = item.get("text").and_then(Value::as_str) {
+                                                println!("  {}", txt);
+                                            } else {
+                                                println!("  {}", item);
+                                            }
+                                        }
+                                    },
+                                    _ => println!("  {}", text_value),
                                 }
                             } else {
-                                println!("  [JSON object without text_response] {}", text);
+                                println!("  {}", text);
                             }
                         },
                         Ok(Value::String(s)) => {
-                            let cleaned_s = s.trim_matches('"');
-                            println!("{}", cleaned_s);
+                            let cleaned_s = s.trim_matches('"').replace("\\n", "\n");
+                            println!("  {}", cleaned_s);
                         }
-                        _ => println!("  {}", text), // Not a JSON object with text_response or a simple JSON string
+                        _ => println!("  {}", text),
                     }
                 },
                 _ => println!("  [Non-text content]"),

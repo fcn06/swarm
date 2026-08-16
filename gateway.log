@@ -1,5 +1,5 @@
 ✔ Loaded Gateway Configuration from: /home/fred/Agents_Projects/Antigravity/agent_workspace/swarm/kickstart/gateway_kickstart/config_files/gateway_config.toml
-[2m2026-08-16T20:47:47.814026Z[0m [32m INFO[0m [2mswarm_server[0m[2m:[0m Starting Swarm Gateway Server on 0.0.0.0:8080
+[2m2026-08-16T20:50:31.307030Z[0m [32m INFO[0m [2mswarm_server[0m[2m:[0m Starting Swarm Gateway Server on 0.0.0.0:8080
 ╔════════════════════════════════════════════════════════════════╗
 ║       🌐 fcn06/swarm Multi-Agent Gateway Server Running       ║
 ╠════════════════════════════════════════════════════════════════╣
@@ -8,4 +8,4 @@
 ║ • In-Memory Session Storage: Active                            ║
 ║ • Config File:               /home/fred/Agents_Projects/Antigravity/agent_workspace/swarm/kickstart/gateway_kickstart/config_files/gateway_config.toml ║
 ╚════════════════════════════════════════════════════════════════╝
-[2m2026-08-16T20:47:47.814163Z[0m [32m INFO[0m [2magent_core::server::gateway_server[0m[2m:[0m 🚀 Swarm Gateway Server running on 0.0.0.0:8080
+[2m2026-08-16T20:50:31.307132Z[0m [32m INFO[0m [2magent_core::server::gateway_server[0m[2m:[0m 🚀 Swarm Gateway Server running on 0.0.0.0:8080

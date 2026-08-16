@@ -1,5 +1,10 @@
 # 🚀 Swarm: Intelligent Multi-Agent Framework & Model Gateway in Rust 🦀
 
+
+[![Rust](https://img.shields.io/badge/Rust-1.88-orange?logo=rust)](https://www.rust-lang.org)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue)](LICENSE)
+[![MCP](https://img.shields.io/badge/MCP-SSE%20%2B%20Streamable-purple)](https://modelcontextprotocol.io)
+
 > **Swarm** is a high-performance Rust framework designed to build, coordinate, and orchestrate intelligent AI agents. It operates in **two distinct modes**:
 >
 > 1. **🤖 Multi-Agent Orchestration & Tool Execution Mode**: Orchestrates collaborative agent networks (Planner, Executor, Domain Agents) with real-time MCP tools, service discovery, shared memory, and optional LLM-as-a-Judge evaluation.

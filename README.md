@@ -1,187 +1,80 @@
-# 🚀 Swarm: A Framework for Building and Orchestrating Intelligent Agents in Rust 🦀
+# 🚀 Swarm: Intelligent Multi-Agent Framework & Model Gateway in Rust 🦀
 
-> **Swarm** is a Rust framework for creating and managing a network of specialized, intelligent agents that collaborate through flexible workflows. It acts as a central nervous system and multi-model gateway for your digital workforce, allowing you to orchestrate complex tasks, either by executing predefined plans, generating them dynamically, or serving as a high-performance stateful proxy between IDEs/clients and upstream model platforms.
+> **Swarm** is a high-performance Rust framework designed to build, coordinate, and orchestrate intelligent AI agents. It operates in **two distinct modes**:
+>
+> 1. **🤖 Multi-Agent Orchestration & Tool Execution Mode**: Orchestrates collaborative agent networks (Planner, Executor, Domain Agents) with real-time MCP tools, service discovery, shared memory, and optional LLM-as-a-Judge evaluation.
+> 2. **🌐 Model Gateway Server Mode**: Serves as a unified high-performance gateway supporting standard OpenAI-compatible `/v1/chat/completions` (for IDEs and extensions) and stateful multi-turn `/v1/responses` (Open Responses standard).
 
-*   **Self-Correcting Workflows:** Automated planning and execution, refined through a built-in LLM-as-a-Judge evaluation system.
-*   **Dual-Mode Gateway (`swarm_server`):** Native support for the Open Responses specification (`POST /v1/responses`) alongside stateless backward-compatibility (`POST /v1/chat/completions`) and outbound Google `/v1/interactions`.
-*   **Dynamic Scaling:** Use the Agent Factory to programmatically instantiate and manage specialist agents at runtime.
-*   **Open Standards Focus:** Built around the Model Context Protocol (MCP), Agent-to-Agent (A2A), and Open Responses protocols for robust, interoperable communication.
+---
 
-<p align="center" width="60%">
-    <img width="60%" src="./documentation/illustrations/Swarm_Agent_Factory_Illustration.png">
-</p>
-
-## **1. Target Architecture & Data Flow**
+## 🧭 Swarm at a Glance: Two Operating Modes
 
 ```
 +--------------------------------------------------------------------------------------------------+
-|                                  CLIENT LAYER (IDE / EDITORS)                                    |
-|   Stateless IDE Extensions (POST /v1/chat/completions)  |  Modern Agent SDKs (POST /v1/responses)  |
-+-------------------------------------------+------------------------------------------------------+
-                                            |
-                                            v
+|                                        SWARM MODES                                               |
 +--------------------------------------------------------------------------------------------------+
-|                                    fcn06/swarm (GATEWAY ENGINE)                                  |
 |                                                                                                  |
-|  1. INBOUND ADAPTERS                                                                             |
-|     • POST /v1/chat/completions (Normalized to internal ResponseItem)                           |
-|     • POST /v1/responses        (Native Open Responses format)                               |
+|   MODE 1: MULTI-AGENT & MCP ORCHESTRATION               MODE 2: MODEL GATEWAY SERVER             |
+|   (kickstart/)                                          (gateway_kickstart/)                     |
 |                                                                                                  |
-|  2. CORE SESSION & STATE ENGINE (SessionStore)                                                   |
-|     • Session mapping & prefix KV cache optimization                                             |
-|     • Polymorphic ResponseItem state (Message, FunctionCall, FunctionOutput, Thought)            |
+|   • Planner Agent (Dynamic plan generation)             • POST /v1/chat/completions (OpenAI)     |
+|   • Executor Agent (Workflow DAG execution)             • POST /v1/responses (Open Responses)   |
+|   • Domain Specialists with MCP Tool integration        • Stateful multi-turn turn chaining      |
+|   • Discovery (4000) & Memory (5000) services           • Outbound model adaptors (Groq, Gemini) |
+|   • Optional LLM-as-a-Judge self-correction             • High-throughput lock-free cache        |
 |                                                                                                  |
-|  3. AGENT ORCHESTRATOR & LOCAL MCP ENGINE                                                        |
-|     • Rust agent execution loop (Planner -> Executor -> Judge)                                  |
-|     • Direct MCP tool execution (stdio/SSE)                                                      |
-|                                                                                                  |
-|  4. OUTBOUND ADAPTER LAYER (swarm_commons::llm_api)                                             |
-|     • Converts ResponseItem state to downstream target protocol schemas                        |
-+-------------------┬──────────────────────────────────┬───────────────────────────────────┤
-                    │                                  │                                   │
-                    v                                  v                                   v
-        POST /v1/chat/completions              POST /v1/responses                  POST /v1/interactions
-  (Corporate Proxies)                          (OpenAI Upstream)                   (Google Gemini Platform)
++--------------------------------------------------------------------------------------------------+
 ```
 
 ---
 
-## **🌐 Swarm Gateway Server (`swarm_server`)**
+## 📦 Prerequisites
 
-> **Note**: These architectural changes (Open Responses specification, stateful turn tracking with `SessionStore`, and outbound adapters) will enable Swarm to act as a unified, high-performance **model gateway** to various models (Google Gemini, OpenAI, Groq, local LLMs, and internal specialist agents) pretty soon.
-
-Swarm includes a standalone high-performance gateway executable (`swarm_server`) designed to bridge client applications, IDEs, and upstream model providers with unified state management:
-
-* **Open Responses (`POST /v1/responses`)**:
-  - Implements the Open Responses specification with SSE streaming (`response.item` and `[DONE]`) and JSON responses.
-  - Multi-turn conversation state chaining via `previous_response_id`.
-* **Chat Completions Normalization (`POST /v1/chat/completions`)**:
-  - Transparently normalizes standard OpenAI chat completion payloads into polymorphic `ResponseItem` instances, providing full backward compatibility for IDE plugins and client SDKs.
-* **Google Interactions Adapter (`POST /v1/interactions`)**:
-  - Upstream provider adapter translating conversation state and function calls into Gemini wire formats preserving `previous_interaction_id`.
-* **In-Memory State (`SessionStore`)**:
-  - Thread-safe, lock-free session cache tracking full message history, reasoning traces, function calls, and tool outputs.
-
-### Launching the Gateway Server
-
-```bash
-# Build and launch swarm_server on port 8080
-cargo run --release --bin swarm_server -- --bind-address 0.0.0.0:8080 --log-level info
-```
+1. **Install Rust**: [rust-lang.org](https://www.rust-lang.org/tools/install).
+2. **Set your Groq API Key**:
+   ```bash
+   export GROQ_API_KEY="gsk_your_groq_api_key_here"
+   ```
 
 ---
 
-## **Why Swarm?**
+## 🤖 Mode 1: Multi-Agent & MCP Orchestration
 
-Building multi-agent systems is complex... Swarm simplifies this by providing the backbone for agents to collaborate seamlessly, allowing you to focus on building intelligent solutions, not on the plumbing. Built in Rust, Swarm delivers the memory safety, concurrency, and performance essential for scalable, production-grade AI services.
+In this mode, Swarm coordinates specialized agents that dynamically collaborate to solve user requests using live tools:
 
----
+- **Planner Agent (Port 8280)**: Analyzes the user request and dynamically constructs an execution workflow.
+- **Executor Agent (Port 9580)**: Executes each step in the workflow graph with dependency resolution.
+- **Domain Agent (Port 8080)**: Specialist agent equipped with the **MCP Runtime** to execute tools (Weather, Customer, Wikipedia search, Scraping).
+- **MCP Server (Port 8000)**: Model Context Protocol SSE server providing live tools.
+- **Discovery (Port 4000) & Memory (Port 5000)**: Centralized agent registry and conversational context store.
 
-## **How It Works**
-
-
-Swarm's architecture is designed around a collaborative "conductor" and "specialist" model, facilitating efficient execution of complex tasks:
-
-1.  **User Request & Planning (Planner Agent - The Conductor, Part 1):**
-    *   A user initiates a request, which is received by the **Planner Agent** (or an **Agent Factory** can directly launch an agent to handle the request).
-    *   The Planner Agent, acting as the primary orchestrator, determines the optimal course of action. It can:
-        *   Load a predefined plan ("static workflow") from a JSON file.
-        *   Dynamically generate a new plan ("dynamic workflow") by evaluating the capabilities of available **Domain Agents, Tools, or Tasks** (or by instructing an **Agent Factory** to instantiate the necessary agents).
-    *   Once a plan is established, it is passed to the **Executor Agent**.
-
-2.  **Execution & Evaluation (Executor Agent - The Doer; Planner Agent - The Conductor, Part 2):**
-    *   The **Executor Agent** receives the plan from the Planner Agent and meticulously executes each step. This involves coordinating with **Domain Agents** and utilizing various tools through the **MCP Runtime**. The Executor Agent reports the outcome of the execution back to the Planner Agent.
-    *   For **dynamic plans**, the **Planner Agent** then takes this outcome and, using an integrated **LLM-as-a-Judge** system via the **Evaluation Service** (provided by `swarm_services`), critically assesses the execution's success. If the evaluation score is unsatisfactory, the Planner Agent can leverage this feedback to refine the plan, potentially regenerating and re-executing an improved workflow. This creates a powerful feedback loop for continuous improvement in dynamic scenarios.
-
-3.  **Specialized Task Handling (Domain Agents - The Specialists):**
-    *   **Domain Agents** are the core "workers," each specializing in a particular domain (e.g., customer care, weather forecasting, data analysis).
-    *   Each Domain Agent is powered by its own Large Language Model (LLM) and equipped with a dedicated set of tools to accomplish its specific tasks, responding to directives from the Executor Agent.
-
-This modular and iterative structure enables the creation of sophisticated multi-agent systems where a central orchestrator efficiently delegates, executes, and refines tasks through a team of specialized, intelligent agents.
-
----
-
-## **🚀 Quickstart: Launch Swarm in 3 Simple Steps**
-
-### Prerequisites
-
-1. **Install Rust**: If you don't have it already, download and install it from [rust-lang.org](https://www.rust-lang.org/tools/install).
-2. **Get a Groq API Key**: Swarm agents use high-performance LLMs. Obtain a free API key from [Groq Console](https://console.groq.com/keys).
-
----
-
-### Step 1: Export Your API Key
-
-Set your Groq API key in your terminal:
-
-```bash
-export GROQ_API_KEY="gsk_your_groq_api_key_here"
-```
-
-*(The kickstart scripts automatically configure and propagate `GROQ_API_KEY` across all specialist agents, planner, and MCP runtime)*
-
----
-
-### Step 2: Launch All Multi-Agent Services
-
-From the `swarm/` directory, launch the automated kickstart script:
+### Quickstart (Mode 1)
 
 ```bash
 cd swarm
+
+# 1. Launch all agents, MCP server, and infrastructure services:
 ./kickstart/01_launch_all.sh
-```
 
-This single command:
-1. Verifies your GROQ API environment variables.
-2. Compiles all services and agents in release mode.
-3. Spawns and interconnects the full agent cluster in the background:
-   - **Discovery Service** (`http://127.0.0.1:4000`): Service discovery & registry.
-   - **Memory Service** (`http://127.0.0.1:5000`): Task state & conversational memory.
-   - **MCP Tools Server** (`http://127.0.0.1:8000/sse`): Serves `weather`, `customer`, `scrape`, and `search` tools.
-   - **Basic Domain Agent with MCP** (`http://127.0.0.1:8080`): A2A domain agent that executes MCP tools.
-   - **Planner Agent Orchestrator** (`http://127.0.0.1:8280`): Generates dynamic execution graphs.
-   - **Executor Agent** (`http://127.0.0.1:9580`): Executes planned workflows across agents.
+# 2. Run a sample query (e.g., Live Weather via MCP):
+./kickstart/02_test_weather_query.sh "What is the current weather in Boston ?"
 
-All configurations are localized in [`kickstart/config_files/`](file:///home/fred/Agents_Projects/Antigravity/agent_workspace/swarm/kickstart/config_files).
-
----
-
-### Step 3: Run a Sample Query with MCP Tools
-
-In another terminal, test a real query:
-
-```bash
-./kickstart/02_test_weather_query.sh
-```
-
-You can also pass custom queries:
-
-```bash
-./kickstart/02_test_weather_query.sh "What is the weather like in Boston ?"
-./kickstart/02_test_weather_query.sh "Compare Bach and Vivaldi ?"
-```
-
-**What happens behind the scenes:**
-1. The client sends your query to the **Planner Agent** (port 8280).
-2. The Planner dynamically creates an execution plan and routes the task to the **Basic Domain Agent** (port 8080).
-3. The Domain Agent connects to the **MCP Tools Server** (port 8000) to fetch live tool data (e.g. weather).
-4. The final synthesized answer is returned to your terminal.
-
----
-
-### Stopping the Services
-
-When you're finished, terminate all running background processes with:
-
-```bash
+# 3. Stop all background processes when done:
 ./kickstart/03_terminate_all.sh
 ```
 
+All configurations for Mode 1 are located in [`kickstart/config_files/`](kickstart/config_files).
+
 ---
 
-## **🌐 Standalone Gateway Server (`swarm_server`)**
+## 🌐 Mode 2: Standalone Model Gateway Server
 
-Swarm also provides a standalone model gateway server supporting Open Responses (`/v1/responses`) and backward-compatible Chat Completions (`/v1/chat/completions`) with dedicated scripts in [`gateway_kickstart/`](file:///home/fred/Agents_Projects/Antigravity/agent_workspace/swarm/gateway_kickstart):
+In this mode, `swarm_server` acts as a unified model gateway for client applications, IDEs, and developer tools:
+
+- **OpenAI-Compatible Chat Completions (`POST /v1/chat/completions`)**: Backward-compatible with standard developer tools, IDE extensions, and OpenAI SDKs.
+- **Open Responses Standard (`POST /v1/responses`)**: Modern stateful API with multi-turn conversation chaining (`previous_response_id`) and SSE streaming.
+
+### Quickstart (Mode 2)
 
 ```bash
 cd swarm
@@ -189,10 +82,10 @@ cd swarm
 # 1. Launch the standalone Gateway Server (port 8080):
 ./gateway_kickstart/01_launch_gateway.sh
 
-# 2. Test OpenAI-compatible Chat Completions (/v1/chat/completions):
-./gateway_kickstart/02_test_chat_completions.sh "Explain the role of the Planner Agent in Swarm"
+# 2. Test Chat Completions:
+./gateway_kickstart/02_test_chat_completions.sh "Explain Swarm architecture in 2 sentences"
 
-# 3. Test Open Responses multi-turn stateful session (/v1/responses):
+# 3. Test Stateful Multi-Turn Open Responses:
 ./gateway_kickstart/03_test_open_responses.sh
 
 # 4. Stop the Gateway Server:
@@ -201,95 +94,63 @@ cd swarm
 
 ---
 
-## **📁 Kickstart Directories Layout**
+## 📁 Directory Structure
 
-### 1. Multi-Agent & MCP Orchestrator (`kickstart/`)
 ```
-swarm/kickstart/
-├── 01_launch_all.sh           # Builds and launches Discovery, Memory, MCP server, and Agents
-├── 02_test_weather_query.sh   # Sends queries to the planner agent and prints responses
-├── 03_terminate_all.sh        # Stops all background agent and service processes
-├── README.md                  # Detailed kickstart guide
-└── config_files/              # Agent and MCP runtime configuration files
-    ├── agent_basic_config.toml
-    ├── agent_planner_config.toml
-    ├── agent_executor_config.toml
-    ├── mcp_runtime_config.toml
-    ├── factory_config.toml
-    ├── mix_agent_tools_workflow.json
-    └── mix_agent_tools_workflow_with_email_step.json
-```
-
-### 2. Standalone Gateway Server (`gateway_kickstart/`)
-```
-swarm/gateway_kickstart/
-├── 01_launch_gateway.sh           # Builds and starts swarm_server on port 8080
-├── 02_test_chat_completions.sh    # Sends test request to /v1/chat/completions
-├── 03_test_open_responses.sh      # Sends stateful multi-turn request to /v1/responses
-├── 04_terminate_gateway.sh        # Stops the gateway server
-└── README.md                      # Gateway documentation
+swarm/
+├── kickstart/                 # Mode 1: Multi-Agent & MCP Launch Suite
+│   ├── 01_launch_all.sh
+│   ├── 02_test_weather_query.sh
+│   ├── 03_terminate_all.sh
+│   ├── README.md
+│   └── config_files/          # Localized agent & MCP configurations
+│
+├── gateway_kickstart/         # Mode 2: Standalone Gateway Launch Suite
+│   ├── 01_launch_gateway.sh
+│   ├── 02_test_chat_completions.sh
+│   ├── 03_test_open_responses.sh
+│   ├── 04_terminate_gateway.sh
+│   └── README.md
+│
+├── basic_agent/               # Specialist domain agent embedding MCP runtime
+├── planner_agent/             # Workflow planner and orchestrator
+├── executor_agent/            # Workflow graph executor
+├── agent_factory/             # Dynamic agent instantiation runtime
+└── examples/                  # Example MCP servers and standalone runners
 ```
 
 ---
 
-## **💡 Core Components of Swarm**
+## 💡 Core Architecture
 
-Swarm leverages a modular architecture, building upon shared foundational crates and dedicated infrastructure services to enable robust multi-agent systems.
-
-### Foundational Building Blocks (from `swarm_commons`)
-For core abstractions, common models, configuration, and LLM interaction, Swarm relies on the `swarm_commons` project.
-*   **Agent Core Logic:** Fundamental traits and business logic for agents.
-*   **Agent Models:** Shared data structures for communication and state.
-*   **Configuration:** Centralized management of settings and prompts.
-*   **LLM API Integration:** Standardized interfaces for interacting with Large Language Models.
-[Learn more about Swarm Commons here.](./codebase/swarm_commons/README.md)
-
-### Core Infrastructure Services (from `swarm_services`)
-For essential backend functionalities that enable agents to collaborate, discover each other, manage memory, and evaluate performance, Swarm integrates with `swarm_services`.
-*   **Agent Discovery Service:** Enables agents to register and discover others.
-*   **Agent Memory Service:** Manages shared conversational history and context.
-*   **Agent Evaluation Service (LLM as a Judge):** Critically assesses agent performance and workflow outcomes.
-*   **Agent Service Adapters:** Client implementations for agents to interact with these services.
-[Learn more about Swarm Services here.](./codebase/swarm_services/README.md)
-
-
-### Orchestration & Logic (The Brains - within `Swarm` itself)
-*   **✍️ Planner Agent (The Architect):** This specialized agent is the first part of the "Conductor." It focuses on generating detailed, step-by-step execution plans or workflows based on a high-level goal, which are then passed to the Executor Agent.
-*   **🔗 Workflow Mgmt Runtime (The Engine):** This flexible core is responsible for defining, validating, and executing multi-agent workflows and plans. It is the underlying mechanism leveraged by the Executor Agent to manage the execution of planned tasks.
-
-### Execution & Agent Types (The Body - within `Swarm` itself)
-*   **🏃 Executor Agent (The Doer):** Completing the "Conductor" role, this agent takes an execution plan from the Planner, carries out the individual tasks by interacting with tools and other agents, and integrates with the LLM-as-a-Judge system (via `swarm_services`) for continuous evaluation and potential workflow refinement.
-*   **🏭 Agent Factory (The Spawner):** This component allows for the dynamic, programmatic creation and management of agent instances at runtime, facilitating scalable and adaptive multi-agent systems.
-*   **🗣️ Domain Agents (The Specialists):** These are specialized agents, each acting as an expert in a particular domain (e.g., weather forecasting, database queries, customer care). They execute specific tasks as directed by the Executor Agent.
-*   **🛠️ MCP Runtime (The Bridge):** This component facilitates seamless agent interaction with external services, tools, and diverse data sources, effectively extending the agents' capabilities to the outside world.
+* **`swarm_commons`**: Shared core traits, A2A interaction protocols, LLM adapters, and state stores.
+* **`swarm_services`**: Microservices providing Agent Discovery, Shared Memory, and LLM-as-a-Judge Evaluation.
+* **`swarm`**: Core orchestration engines, specialist agents, and the unified gateway server.
 
 ---
 
-## **🗺️ Roadmap & Contributing**
+## 🗺️ Roadmap & Contributing
 
-Swarm is an active project, and we are constantly working on improvements. Our roadmap includes:
+- [x] Multi-Agent dynamic workflow planning and execution.
+- [x] Model Context Protocol (MCP) tool integration.
+- [x] Open Responses (`/v1/responses`) stateful turn chaining.
+- [x] OpenAI-compatible (`/v1/chat/completions`) endpoint.
+- [ ] Multi-provider load balancing and fallback routing (Gemini, Groq, OpenAI, Ollama).
+- [ ] Distributed Self-Sovereign Identity (SSI) agent authentication.
 
-*   **Full Model Gateway Support:** Expanding `swarm_server` into a full-fledged model gateway to seamlessly route, load balance, and state-track calls across heterogeneous LLMs (Gemini, OpenAI, Anthropic, Groq, Ollama, and local models).
-*   **Enhanced Workflow Features:** More advanced conditional logic and branching.
-*   **Create an Identity Agent, using Self Sovereign Identity:** This agent would be able to sign a request, validate a signed request, pass the validated request to another agent for execution. Probably will be in a separate and dedicated crate.
-*   **Improved Observability:** Better logging, tracing, and monitoring.
-*   **Broader LLM Integration:** Compatibility with a wider range of LLMs and tool calling protocols.
-
-### **🤝 How to Contribute**
-
-We welcome contributions! Whether you're a developer, a writer, or have a great idea, we'd love to have you. The best way to start is by opening an issue to discuss your ideas.
+We welcome contributions! Feel free to open issues or pull requests.
 
 ---
 
-## **⭐ Show Your Support**
+## ⭐ Show Your Support
 
 If you find Swarm useful, please consider starring our repository! Your support helps us grow.
 
 ---
 
-## **🙏 Special Thanks**
+## 🙏 Special Thanks
 
 We rely on the fantastic work of these actively developed crates:
 
-*   **MCP Protocol:** [https://github.com/modelcontextprotocol/rust-sdk](https://github.com/modelcontextprotocol/rust-sdk)
-*   **A2A Protocol:** [https://github.com/EmilLindfors/a2a-rs](https://github.com/EmilLindfors/a2a-rs)
+* **MCP Protocol:** [https://github.com/modelcontextprotocol/rust-sdk](https://github.com/modelcontextprotocol/rust-sdk)
+* **A2A Protocol:** [https://github.com/EmilLindfors/a2a-rs](https://github.com/EmilLindfors/a2a-rs)

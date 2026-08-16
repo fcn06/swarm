@@ -6,7 +6,6 @@ use agent_core::business_logic::mcp_runtime::McpRuntimeDetails;
 
 use llm_api::chat::ChatLlmInteraction;
 use std::sync::Arc;
-use tokio::sync::Mutex;
 
 use tracing::debug;
 
@@ -26,7 +25,7 @@ use agent_core::business_logic::services::WorkflowServiceApi;
 #[derive(Clone)]
 pub struct BasicAgent {
     llm_interaction: ChatLlmInteraction,
-    mcp_agent: Option<Arc<Mutex<McpAgent>>>,
+    mcp_agent: Option<Arc<McpAgent>>,
 }
 
 #[async_trait]
@@ -49,7 +48,7 @@ impl Agent for BasicAgent {
 
         let mcp_agent = if let Some(details) = mcp_runtime_details {
             let mcp_agent = McpAgent::new(details.config, Some(details.api_key)).await?;
-            Some(Arc::new(Mutex::new(mcp_agent)))
+            Some(Arc::new(mcp_agent))
         } else {
             None
         };
@@ -88,23 +87,17 @@ impl Agent for BasicAgent {
         };
 
         // Use MCP LLM to answer if there is a MCP runtime, Agent LLM otherwise 
-        let response = if self.mcp_agent.is_none() {
+        let response = if let Some(ref agent) = self.mcp_agent {
+            agent.run_agent_internal(llm_msg).await?
+        } else {
             self.llm_interaction
                 .call_api_simple("user".to_string(), user_query)
-                .await
-                .unwrap()
-        } else {
-            let mut locked_mcp_agent = self.mcp_agent.as_ref().unwrap().lock().await;
-            locked_mcp_agent
-                .run_agent_internal(llm_msg)
-                .await
-                .unwrap()
+                .await?
         };
 
         let llm_content = response
-            .expect("No Return from LLM")
-            .content
-            .expect("Empty result from Llm");
+            .and_then(|m| m.content)
+            .unwrap_or_else(|| "Empty result from LLM".to_string());
 
         let output_value = match serde_json::from_str::<Value>(&llm_content) {
             Ok(json_val) => json_val,

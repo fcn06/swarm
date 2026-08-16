@@ -123,7 +123,10 @@ impl Agent for ExecutorAgent {
             Ok((execution_outcome, _activities_outcome)) => {
                 debug!("\nWorkflow execution completed successfully. Outcome : {}\n", execution_outcome);
 
-                let parsed_outcome: Value = serde_json::from_str(&execution_outcome)?;
+                let parsed_outcome: Value = match serde_json::from_str(&execution_outcome) {
+                    Ok(v) => v,
+                    Err(_) => Value::String(execution_outcome),
+                };
 
                 Ok(ExecutionResult {
                     request_id: Uuid::new_v4().to_string(), // Generate a new UUID

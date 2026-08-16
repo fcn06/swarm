@@ -16,3 +16,7 @@ target
 Cargo.lock
 GEMINI.md
 # documentation/
+.env
+*.env
+.env.*
+!.env.example

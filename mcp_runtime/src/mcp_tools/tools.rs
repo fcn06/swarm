@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 use rmcp::model::Tool as RmcpTool; // Alias for clarity
 
 use llm_api::tools::{FunctionDefinition, FunctionParameters, Tool};
@@ -23,38 +23,45 @@ use serde_json::{Map, Value};
 /// Currently, the `required` field in `FunctionParameters` is always set to `None`.
 /// Future improvements could involve parsing the `input_schema` to determine required parameters.
 pub fn define_all_tools(rmcp_tools: Vec<RmcpTool>) -> Result<Vec<Tool>> {
-    rmcp_tools
-        .into_iter()
-        .map(|tool| {
-            let tool_name = tool.name.to_string(); // Get name early for potential error context
-            let description = tool
-                .description
-                .ok_or_else(|| {
-                    anyhow::anyhow!("Tool description is missing for tool '{}'", tool_name)
-                })?
-                .to_string(); // Convert Arc<str> to String
+    let mut tools = Vec::new();
 
-            // Clone the input schema map directly
-            let properties_map: Map<String, Value> = tool.input_schema.as_ref().clone();
+    for tool in rmcp_tools {
+        let tool_name = tool.name.to_string();
+        if tool_name.is_empty() {
+            continue;
+        }
 
-            let properties = properties_map.get("properties");
-            //println!("Properties : {:#?}", properties);
+        let description = tool
+            .description
+            .as_ref()
+            .map(|d| d.to_string())
+            .unwrap_or_else(|| format!("Execute {}", tool_name));
 
-            Ok(Tool {
-                r#type: "function".to_string(),
-                function: FunctionDefinition {
-                    name: tool_name, // Use owned name
-                    description,
-                    parameters: FunctionParameters {
-                        r#type: "object".to_string(),
-                        properties: properties
-                            .cloned()
-                            .unwrap_or_else(|| serde_json::Value::Object(serde_json::Map::new())),
-                        required: None, // Keep as None for now
-                    },
+        // Extract properties and required fields safely
+        let properties_map: Map<String, Value> = tool.input_schema.as_ref().clone();
+
+        let properties = properties_map
+            .get("properties")
+            .cloned()
+            .unwrap_or_else(|| serde_json::Value::Object(serde_json::Map::new()));
+
+        let required = properties_map
+            .get("required")
+            .and_then(|v| serde_json::from_value::<Vec<String>>(v.clone()).ok());
+
+        tools.push(Tool {
+            r#type: "function".to_string(),
+            function: FunctionDefinition {
+                name: tool_name,
+                description,
+                parameters: FunctionParameters {
+                    r#type: "object".to_string(),
+                    properties,
+                    required,
                 },
-            })
-        })
-        .collect::<Result<Vec<Tool>>>()
-        .with_context(|| "Failed to define tools from rmcp::model::Tool vector")
+            },
+        });
+    }
+
+    Ok(tools)
 }

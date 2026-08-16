@@ -78,7 +78,7 @@ async fn root() -> &'static str {
 
 // Updated handler to accept AppState
 async fn post_msg(
-    State(mut state): State<AppState>, // Extract the AppState
+    State(state): State<AppState>, // Extract the AppState
     Json(payload): Json<Message>,
 ) -> Result<impl IntoResponse, ApiError> {
     // Return Result for error handling

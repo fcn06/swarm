@@ -22,19 +22,22 @@ pub type McpClient = RunningService<RoleClient, InitializeRequestParams>;
 // see example mcp_client
 
 pub fn create_transport(
-        uri: impl Into<Arc<str>>,
-        api_key: Option<String>,
-    ) -> StreamableHttpClientTransport<reqwest::Client> {
-
+    uri: impl Into<Arc<str>>,
+    api_key: Option<String>,
+) -> StreamableHttpClientTransport<reqwest::Client> {
     use reqwest::header;
     let mut headers = header::HeaderMap::new();
     headers.insert("X-MY-HEADER", header::HeaderValue::from_static("value"));
     
-    let bearer = format!("Bearer {}", api_key.expect("").as_str());
-    let mut auth_value = header::HeaderValue::from_str(&bearer).unwrap();
-    
-    auth_value.set_sensitive(true);
-    headers.insert(header::AUTHORIZATION, auth_value);
+    if let Some(key) = api_key {
+        if !key.is_empty() {
+            let bearer = format!("Bearer {}", key);
+            if let Ok(mut auth_value) = header::HeaderValue::from_str(&bearer) {
+                auth_value.set_sensitive(true);
+                headers.insert(header::AUTHORIZATION, auth_value);
+            }
+        }
+    }
 
     let client = reqwest::Client::builder()
         .default_headers(headers)
@@ -53,10 +56,9 @@ pub async fn initialize_mcp_client_v2(agent_mcp_config: McpRuntimeConfig)
     
     let mcp_server_url_string = agent_mcp_config
         .agent_mcp_server_url
-        .expect("Missing mcp server Url");
+        .ok_or_else(|| anyhow::anyhow!("Missing MCP server URL in agent_mcp_config"))?;
     let mcp_server_url = mcp_server_url_string.as_str();
 
-    // Need to create and pass a static String to inject a default header
     let api_key = agent_mcp_config.agent_mcp_server_api_key.clone();
     
     let transport = create_transport(mcp_server_url, api_key);
@@ -97,7 +99,11 @@ pub async fn execute_tool_call_v2(
                 tool_call.function.name,
                 e
             );
-            CallToolResult::error(vec![])
+            CallToolResult::error(vec![
+                rmcp::model::Content::text(format!(
+                    "Failed to parse tool arguments: {}", e
+                ))
+            ])
         }
     };
 

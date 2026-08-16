@@ -350,7 +350,7 @@ impl PlannerAgent {
                     }
                 },
                 Err(e) => {
-                    error!("Error during evaluation logging: {}", e);
+                    warn!("Evaluation service unreachable or returned error: {}. Proceeding without evaluation retry.", e);
                     Ok(None)
                 }
             }

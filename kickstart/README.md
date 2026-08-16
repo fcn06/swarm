@@ -1,56 +1,73 @@
-# Swarm Multi-Agent & MCP Kickstart (`kickstart/`)
+# Swarm Kickstart Suites (`kickstart/`)
 
-Self-contained kickstart setup with localized configurations in `kickstart/config_files/`.
-
----
-
-## 📁 Directory Layout
+Self-contained kickstart environments for running Swarm in its two primary operating modes:
 
 ```
 swarm/kickstart/
-├── 01_launch_all.sh           # Builds and launches Discovery, Memory, MCP server, and Agents
-├── 02_test_weather_query.sh   # Sends the Boston weather query and prints the clean response
-├── 03_terminate_all.sh        # Stops all running agent and service processes
-├── README.md                  # Quickstart documentation
-└── config_files/              # Localized configuration files
-    ├── agent_basic_config.toml
-    ├── agent_planner_config.toml
-    ├── agent_executor_config.toml
-    ├── mcp_runtime_config.toml
-    ├── factory_config.toml
-    ├── mix_agent_tools_workflow.json
-    └── mix_agent_tools_workflow_with_email_step.json
+├── multi_agent_orchestration_kickstart/   # Mode 1: Multi-Agent & MCP Orchestration
+│   ├── 01_launch_all.sh
+│   ├── 02_test_weather_query.sh
+│   ├── 03_terminate_all.sh
+│   ├── README.md
+│   └── config_files/
+│       ├── agent_basic_config.toml
+│       ├── agent_planner_config.toml
+│       ├── agent_executor_config.toml
+│       ├── mcp_runtime_config.toml
+│       ├── factory_config.toml
+│       ├── mix_agent_tools_workflow.json
+│       └── mix_agent_tools_workflow_with_email_step.json
+│
+└── gateway_kickstart/                     # Mode 2: Standalone Model Gateway Server
+    ├── 01_launch_gateway.sh
+    ├── 02_test_chat_completions.sh
+    ├── 03_test_open_responses.sh
+    ├── 04_terminate_gateway.sh
+    ├── README.md
+    └── config_files/
+        ├── gateway_config.toml
+        ├── chat_completions_request.json
+        ├── open_responses_request.json
+        └── open_responses_followup_request.json
 ```
 
 ---
 
-## 🏛️ Services Launched
+## 🤖 Mode 1: Multi-Agent Orchestration (`multi_agent_orchestration_kickstart/`)
 
-| Component | Port | Config File |
-| :--- | :--- | :--- |
-| **Discovery Service** | `4000` | In-memory registry |
-| **Memory Service** | `5000` | In-memory task store |
-| **MCP Tools Server** | `8000` | `main-server` with `weather`, `customer`, `scrape`, `search` |
-| **Basic Domain Agent** | `8080` | `kickstart/config_files/agent_basic_config.toml` |
-| **Planner Orchestrator** | `8280` | `kickstart/config_files/agent_planner_config.toml` |
-| **Executor Agent** | `9580` | `kickstart/config_files/agent_executor_config.toml` |
-
----
-
-## 🚀 Quick Usage
+Launches the collaborative multi-agent cluster (Planner, Executor, Domain Agent with MCP Tools runtime, Discovery, and Memory services).
 
 ```bash
 cd swarm
 
-# 1. Export your Groq API key:
-export GROQ_API_KEY="gsk_..."
+# 1. Start full multi-agent cluster:
+./kickstart/multi_agent_orchestration_kickstart/01_launch_all.sh
 
-# 2. Launch the full agent stack:
-./kickstart/01_launch_all.sh
+# 2. Execute sample query with live MCP tool execution:
+./kickstart/multi_agent_orchestration_kickstart/02_test_weather_query.sh "What is the current weather in Boston ?"
 
-# 3. In another terminal, run the query:
-./kickstart/02_test_weather_query.sh
+# 3. Stop all agent processes:
+./kickstart/multi_agent_orchestration_kickstart/03_terminate_all.sh
+```
 
-# 4. Stop everything when done:
-./kickstart/03_terminate_all.sh
+---
+
+## 🌐 Mode 2: Standalone Model Gateway Server (`gateway_kickstart/`)
+
+Launches the unified gateway server (`swarm_server`) supporting OpenAI-compatible `/v1/chat/completions` and stateful multi-turn Open Responses `/v1/responses`.
+
+```bash
+cd swarm
+
+# 1. Start the Gateway Server (configured via config_files/gateway_config.toml):
+./kickstart/gateway_kickstart/01_launch_gateway.sh
+
+# 2. Test OpenAI-compatible Chat Completions:
+./kickstart/gateway_kickstart/02_test_chat_completions.sh "What is the weather like in Boston ?"
+
+# 3. Test Stateful Multi-Turn Open Responses:
+./kickstart/gateway_kickstart/03_test_open_responses.sh
+
+# 4. Stop the Gateway Server:
+./kickstart/gateway_kickstart/04_terminate_gateway.sh
 ```

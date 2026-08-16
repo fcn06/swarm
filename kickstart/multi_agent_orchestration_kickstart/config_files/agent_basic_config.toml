@@ -38,4 +38,4 @@ agent_llm_url="https://api.groq.com/openai/v1/chat/completions"
 #################################################################
 # MCP Runtime Configuration Path
 #################################################################
-agent_mcp_config_path="kickstart/config_files/mcp_runtime_config.toml"
+agent_mcp_config_path="kickstart/multi_agent_orchestration_kickstart/config_files/mcp_runtime_config.toml"

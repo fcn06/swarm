@@ -8,7 +8,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SWARM_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+SWARM_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 CONFIG_DIR="$SCRIPT_DIR/config_files"
 
 cd "$SWARM_ROOT"
@@ -21,7 +21,7 @@ echo "==========================================================================
 echo "    🌐 Gateway Test: POST /v1/chat/completions                            "
 echo "=========================================================================="
 echo " URL    : http://localhost:$PORT/v1/chat/completions"
-echo " Config : gateway_kickstart/config_files/chat_completions_request.json"
+echo " Config : kickstart/gateway_kickstart/config_files/chat_completions_request.json"
 echo " Model  : $MODEL"
 if [ -n "$USER_QUERY" ]; then
     echo " Query  : \"$USER_QUERY\""

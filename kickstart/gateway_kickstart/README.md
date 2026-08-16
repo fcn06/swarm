@@ -1,6 +1,6 @@
-# Swarm Gateway Kickstart (`gateway_kickstart/`)
+# Gateway Kickstart (`gateway_kickstart/`)
 
-Standalone, self-contained suite for building, launching, testing, and managing the **Swarm Model Gateway Server** (`swarm_server`).
+Standalone, self-contained suite for building, launching, testing, and managing **Mode 2: The Swarm Model Gateway Server** (`swarm_server`).
 
 ---
 
@@ -44,7 +44,7 @@ api_url = "https://api.openai.com/v1/chat/completions"
 ## 📁 Directory Layout
 
 ```
-swarm/gateway_kickstart/
+swarm/kickstart/gateway_kickstart/
 ├── 01_launch_gateway.sh           # Builds and runs swarm_server on port 8080
 ├── 02_test_chat_completions.sh    # Sends test POST /v1/chat/completions request
 ├── 03_test_open_responses.sh      # Sends test multi-turn stateful POST /v1/responses request
@@ -79,14 +79,14 @@ export OPENAI_API_KEY="sk-..."
 cd swarm
 
 # 1. Launch the Gateway Server (configured via gateway_config.toml):
-./gateway_kickstart/01_launch_gateway.sh
+./kickstart/gateway_kickstart/01_launch_gateway.sh
 
 # 2. Test Chat Completions:
-./gateway_kickstart/02_test_chat_completions.sh "What is the weather like in Boston ?"
+./kickstart/gateway_kickstart/02_test_chat_completions.sh "What is the weather like in Boston ?"
 
 # 3. Test Open Responses (Stateful Multi-Turn):
-./gateway_kickstart/03_test_open_responses.sh
+./kickstart/gateway_kickstart/03_test_open_responses.sh
 
 # 4. Terminate the Gateway Server:
-./gateway_kickstart/04_terminate_gateway.sh
+./kickstart/gateway_kickstart/04_terminate_gateway.sh
 ```

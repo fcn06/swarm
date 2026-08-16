@@ -15,7 +15,7 @@
 +--------------------------------------------------------------------------------------------------+
 |                                                                                                  |
 |   MODE 1: MULTI-AGENT & MCP ORCHESTRATION               MODE 2: MODEL GATEWAY SERVER             |
-|   (kickstart/)                                          (gateway_kickstart/)                     |
+|   (kickstart/multi_agent_orchestration_kickstart/)      (kickstart/gateway_kickstart/)           |
 |                                                                                                  |
 |   • Planner Agent (Dynamic plan generation)             • POST /v1/chat/completions (OpenAI)     |
 |   • Executor Agent (Workflow DAG execution)             • POST /v1/responses (Open Responses)   |
@@ -54,16 +54,16 @@ In this mode, Swarm coordinates specialized agents that dynamically collaborate 
 cd swarm
 
 # 1. Launch all agents, MCP server, and infrastructure services:
-./kickstart/01_launch_all.sh
+./kickstart/multi_agent_orchestration_kickstart/01_launch_all.sh
 
 # 2. Run a sample query (e.g., Live Weather via MCP):
-./kickstart/02_test_weather_query.sh "What is the current weather in Boston ?"
+./kickstart/multi_agent_orchestration_kickstart/02_test_weather_query.sh "What is the current weather in Boston ?"
 
 # 3. Stop all background processes when done:
-./kickstart/03_terminate_all.sh
+./kickstart/multi_agent_orchestration_kickstart/03_terminate_all.sh
 ```
 
-All configurations for Mode 1 are located in [`kickstart/config_files/`](kickstart/config_files).
+All configurations for Mode 1 are located in [`kickstart/multi_agent_orchestration_kickstart/config_files/`](kickstart/multi_agent_orchestration_kickstart/config_files).
 
 ---
 
@@ -73,7 +73,7 @@ In this mode, `swarm_server` acts as a unified model gateway for client applicat
 
 - **OpenAI-Compatible Chat Completions (`POST /v1/chat/completions`)**: Backward-compatible with standard developer tools, IDE extensions, and OpenAI SDKs.
 - **Open Responses Standard (`POST /v1/responses`)**: Modern stateful API with multi-turn conversation chaining (`previous_response_id`) and SSE streaming.
-- **Dynamic Target URL & Provider Configuration**: Configurable target URLs for Groq, Google Gemini, OpenAI, and local OpenAI-compatible endpoints (Ollama, vLLM, llama.cpp) via [`gateway_kickstart/config_files/gateway_config.toml`](gateway_kickstart/config_files/gateway_config.toml).
+- **Dynamic Target URL & Provider Configuration**: Configurable target URLs for Groq, Google Gemini, OpenAI, and local OpenAI-compatible endpoints (Ollama, vLLM, llama.cpp) via [`kickstart/gateway_kickstart/config_files/gateway_config.toml`](kickstart/gateway_kickstart/config_files/gateway_config.toml).
 
 ### Quickstart (Mode 2)
 
@@ -81,19 +81,19 @@ In this mode, `swarm_server` acts as a unified model gateway for client applicat
 cd swarm
 
 # 1. Launch the standalone Gateway Server (port 8080):
-./gateway_kickstart/01_launch_gateway.sh
+./kickstart/gateway_kickstart/01_launch_gateway.sh
 
 # 2. Test Chat Completions:
-./gateway_kickstart/02_test_chat_completions.sh "Explain Swarm architecture in 2 sentences"
+./kickstart/gateway_kickstart/02_test_chat_completions.sh "Explain Swarm architecture in 2 sentences"
 
 # 3. Test Stateful Multi-Turn Open Responses:
-./gateway_kickstart/03_test_open_responses.sh
+./kickstart/gateway_kickstart/03_test_open_responses.sh
 
 # 4. Stop the Gateway Server:
-./gateway_kickstart/04_terminate_gateway.sh
+./kickstart/gateway_kickstart/04_terminate_gateway.sh
 ```
 
-All configurations for Mode 2 are located in [`gateway_kickstart/config_files/`](gateway_kickstart/config_files).
+All configurations for Mode 2 are located in [`kickstart/gateway_kickstart/config_files/`](kickstart/gateway_kickstart/config_files).
 
 ---
 
@@ -101,26 +101,27 @@ All configurations for Mode 2 are located in [`gateway_kickstart/config_files/`]
 
 ```
 swarm/
-├── kickstart/                 # Mode 1: Multi-Agent & MCP Launch Suite
-│   ├── 01_launch_all.sh
-│   ├── 02_test_weather_query.sh
-│   ├── 03_terminate_all.sh
-│   ├── README.md
-│   └── config_files/          # Localized agent & MCP configurations
+├── kickstart/
+│   ├── multi_agent_orchestration_kickstart/   # Mode 1: Multi-Agent & MCP Launch Suite
+│   │   ├── 01_launch_all.sh
+│   │   ├── 02_test_weather_query.sh
+│   │   ├── 03_terminate_all.sh
+│   │   ├── README.md
+│   │   └── config_files/                      # Agent & MCP configurations
+│   │
+│   └── gateway_kickstart/                     # Mode 2: Standalone Gateway Launch Suite
+│       ├── 01_launch_gateway.sh
+│       ├── 02_test_chat_completions.sh
+│       ├── 03_test_open_responses.sh
+│       ├── 04_terminate_gateway.sh
+│       ├── README.md
+│       └── config_files/                      # Gateway server configuration & payload templates
 │
-├── gateway_kickstart/         # Mode 2: Standalone Gateway Launch Suite
-│   ├── 01_launch_gateway.sh
-│   ├── 02_test_chat_completions.sh
-│   ├── 03_test_open_responses.sh
-│   ├── 04_terminate_gateway.sh
-│   ├── README.md
-│   └── config_files/          # Gateway configuration & sample payload templates
-│
-├── basic_agent/               # Specialist domain agent embedding MCP runtime
-├── planner_agent/             # Workflow planner and orchestrator
-├── executor_agent/            # Workflow graph executor
-├── agent_factory/             # Dynamic agent instantiation runtime
-└── examples/                  # Example MCP servers and standalone runners
+├── basic_agent/                               # Specialist domain agent embedding MCP runtime
+├── planner_agent/                             # Workflow planner and orchestrator
+├── executor_agent/                            # Workflow graph executor
+├── agent_factory/                             # Dynamic agent instantiation runtime
+└── examples/                                  # Example MCP servers and standalone runners
 ```
 
 ---

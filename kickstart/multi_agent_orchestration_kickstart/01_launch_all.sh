@@ -8,10 +8,10 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SWARM_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+SWARM_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 WORKSPACE_ROOT="$(cd "$SWARM_ROOT/.." && pwd)"
 SWARM_SERVICES_ROOT="$WORKSPACE_ROOT/swarm_services"
-CONFIG_DIR="$SWARM_ROOT/kickstart/config_files"
+CONFIG_DIR="$SCRIPT_DIR/config_files"
 
 cd "$SWARM_ROOT"
 
@@ -71,7 +71,7 @@ echo "✔ Binaries ready."
 
 echo $'\n'
 echo "--------------------------------------------------------------------------"
-echo " 3. Launching Services in Background (using kickstart/config_files/)"
+echo " 3. Launching Services in Background"
 echo "--------------------------------------------------------------------------"
 
 # Terminate any leftover processes on these ports first
@@ -96,13 +96,13 @@ echo "• [3/5] Starting MCP Tools Server (Port 8000 with Weather, Customer, Scr
 sleep 3
 
 echo "• [4/5] Starting Basic Domain Agent with MCP Tools (Port 8080)..."
-"$SWARM_ROOT/target/release/basic_agent_launch" --config-file "kickstart/config_files/agent_basic_config.toml" --log-level "warn" &
+"$SWARM_ROOT/target/release/basic_agent_launch" --config-file "kickstart/multi_agent_orchestration_kickstart/config_files/agent_basic_config.toml" --log-level "warn" &
 sleep 4
 
 echo "• [5/5] Starting Planner & Executor Agents (Ports 8280 & 9580)..."
-"$SWARM_ROOT/target/release/launch_planner_agent" --config-file "kickstart/config_files/agent_planner_config.toml" --log-level "warn" &
+"$SWARM_ROOT/target/release/launch_planner_agent" --config-file "kickstart/multi_agent_orchestration_kickstart/config_files/agent_planner_config.toml" --log-level "warn" &
 sleep 3
-"$SWARM_ROOT/target/release/launch_executor_agent" --config-file "kickstart/config_files/agent_executor_config.toml" --log-level "warn" &
+"$SWARM_ROOT/target/release/launch_executor_agent" --config-file "kickstart/multi_agent_orchestration_kickstart/config_files/agent_executor_config.toml" --log-level "warn" &
 sleep 3
 
 echo $'\n'
@@ -117,5 +117,5 @@ echo " • Planner Orchestrator:   http://127.0.0.1:8280"
 echo " • Executor Agent:         http://127.0.0.1:9580"
 echo "=========================================================================="
 echo $'\n'
-echo "👉 Run: ./kickstart/02_test_weather_query.sh"
-echo "👉 Stop: ./kickstart/03_terminate_all.sh"
+echo "👉 Run: ./kickstart/multi_agent_orchestration_kickstart/02_test_weather_query.sh"
+echo "👉 Stop: ./kickstart/multi_agent_orchestration_kickstart/03_terminate_all.sh"

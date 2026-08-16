@@ -8,7 +8,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SWARM_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+SWARM_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 CONFIG_DIR="$SCRIPT_DIR/config_files"
 
 cd "$SWARM_ROOT"
@@ -20,7 +20,7 @@ echo "==========================================================================
 echo "    🌐 Gateway Test: POST /v1/responses (Multi-Turn Stateful Session)    "
 echo "=========================================================================="
 echo " URL    : http://localhost:$PORT/v1/responses"
-echo " Config : gateway_kickstart/config_files/"
+echo " Config : kickstart/gateway_kickstart/config_files/"
 echo " Model  : $MODEL"
 echo "=========================================================================="
 echo ""

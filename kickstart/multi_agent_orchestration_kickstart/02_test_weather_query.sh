@@ -7,7 +7,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SWARM_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+SWARM_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 cd "$SWARM_ROOT"
 
@@ -18,7 +18,7 @@ echo "    🌤️  Executing Multi-Agent Query with MCP Tool: Weather in Boston 
 echo "=========================================================================="
 echo " Query  : \"$USER_QUERY\""
 echo " Route  : Planner Agent (8280) -> Domain Agent (8080) -> MCP Server (8000)"
-echo " Config : kickstart/config_files/"
+echo " Config : kickstart/multi_agent_orchestration_kickstart/config_files/"
 echo "=========================================================================="
 echo ""
 
@@ -26,7 +26,7 @@ echo ""
   --port 8280 \
   --log-level "warn" \
   --generation-type "dynamic_generation" \
-  --graph-file "kickstart/config_files/mix_agent_tools_workflow.json" \
+  --graph-file "kickstart/multi_agent_orchestration_kickstart/config_files/mix_agent_tools_workflow.json" \
   --user-query "$USER_QUERY"
 
 echo ""

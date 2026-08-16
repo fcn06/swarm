@@ -110,7 +110,8 @@ swarm/
 │   ├── 02_test_chat_completions.sh
 │   ├── 03_test_open_responses.sh
 │   ├── 04_terminate_gateway.sh
-│   └── README.md
+│   ├── README.md
+│   └── config_files/          # Gateway configuration & sample payload templates
 │
 ├── basic_agent/               # Specialist domain agent embedding MCP runtime
 ├── planner_agent/             # Workflow planner and orchestrator

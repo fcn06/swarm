@@ -1,0 +1,41 @@
+#################################################################
+# Swarm Standalone Gateway Server Configuration
+#################################################################
+
+[server]
+# Bind address for the Gateway server
+bind_address = "0.0.0.0:8080"
+host = "127.0.0.1"
+port = 8080
+log_level = "info"
+
+[session]
+# In-memory session store settings
+max_history_items = 100
+session_timeout_seconds = 3600
+
+[models]
+# Default model to use when not specified in the client request
+default_model = "groq/llama-3.3-70b-versatile"
+
+[providers.groq]
+api_url = "https://api.groq.com/openai/v1/chat/completions"
+recommended_models = [
+    "groq/llama-3.3-70b-versatile",
+    "openai/gpt-oss-20b",
+    "qwen/qwen3-32b"
+]
+
+[providers.google]
+api_url = "https://generativelanguage.googleapis.com/v1beta/models"
+recommended_models = [
+    "gemini-2.0-flash",
+    "gemini-1.5-pro"
+]
+
+[providers.openai]
+api_url = "https://api.openai.com/v1/chat/completions"
+recommended_models = [
+    "gpt-4o",
+    "gpt-4o-mini"
+]

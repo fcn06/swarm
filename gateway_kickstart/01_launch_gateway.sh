@@ -2,12 +2,14 @@
 
 # ==============================================================================
 # Swarm Standalone Gateway Server Launch Script
+# Uses configuration from gateway_kickstart/config_files/
 # ==============================================================================
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SWARM_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+CONFIG_FILE="$SCRIPT_DIR/config_files/gateway_config.toml"
 
 cd "$SWARM_ROOT"
 
@@ -17,6 +19,10 @@ LOG_LEVEL="${LOG_LEVEL:-info}"
 
 echo "=========================================================================="
 echo "          🌐 fcn06/swarm Standalone Gateway Server Launch                "
+echo "=========================================================================="
+echo " Config File : gateway_kickstart/config_files/gateway_config.toml"
+echo " Bind Address: $BIND_ADDRESS"
+echo " Log Level   : $LOG_LEVEL"
 echo "=========================================================================="
 
 echo $'\n'
@@ -68,6 +74,7 @@ echo "          🎉 Swarm Gateway Server is RUNNING (PID: $GATEWAY_PID)!       
 echo "=========================================================================="
 echo " • Open Responses Route:   POST http://127.0.0.1:$PORT/v1/responses"
 echo " • Chat Completions Route: POST http://127.0.0.1:$PORT/v1/chat/completions"
+echo " • Config Directory:       gateway_kickstart/config_files/"
 echo "=========================================================================="
 echo $'\n'
 echo "👉 Test Chat Completions: ./gateway_kickstart/02_test_chat_completions.sh"

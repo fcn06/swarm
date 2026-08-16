@@ -1,6 +1,6 @@
 # Swarm Gateway Kickstart (`gateway_kickstart/`)
 
-Standalone scripts for building, launching, testing, and managing the **Swarm Model Gateway Server** (`swarm_server`).
+Standalone, self-contained suite for building, launching, testing, and managing the **Swarm Model Gateway Server** (`swarm_server`).
 
 ---
 
@@ -21,7 +21,12 @@ swarm/gateway_kickstart/
 ├── 02_test_chat_completions.sh    # Sends test POST /v1/chat/completions request
 ├── 03_test_open_responses.sh      # Sends test multi-turn stateful POST /v1/responses request
 ├── 04_terminate_gateway.sh        # Stops the running gateway server
-└── README.md                      # Documentation
+├── README.md                      # Documentation
+└── config_files/                  # Localized configuration & payload templates
+    ├── gateway_config.toml
+    ├── chat_completions_request.json
+    ├── open_responses_request.json
+    └── open_responses_followup_request.json
 ```
 
 ---

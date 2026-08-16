@@ -1,0 +1,5 @@
+{
+  "model": "groq/llama-3.3-70b-versatile",
+  "input": "My favorite city is Boston.",
+  "stream": false
+}

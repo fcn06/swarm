@@ -181,39 +181,29 @@ When you're finished, terminate all running background processes with:
 
 ## **🌐 Standalone Gateway Server (`swarm_server`)**
 
-Swarm also provides a standalone gateway server supporting Open Responses (`/v1/responses`) and backward-compatible Chat Completions (`/v1/chat/completions`):
+Swarm also provides a standalone model gateway server supporting Open Responses (`/v1/responses`) and backward-compatible Chat Completions (`/v1/chat/completions`) with dedicated scripts in [`gateway_kickstart/`](file:///home/fred/Agents_Projects/Antigravity/agent_workspace/swarm/gateway_kickstart):
 
 ```bash
-# 1. Launch the gateway server
-cargo run --release --bin swarm_server -- --bind-address 0.0.0.0:8080
+cd swarm
 
-# 2. Test Open Responses (Stateful session):
-curl -X POST http://127.0.0.1:8080/v1/responses \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "groq/llama-3.3-70b-versatile",
-    "input": "Explain the role of the Planner Agent in Swarm",
-    "stream": false
-  }'
+# 1. Launch the standalone Gateway Server (port 8080):
+./gateway_kickstart/01_launch_gateway.sh
 
-# 3. Test OpenAI-compatible Chat Completions:
-curl -X POST http://127.0.0.1:8080/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "groq/llama-3.3-70b-versatile",
-    "messages": [
-      {
-        "role": "user",
-        "content": "Hello from an IDE extension!"
-      }
-    ]
-  }'
+# 2. Test OpenAI-compatible Chat Completions (/v1/chat/completions):
+./gateway_kickstart/02_test_chat_completions.sh "Explain the role of the Planner Agent in Swarm"
+
+# 3. Test Open Responses multi-turn stateful session (/v1/responses):
+./gateway_kickstart/03_test_open_responses.sh
+
+# 4. Stop the Gateway Server:
+./gateway_kickstart/04_terminate_gateway.sh
 ```
 
 ---
 
-## **📁 Kickstart Directory Layout**
+## **📁 Kickstart Directories Layout**
 
+### 1. Multi-Agent & MCP Orchestrator (`kickstart/`)
 ```
 swarm/kickstart/
 ├── 01_launch_all.sh           # Builds and launches Discovery, Memory, MCP server, and Agents
@@ -228,6 +218,16 @@ swarm/kickstart/
     ├── factory_config.toml
     ├── mix_agent_tools_workflow.json
     └── mix_agent_tools_workflow_with_email_step.json
+```
+
+### 2. Standalone Gateway Server (`gateway_kickstart/`)
+```
+swarm/gateway_kickstart/
+├── 01_launch_gateway.sh           # Builds and starts swarm_server on port 8080
+├── 02_test_chat_completions.sh    # Sends test request to /v1/chat/completions
+├── 03_test_open_responses.sh      # Sends stateful multi-turn request to /v1/responses
+├── 04_terminate_gateway.sh        # Stops the gateway server
+└── README.md                      # Gateway documentation
 ```
 
 ---

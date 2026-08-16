@@ -37,10 +37,6 @@ use axum::{
     routing::{get, post},
 };
 use rand::{Rng, distr::Alphanumeric};
-use rmcp::transport::auth::{
-    AuthorizationMetadata, ClientRegistrationRequest, ClientRegistrationResponse,
-    OAuthClientConfig,
-};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use tokio::sync::RwLock;
@@ -48,6 +44,42 @@ use tokio_util::sync::CancellationToken;
 use tower_http::cors::{Any, CorsLayer};
 use tracing::{debug, error, info, warn};
 use uuid::Uuid;
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct OAuthClientConfig {
+    client_id: String,
+    client_secret: Option<String>,
+    scopes: Vec<String>,
+    redirect_uri: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct AuthorizationMetadata {
+    authorization_endpoint: String,
+    token_endpoint: String,
+    scopes_supported: Option<Vec<String>>,
+    registration_endpoint: Option<String>,
+    issuer: Option<String>,
+    jwks_uri: Option<String>,
+    #[serde(flatten)]
+    additional_fields: HashMap<String, Value>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+struct ClientRegistrationRequest {
+    client_name: Option<String>,
+    redirect_uris: Vec<String>,
+}
+
+#[derive(Clone, Debug, Serialize)]
+struct ClientRegistrationResponse {
+    client_id: String,
+    client_secret: Option<String>,
+    client_name: Option<String>,
+    redirect_uris: Vec<String>,
+    #[serde(flatten)]
+    additional_fields: HashMap<String, Value>,
+}
 
 
 

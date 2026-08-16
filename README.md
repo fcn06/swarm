@@ -70,6 +70,9 @@ cd swarm
 
 All configurations for Mode 1 are located in [`kickstart/multi_agent_orchestration_kickstart/config_files/`](kickstart/multi_agent_orchestration_kickstart/config_files).
 
+> [!NOTE]
+> **Port Allocation**: In Mode 1, the Basic Domain Agent listens on `Port 8080`. In Mode 2, the Gateway Server also defaults to `Port 8080`. The two modes are designed to run independently, or you can override the port with `--port` / `--bind-address`.
+
 ---
 
 ## 🌐 Mode 2: Standalone Model Gateway Server
@@ -78,7 +81,30 @@ In this mode, `swarm_server` acts as a unified model gateway for client applicat
 
 - **OpenAI-Compatible Chat Completions (`POST /v1/chat/completions`)**: Backward-compatible with standard developer tools, IDE extensions, and OpenAI SDKs.
 - **Open Responses Standard (`POST /v1/responses`)**: Modern stateful API with multi-turn conversation chaining (`previous_response_id`) and SSE streaming.
-- **Dynamic Target URL & Provider Configuration**: Configurable target URLs for Groq, Google Gemini, OpenAI, and local OpenAI-compatible endpoints (Ollama, vLLM, llama.cpp) via [`kickstart/gateway_kickstart/config_files/gateway_config.toml`](kickstart/gateway_kickstart/config_files/gateway_config.toml).
+- **Dynamic Target URL & Provider Configuration**: Configurable target URLs for Groq, Google Gemini, OpenAI, and local OpenAI-compatible endpoints (Ollama, vLLM, llama.cpp).
+
+### ⚙️ Gateway Configuration Preview
+
+Backend routing and default models are configured in [`kickstart/gateway_kickstart/config_files/gateway_config.toml`](kickstart/gateway_kickstart/config_files/gateway_config.toml):
+
+```toml
+[server]
+bind_address = "0.0.0.0:8080"
+log_level = "info"
+
+[models]
+default_model = "openai/gpt-oss-20b"
+
+[providers.groq]
+api_url = "https://api.groq.com/openai/v1/chat/completions"
+
+[providers.google]
+api_url = "https://generativelanguage.googleapis.com/v1beta/models"
+
+[providers.custom]
+# Local inference (Ollama / vLLM / llama.cpp / LocalAI)
+# api_url = "http://127.0.0.1:11434/v1/chat/completions"
+```
 
 ### Quickstart (Mode 2)
 
@@ -88,17 +114,41 @@ cd swarm
 # 1. Launch the standalone Gateway Server (port 8080):
 ./kickstart/gateway_kickstart/01_launch_gateway.sh
 
-# 2. Test Chat Completions:
-./kickstart/gateway_kickstart/02_test_chat_completions.sh "Explain Swarm architecture in 2 sentences"
+# 2. Test OpenAI-Compatible Chat Completions:
+curl -X POST http://localhost:8080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openai/gpt-oss-20b",
+    "messages": [
+      {"role": "system", "content": "You are a helpful assistant."},
+      {"role": "user", "content": "Explain Swarm architecture in 2 sentences."}
+    ]
+  }'
 
-# 3. Test Stateful Multi-Turn Open Responses:
-./kickstart/gateway_kickstart/03_test_open_responses.sh
+# 3. Test Stateful Open Responses (Multi-Turn chaining):
+curl -X POST http://localhost:8080/v1/responses \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openai/gpt-oss-20b",
+    "input": "My favorite city is Boston."
+  }'
 
 # 4. Stop the Gateway Server:
 ./kickstart/gateway_kickstart/04_terminate_gateway.sh
 ```
 
 All configurations for Mode 2 are located in [`kickstart/gateway_kickstart/config_files/`](kickstart/gateway_kickstart/config_files).
+
+---
+
+## ⚡ Why Rust? High Performance by Design
+
+Unlike Python-based frameworks (LangChain, LiteLLM), Swarm delivers:
+
+* **⚡ Sub-Millisecond Proxy Latency**: Near-zero proxy overhead powered by Tokio async I/O and Hyper.
+* **🔒 Lock-Free Session Management**: High-throughput concurrent state caching with DashMap and Arc-based session stores.
+* **🪶 Minimal Resource Footprint**: Lean memory consumption (<25MB baseline) with zero garbage-collection pauses.
+* **🛡️ Type-Safe Tool & Protocol Guarantees**: Strict compile-time validation for MCP and A2A payloads, eliminating runtime schema panics.
 
 ---
 

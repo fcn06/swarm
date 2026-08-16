@@ -17,6 +17,20 @@ PORT="${PORT:-8080}"
 BIND_ADDRESS="${BIND_ADDRESS:-0.0.0.0:$PORT}"
 LOG_LEVEL="${LOG_LEVEL:-info}"
 
+# Auto-load .env from SWARM_ROOT or WORKSPACE_ROOT if present
+WORKSPACE_ROOT="$(cd "$SWARM_ROOT/.." && pwd)"
+if [ -f "$SWARM_ROOT/.env" ]; then
+    # shellcheck disable=SC1091
+    set -a
+    source "$SWARM_ROOT/.env"
+    set +a
+elif [ -f "$WORKSPACE_ROOT/.env" ]; then
+    # shellcheck disable=SC1091
+    set -a
+    source "$WORKSPACE_ROOT/.env"
+    set +a
+fi
+
 echo "=========================================================================="
 echo "          🌐 fcn06/swarm Standalone Gateway Server Launch                "
 echo "=========================================================================="
@@ -27,23 +41,83 @@ echo "==========================================================================
 
 echo $'\n'
 echo "--------------------------------------------------------------------------"
-echo " 1. Checking LLM Provider API Keys"
+echo " 1. Checking LLM Provider Configuration"
 echo "--------------------------------------------------------------------------"
 
-echo "Provider Keys Status:"
-echo " • GROQ_API_KEY   : ${GROQ_API_KEY:+[SET]}${GROQ_API_KEY:-[NOT SET - needed for Groq models]}"
-echo " • GEMINI_API_KEY : ${GEMINI_API_KEY:+[SET]}${GEMINI_API_KEY:-[NOT SET - needed for Gemini models]}"
-echo " • OPENAI_API_KEY : ${OPENAI_API_KEY:+[SET]}${OPENAI_API_KEY:-[NOT SET - needed for OpenAI models]}"
+# Check if local Ollama daemon is active
+OLLAMA_ACTIVE=false
+if curl -s --connect-timeout 1 http://localhost:11434/api/tags >/dev/null 2>&1; then
+    OLLAMA_ACTIVE=true
+fi
 
-if [ -z "$GROQ_API_KEY" ] && [ -z "$GEMINI_API_KEY" ] && [ -z "$OPENAI_API_KEY" ]; then
+echo "Provider Status:"
+echo " • GROQ_API_KEY   : ${GROQ_API_KEY:+[SET - Groq active]}${GROQ_API_KEY:-[NOT SET]}"
+echo " • GEMINI_API_KEY : ${GEMINI_API_KEY:+[SET - Gemini active]}${GEMINI_API_KEY:-[NOT SET]}"
+echo " • OPENAI_API_KEY : ${OPENAI_API_KEY:+[SET - OpenAI active]}${OPENAI_API_KEY:-[NOT SET]}"
+echo " • SWARM_LLM_URL  : ${SWARM_LLM_URL:+[SET - $SWARM_LLM_URL]}${SWARM_LLM_URL:-[NOT SET]}"
+if [ "$OLLAMA_ACTIVE" = true ]; then
+    echo " • Local Ollama   : [DETECTED at http://localhost:11434]"
+else
+    echo " • Local Ollama   : [NOT DETECTED on port 11434]"
+fi
+
+# If no provider is configured, present interactive choice
+if [ -z "$GROQ_API_KEY" ] && [ -z "$GEMINI_API_KEY" ] && [ -z "$OPENAI_API_KEY" ] && [ -z "$SWARM_LLM_URL" ]; then
     echo $'\n'
-    echo "⚠️  WARNING: No LLM API keys were detected in your environment."
-    echo "   Without an API key, the gateway will operate in local Echo mode."
-    read -p "Enter your GROQ API key (or press enter to skip): " USER_KEY
-    if [ -n "$USER_KEY" ]; then
-        export GROQ_API_KEY="$USER_KEY"
-        echo "✔ GROQ_API_KEY set."
-    fi
+    echo "No LLM provider keys or custom endpoints are currently active."
+    echo "Select an option below:"
+    echo "  1) Groq (Cloud - ultra fast Llama 3.3, GPT-OSS)"
+    echo "  2) Google Gemini (Cloud - Gemini 2.0 Flash / Pro)"
+    echo "  3) OpenAI (Cloud - GPT-4o, GPT-4o-mini)"
+    echo "  4) Local Ollama (http://localhost:11434)"
+    echo "  5) Local Echo Mode (No LLM, echoes requests for testing)"
+    echo ""
+    read -p "Choose provider [1-5] (default 1): " PROVIDER_CHOICE
+    PROVIDER_CHOICE="${PROVIDER_CHOICE:-1}"
+
+    case "$PROVIDER_CHOICE" in
+        1)
+            read -p "Enter your GROQ API key: " USER_KEY
+            if [ -n "$USER_KEY" ]; then
+                export GROQ_API_KEY="$USER_KEY"
+                echo "GROQ_API_KEY=$USER_KEY" >> "$SWARM_ROOT/.env"
+                echo "✔ GROQ_API_KEY set and saved to .env."
+            fi
+            ;;
+        2)
+            read -p "Enter your Google GEMINI API key: " USER_KEY
+            if [ -n "$USER_KEY" ]; then
+                export GEMINI_API_KEY="$USER_KEY"
+                echo "GEMINI_API_KEY=$USER_KEY" >> "$SWARM_ROOT/.env"
+                echo "✔ GEMINI_API_KEY set and saved to .env."
+            fi
+            ;;
+        3)
+            read -p "Enter your OPENAI API key: " USER_KEY
+            if [ -n "$USER_KEY" ]; then
+                export OPENAI_API_KEY="$USER_KEY"
+                echo "OPENAI_API_KEY=$USER_KEY" >> "$SWARM_ROOT/.env"
+                echo "✔ OPENAI_API_KEY set and saved to .env."
+            fi
+            ;;
+        4)
+            read -p "Enter Ollama URL [http://localhost:11434/v1/chat/completions]: " USER_URL
+            USER_URL="${USER_URL:-http://localhost:11434/v1/chat/completions}"
+            export SWARM_LLM_URL="$USER_URL"
+            export OPENAI_API_KEY="ollama"
+            cat <<EOF >> "$SWARM_ROOT/.env"
+SWARM_LLM_URL=$USER_URL
+OPENAI_API_KEY=ollama
+EOF
+            echo "✔ Configured for local Ollama ($USER_URL) and saved to .env."
+            ;;
+        5)
+            echo "✔ Operating in Echo mode."
+            ;;
+        *)
+            echo "✔ Defaulting to Echo mode."
+            ;;
+    esac
 fi
 
 echo $'\n'

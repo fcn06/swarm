@@ -39,3 +39,13 @@ recommended_models = [
     "gpt-4o",
     "gpt-4o-mini"
 ]
+
+[providers.custom]
+# Local Ollama / vLLM / LocalAI OpenAI-compatible endpoint
+api_url = "http://localhost:11434/v1/chat/completions"
+recommended_models = [
+    "llama3.2:latest",
+    "mistral:latest",
+    "deepseek-r1:8b",
+    "qwen2.5:latest"
+]

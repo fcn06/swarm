@@ -25,8 +25,9 @@
 |   • Planner Agent (Dynamic plan generation)             • POST /v1/chat/completions (OpenAI)     |
 |   • Executor Agent (Workflow DAG execution)             • POST /v1/responses (Open Responses)   |
 |   • Domain Specialists with MCP Tool integration        • Stateful multi-turn turn chaining      |
-|   • Discovery (4000) & Memory (5000) services           • Outbound model adaptors (Groq, Gemini) |
-|   • Optional LLM-as-a-Judge self-correction             • High-throughput lock-free cache        |
+|   • Discovery (4000) & Memory (5000) services           • Multi-provider (Groq, Gemini, OpenAI,  |
+|   • Evaluation & Judge Service (Port 7000)                Ollama / vLLM / local endpoints)       |
+|   • Resilient OAuth2 / JWT authentication               • High-throughput lock-free cache        |
 |                                                                                                  |
 +--------------------------------------------------------------------------------------------------+
 ```
@@ -35,10 +36,25 @@
 
 ## 📦 Prerequisites
 
-1. **Install Rust**: [rust-lang.org](https://www.rust-lang.org/tools/install).
-2. **Set your Groq API Key**:
+1. **Install Rust**: [rust-lang.org](https://www.rust-lang.org/tools/install) (1.80+ recommended).
+2. **Configure Environment Variables**:
+   Copy `.env.example` to `.env` and fill in your preferred provider key:
    ```bash
+   cp .env.example .env
+   ```
+   Or export directly in your shell:
+   ```bash
+   # Groq (default cloud provider for fast inference):
    export GROQ_API_KEY="gsk_your_groq_api_key_here"
+
+   # Google Gemini (optional):
+   export GEMINI_API_KEY="your_gemini_api_key_here"
+
+   # OpenAI (optional):
+   export OPENAI_API_KEY="your_openai_api_key_here"
+
+   # Local Ollama (optional, e.g. http://localhost:11434/v1/chat/completions):
+   # export SWARM_LLM_URL="http://localhost:11434/v1/chat/completions"
    ```
 
 ---
@@ -52,6 +68,7 @@ In this mode, Swarm coordinates specialized agents that dynamically collaborate 
 - **Domain Agent (Port 8080)**: Specialist agent equipped with the **MCP Runtime** to execute tools (Weather, Customer, Wikipedia search, Scraping).
 - **MCP Server (Port 8000)**: Model Context Protocol SSE server providing live tools.
 - **Discovery (Port 4000) & Memory (Port 5000)**: Centralized agent registry and conversational context store.
+- **Evaluation Service (Port 7000)**: LLM-as-a-Judge self-correction and output verification.
 
 ### Quickstart (Mode 1)
 
@@ -81,7 +98,7 @@ In this mode, `swarm_server` acts as a unified model gateway for client applicat
 
 - **OpenAI-Compatible Chat Completions (`POST /v1/chat/completions`)**: Backward-compatible with standard developer tools, IDE extensions, and OpenAI SDKs.
 - **Open Responses Standard (`POST /v1/responses`)**: Modern stateful API with multi-turn conversation chaining (`previous_response_id`) and SSE streaming.
-- **Dynamic Target URL & Provider Configuration**: Configurable target URLs for Groq, Google Gemini, OpenAI, and local OpenAI-compatible endpoints (Ollama, vLLM, llama.cpp).
+- **Dynamic Multi-Provider Routing**: Out-of-the-box routing to **Groq**, **Google Gemini**, **OpenAI**, or **Local Ollama / vLLM / LocalAI**.
 
 ### ⚙️ Gateway Configuration Preview
 
@@ -101,9 +118,13 @@ api_url = "https://api.groq.com/openai/v1/chat/completions"
 [providers.google]
 api_url = "https://generativelanguage.googleapis.com/v1beta/models"
 
+[providers.openai]
+api_url = "https://api.openai.com/v1/chat/completions"
+
 [providers.custom]
 # Local inference (Ollama / vLLM / llama.cpp / LocalAI)
-# api_url = "http://127.0.0.1:11434/v1/chat/completions"
+api_url = "http://localhost:11434/v1/chat/completions"
+recommended_models = ["llama3.2:latest", "mistral:latest", "deepseek-r1:8b"]
 ```
 
 ### Quickstart (Mode 2)
@@ -112,6 +133,7 @@ api_url = "https://generativelanguage.googleapis.com/v1beta/models"
 cd swarm
 
 # 1. Launch the standalone Gateway Server (port 8080):
+# (Automatically detects .env, active Ollama, or offers an interactive provider menu)
 ./kickstart/gateway_kickstart/01_launch_gateway.sh
 
 # 2. Test OpenAI-Compatible Chat Completions:
@@ -183,8 +205,8 @@ swarm/
 
 ## 💡 Core Architecture
 
-* **`swarm_commons`**: Shared core traits, A2A interaction protocols, LLM adapters, and state stores.
-* **`swarm_services`**: Microservices providing Agent Discovery, Shared Memory, and LLM-as-a-Judge Evaluation.
+* **`swarm_commons`**: Shared core traits, A2A interaction protocols, multi-provider LLM adapters, and lock-free state stores.
+* **`swarm_services`**: Microservices providing Agent Discovery (4000), Shared Memory (5000), and LLM-as-a-Judge Evaluation (7000).
 * **`swarm`**: Core orchestration engines, specialist agents, and the unified gateway server.
 
 ---
@@ -195,8 +217,8 @@ swarm/
 - [x] Model Context Protocol (MCP) tool integration.
 - [x] Open Responses (`/v1/responses`) stateful turn chaining.
 - [x] OpenAI-compatible (`/v1/chat/completions`) endpoint.
-- [ ] Multi-provider load balancing and fallback routing (Gemini, Groq, OpenAI, Ollama).
-- [ ] Distributed Self-Sovereign Identity (SSI) agent authentication.
+- [x] Multi-provider routing (Google Gemini, Groq, OpenAI, Ollama / vLLM).
+- [x] Resilient OAuth2 / JWT agent authentication and auto-discovery retries.
 
 We welcome contributions! Feel free to open issues or pull requests.
 

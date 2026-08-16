@@ -1,0 +1,44 @@
+#################################################################
+# Config for MCP Runtime for Agent
+#################################################################
+
+#################################################################
+# General parameters
+#################################################################
+agent_mcp_role_tool = "tool"
+agent_mcp_system_prompt= "You are a helpful assistant that answers user requests. If you can answer a question using your general knowledge, do so. Otherwise, you can use one or more tools to find the answer. When you receive a message with a role called \"tool\", you must use the response from tools in order to build a final answer."
+agent_mcp_role_assistant = "assistant"
+agent_mcp_tool_choice_auto = "auto"
+agent_mcp_finish_reason_tool_calls = "tool_calls"
+agent_mcp_finish_reason_stop = "stop"
+# max number of loops that the agent will execute
+agent_mcp_max_loops = 5
+
+#################################################################
+# Parameters of the MCP middleware to connect to
+# You can define an MCP Server API Key here 
+# to connect to this mcp server
+#################################################################
+agent_mcp_server_url="http://localhost:8000/sse"
+agent_mcp_server_api_key="<YOUR_API_KEY>"
+
+#################################################################
+# Define her the url of openai compatible endpoint 
+# as well as the model to use
+# api key for the mcp runtime needs to be defined as
+# env variable. Below you can define the name it points to
+#################################################################
+agent_mcp_llm_api_key_env_var="LLM_MCP_API_KEY" 
+#agent_mcp_model_id="gemini-2.0-flash"
+#agent_mcp_llm_url ="https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+#agent_mcp_model_id="qwen/qwen3-32b"
+agent_mcp_model_id="openai/gpt-oss-20b"
+#agent_mcp_model_id="deepseek-r1-distill-llama-70b"
+#agent_mcp_model_id="meta-llama/llama-4-scout-17b-16e-instruct"
+agent_mcp_llm_url="https://api.groq.com/openai/v1/chat/completions"
+
+#################################################################
+# In case you want to launch a rest endpoint to interact 
+# with mcp runtime agent, here is the url
+#################################################################
+agent_mcp_endpoint="http://localhost:3000/"

@@ -1,0 +1,10 @@
+# To evaluate if an agent is calling MCP server
+# This is a query attacking our mcp server 
+
+./target/release/simple_workflow_agent_client --port 8080 --log-level "warn" --generation-type "dynamic_generation" --user-query "What is weather like in Boston ?"
+
+
+# With this you ensure agent is calling MCP runtime and MCP llm
+
+./target/release/simple_workflow_agent_client --port 8080 --log-level "warn" --generation-type "dynamic_generation" --user-query "Prepare me a nice message on the format of an email to tell me what is weather in Boston ?"
+

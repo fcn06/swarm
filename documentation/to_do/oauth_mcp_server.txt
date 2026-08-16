@@ -1,0 +1,6 @@
+oauth mcp server
+https://github.com/modelcontextprotocol/rust-sdk/blob/main/examples/servers/src/complex_auth_sse.rs
+
+oauth mcp client
+https://github.com/modelcontextprotocol/rust-sdk/blob/main/examples/clients/src/auth/oauth_client.rs
+

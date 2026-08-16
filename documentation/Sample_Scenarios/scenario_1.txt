@@ -1,0 +1,36 @@
+# THIS HAS TO BE RUN FROM ROOT OF SWARM CRATE
+
+****************************
+Load Env Variables
+***************************
+export LLM_A2A_API_KEY=<YOUR-GROQ-API-KEY>
+export LLM_MCP_API_KEY=<YOUR-GROQ-API-KEY>
+export LLM_JUDGE_API_KEY=<YOUR-GROQ-API-KEY>
+export LLM_PLANNER_API_KEY=<YOUR-GROQ-API-KEY>
+export LLM_EXECUTOR_API_KEY=<YOUR-GROQ-API-KEY>
+
+
+****************************
+Run agents with dynamic generation
+***************************
+./documentation/demo_planner_executor_management/run_all_commands.sh --dynamic-generation
+
+****************************
+Terminate all agents
+***************************
+sh ./documentation/demo_planner_executor_management/terminate_all_agents_process.sh 
+
+****************************
+Run agents with pre-defined workflow
+***************************
+./documentation/demo_planner_executor_management/run_all_commands.sh --static-generation ./documentation/demo_planner_executor_management/mix_agent_tools_workflow.json
+
+****************************
+Ask A series of queries to multi agent system
+***************************
+#Query using tool search and basic agent to formulate an answer
+./target/release/simple_workflow_agent_client --port 8280 --log-level "warn" --generation-type "dynamic_generation" --user-query "Prepare me a nice message to politely explain what is the weather like in BOSTON ?"
+
+#Query using tool search and basic agent to compile results
+./target/release/simple_workflow_agent_client --port 8280 --log-level "warn" --generation-type "dynamic_generation" --user-query "How many olympic medals did Carl Lewis win ?"
+

@@ -1,0 +1,48 @@
+digraph PersonalizedWeatherNotification {
+    rankdir=TB; // Top to Bottom
+    compound=true;
+    // --- Global Style Settings ---
+    node [shape=box, style="filled,rounded", fontname="Helvetica", fontsize=10];
+
+    // --- Start and End Nodes ---
+    START [label="START", shape=Mdiamond, fillcolor="#CCEECC", tooltip="Workflow Entry Point"];
+    END [label="END", shape=Msquare, fillcolor="#CCEECC", tooltip="Workflow Exit Point"];
+
+    // --- Activity Nodes ---
+
+    // Tool Use Activity
+    fetch_weather_forecast [
+        label="fetch_weather_forecast",
+        fillcolor="#FFDDC1", // Light Peach
+        tooltip="Activity Type: direct_tool_use"
+    ]; // Fetches weather forecast for Boston
+
+    // Delegation Agent Activity
+    fetch_customer_data [
+        label="fetch_customer_data",
+        fillcolor="#B3E0FF", // Lighter Blue
+        tooltip="Activity Type: delegation_agent"
+    ]; // Retrieves customer data for customer_id 12345
+
+    // Delegation Agent Activity (Final Step)
+    compose_personalized_message [
+        label="compose_personalized_message",
+        fillcolor="#B3E0FF", // Lighter Blue
+        tooltip="Activity Type: delegation_agent"
+    ]; // Composes a personalized message using customer and weather data.
+
+    // --- Edges (Dependencies) ---
+
+    // 1. START connection
+    START -> fetch_weather_forecast;
+
+    // 2. Core dependencies
+    fetch_weather_forecast -> fetch_customer_data;
+
+    // 3. Dependencies for message composition
+    fetch_customer_data -> compose_personalized_message;
+    fetch_weather_forecast -> compose_personalized_message; // Direct connection from weather data
+
+    // 4. END connection
+    compose_personalized_message -> END;
+}

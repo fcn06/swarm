@@ -1,0 +1,58 @@
+#################################################################
+# Config for A2A Agent, that can embed a MCP agent
+#################################################################
+
+#################################################################
+# General parameters
+#################################################################
+agent_id="Basic_Agent"
+agent_name="Basic_Agent"
+agent_http_endpoint="http://127.0.0.1:8080"
+agent_ws_endpoint="ws://127.0.0.1:8081"
+
+#agent_host="127.0.0.1"
+#agent_http_port="8080"
+#agent_ws_port="8081"
+
+#################################################################
+# Future use : It would make sense to have a discovery service
+# so that planner agent can dynamically discover agents to
+# connect to
+#################################################################
+agent_discovery_url="http://127.0.0.1:4000"
+
+
+#################################################################
+# Purpose and high level skills
+# The agent will use the A2A protocol for his interactions
+#################################################################
+agent_system_prompt="You are a helpful assistant that answers user requests."
+agent_skill_id="generic_request"
+agent_skill_name="All_requests about Weather and Customer"
+agent_skill_description="Helps with all types of requests."
+agent_version="1.0.0"
+agent_description="An agent that can process requests related to weather, customer information or web search"
+agent_doc_url="/docs"
+agent_tags=["find weather","details about customer","general","search"]
+agent_examples=["What is the weather like in Boston?","What is address of customer 1234","Tell me about rust"]
+
+#################################################################
+# Define her the url of openai compatible endpoint 
+# as well as the model to use
+#################################################################
+# Use this if you use a model from Google
+#agent_model_id="gemini-2.0-flash"
+#agent_llm_url="https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+# Use this if you use a model from Groq
+#agent_model_id="qwen/qwen3-32b"
+agent_model_id="openai/gpt-oss-20b"
+agent_llm_url="https://api.groq.com/openai/v1/chat/completions"
+# Use this if you use a local model run for example from llama.cpp on port 2000
+#agent_model_id="LFM2-350M-Math"
+#agent_llm_url="http://localhost:2000/v1/chat/completions"
+
+#################################################################
+# You can say the agent to include a MCP runtime agent
+# you just define the configuration file to use
+#################################################################
+agent_mcp_config_path="configuration/mcp_runtime_config.toml"

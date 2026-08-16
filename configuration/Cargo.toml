@@ -1,0 +1,18 @@
+[package]
+name = "configuration"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+#crate-type = ["dylib", "rlib"]
+crate-type = ["rlib"]
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+
+toml = { workspace = true }
+
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }

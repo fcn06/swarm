@@ -1,0 +1,75 @@
+{
+  "plan_name": "Create personalized welcome message with weather",
+  "activities": [
+    {
+      "id": "activity_1",
+      "description": "Retrieve the customer details for customer_id 12345.",
+      "type": "DirectToolUse",
+      "activity_type": "direct_tool_use",
+      "agent": {
+        "skill_to_use": "get_customer_details",
+        "assigned_agent_id_preference": "Basic_Agent"
+      },
+      "tools": [
+        {
+          "tool_to_use": "get_customer_details",
+          "tool_parameters": {
+            "_customer_id": "12345"
+          }
+        }
+      ],
+      "tasks": [],
+      "dependencies": [],
+      "expected_outcome": "Customer details JSON containing name and location."
+    },
+    {
+      "id": "activity_2",
+      "description": "Fetch the current weather for the customer's location extracted from activity_1.",
+      "type": "DirectToolUse",
+      "activity_type": "direct_tool_use",
+      "agent": {
+        "skill_to_use": "get_current_weather",
+        "assigned_agent_id_preference": "Basic_Agent"
+      },
+      "tools": [
+        {
+          "tool_to_use": "get_current_weather",
+          "tool_parameters": {
+            "_location": "<location from activity_1>",
+            "unit": "Degree Celsius"
+          }
+        }
+      ],
+      "tasks": [],
+      "dependencies": [
+        {
+          "source": "activity_1",
+          "condition": "customer location available"
+        }
+      ],
+      "expected_outcome": "Weather details JSON containing temperature, conditions, etc."
+    },
+    {
+      "id": "activity_3",
+      "description": "Compose a friendly welcome message that includes the customer's name and the current weather information.",
+      "type": "DelegationAgent",
+      "activity_type": "delegation_agent",
+      "agent": {
+        "assigned_agent_id_preference": "Basic_Agent"
+      },
+      "tools": [],
+      "tasks": [],
+      "dependencies": [
+        {
+          "source": "activity_1",
+          "condition": "customer details retrieved"
+        },
+        {
+          "source": "activity_2",
+          "condition": "weather data retrieved"
+        }
+      ],
+      "expected_outcome": "A complete welcome message string ready for delivery."
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+#################################################################
+# Config for A2A Agent, that can embed a MCP agent
+#################################################################
+
+#################################################################
+# General parameters
+#################################################################
+agent_id="Executor_Agent"
+agent_name="Executor_Agent"
+agent_http_endpoint="http://127.0.0.1:9580"
+agent_ws_endpoint="ws://127.0.0.1:9581"
+
+#agent_host="127.0.0.1"
+#agent_http_port="9580"
+#agent_ws_port="9581"
+
+#################################################################
+# Future use : It would make sense to have a discovery service
+# so that planner agent can dynamically discover agents to
+# connect to
+#################################################################
+agent_discovery_url="http://127.0.0.1:4000"
+agent_discoverable=false
+
+#################################################################
+# Purpose and high level skills
+# The agent will use the A2A protocol for his interactions
+#################################################################
+agent_system_prompt="""
+You are an executor agent that executes precsiley workflow that you are delegated.
+"""
+
+agent_skill_id="workflow_execution"
+agent_skill_name="Execute Strictly Defined Workflow"
+agent_skill_description="Receives a workflow definition as an input and execute it"
+agent_version="1.0.0"
+agent_description="An agent that only executes strictly defined workflow."
+agent_doc_url="/docs"
+agent_tags=["execute plan"]
+agent_examples=["execute this plan"]
+
+#################################################################
+# Define her the url of openai compatible endpoint 
+# as well as the model to use
+#################################################################
+# These set of parameters declares the LLM that the agent will connect to
+#agent_model_id="gemini-2.0-flash"
+#agent_llm_url="https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+#agent_model_id="qwen/qwen3-32b"
+agent_model_id="openai/gpt-oss-20b"
+#agent_model_id="deepseek-r1-distill-llama-70b"
+#agent_model_id="meta-llama/llama-4-scout-17b-16e-instruct"
+agent_llm_url="https://api.groq.com/openai/v1/chat/completions"
+
+#################################################################
+# You can say the agent to include a MCP runtime agent
+# you just define the configuration file to use
+#################################################################
+agent_mcp_config_path="configuration/mcp_runtime_config.toml"

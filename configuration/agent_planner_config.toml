@@ -1,0 +1,83 @@
+#################################################################
+# Config for A2A Agent, that can embed a MCP agent
+#################################################################
+
+#################################################################
+# General parameters
+#################################################################
+agent_id="Planner_Agent"
+agent_name="Planner_Agent"
+agent_http_endpoint="http://127.0.0.1:8280"
+agent_ws_endpoint="ws://127.0.0.1:8281"
+
+#agent_name="Planner_Agent"
+#agent_host="127.0.0.1"
+#agent_http_port="8280"
+#agent_ws_port="8281"
+
+#################################################################
+# Future use : It would make sense to have a discovery service
+# so that planner agent can dynamically discover agents to
+# connect to
+#################################################################
+agent_discovery_url="http://127.0.0.1:4000"
+agent_discoverable=false
+
+#################################################################
+# executor agent to which planner delegates execution
+#################################################################
+agent_executor_url="http://127.0.0.1:9580"
+
+
+#################################################################
+# Purpose and high level skills
+# The agent will use the A2A protocol for his interactions
+#################################################################
+agent_system_prompt="""
+You are an expert workflow generation AI. Your mission is to create highly efficient, well-structured, and accurate JSON workflow definitions for multi-agent systems. You have access to a specific set of agents, tools, and tasks. Your outputs must strictly adhere to the provided JSON schema and the following rules.
+
+1. Maximize Agent Autonomy 🤝:
+When an agent (e.g., Basic_Agent) has the inherent capability and tools to perform a sequence of related operations, consolidate these steps into a single delegation_agent activity.
+Empower agents to handle their own internal logic and tool orchestration. Don't break a single logical action into multiple steps if one agent can handle it.
+For example, if an agent can extract a location from a user request and then use that location with a weather tool, define this as a single delegation_agent activity.
+
+2. Use agent_context for Dynamic Data 🧩:
+NEVER embed variable references ({{...}}) directly into the description field. description is for a static, human-readable summary.
+All dynamic data, especially outputs from previous activities, MUST be passed to a delegation_agent via its agent_context field. The agent will handle the processing internally.
+
+3. Ensure Clear Dependencies 🔗:
+Always specify dependencies correctly to reflect the execution and data flow.
+If an activity relies on the output of a preceding activity, that dependency must be explicitly listed.
+
+4. Be Concise & Accurate 🎯:
+Keep activity description fields brief and focused on the objective.
+Ensure all tool and agent IDs are from the provided list.
+"""
+
+agent_skill_id="define_plan"
+agent_skill_name="Define a plan."
+agent_skill_description="Defines a plan"
+agent_version="1.0.0"
+agent_description="An agent that only defines plan."
+agent_doc_url="/docs"
+agent_tags=["define a plan"]
+agent_examples=["Generate a plan for this user request"]
+
+#################################################################
+# Define her the url of openai compatible endpoint 
+# as well as the model to use
+#################################################################
+# These set of parameters declares the LLM that the agent will connect to
+#agent_model_id="gemini-2.0-flash"
+#agent_llm_url="https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+#agent_model_id="qwen/qwen3-32b"
+agent_model_id="openai/gpt-oss-20b"
+#agent_model_id="deepseek-r1-distill-llama-70b"
+#agent_model_id="meta-llama/llama-4-scout-17b-16e-instruct"
+agent_llm_url="https://api.groq.com/openai/v1/chat/completions"
+
+#################################################################
+# You can say the agent to include a MCP runtime agent
+# you just define the configuration file to use
+#################################################################
+agent_mcp_config_path="configuration/mcp_runtime_config.toml"

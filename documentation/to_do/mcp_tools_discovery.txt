@@ -1,3 +1,0 @@
-Make the mcp use discovery service to get list tools for execution
-
-Make discovery service using embeddings so that we inject in runtime x agent only appropriate tools in the prompt

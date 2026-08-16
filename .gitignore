@@ -15,4 +15,4 @@ target
 
 Cargo.lock
 GEMINI.md
-documentation/
+# documentation/

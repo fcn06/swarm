@@ -14,6 +14,12 @@
 
 ## 🧭 Swarm at a Glance: Two Operating Modes
 
+<p align="center">
+  <img src="illustrations/swarm_dual_ai_framework.jpeg" alt="Swarm Dual AI Framework" width="60%" />
+  <br />
+  <em>Figure: Overview of Swarm's dual operating modes — Multi-Agent Orchestration &amp; Model Gateway Server.</em>
+</p>
+
 ```
 +--------------------------------------------------------------------------------------------------+
 |                                        SWARM MODES                                               |

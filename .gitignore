@@ -20,4 +20,4 @@ GEMINI.md
 *.env
 .env.*
 !.env.example
-#*.log
+*.log

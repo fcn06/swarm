@@ -41,7 +41,7 @@
                     │                                  │                                   │
                     v                                  v                                   v
         POST /v1/chat/completions              POST /v1/responses                  POST /v1/interactions
-  (Corporate Proxies)        (OpenAI Upstream)                   (Google Gemini Platform)
+  (Corporate Proxies)                          (OpenAI Upstream)                   (Google Gemini Platform)
 ```
 
 ---

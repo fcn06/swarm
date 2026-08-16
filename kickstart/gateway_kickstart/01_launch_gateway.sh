@@ -138,7 +138,7 @@ echo "--------------------------------------------------------------------------
 pkill -f "target/release/swarm_server" || true
 sleep 1
 
-./target/release/swarm_server --config-file "$CONFIG_FILE" --bind-address "$BIND_ADDRESS" --log-level "$LOG_LEVEL" &
+setsid ./target/release/swarm_server --config-file "$CONFIG_FILE" --bind-address "$BIND_ADDRESS" --log-level "$LOG_LEVEL" < /dev/null > "$SWARM_ROOT/gateway.log" 2>&1 &
 GATEWAY_PID=$!
 sleep 2
 

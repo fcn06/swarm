@@ -17,7 +17,7 @@ echo "==========================================================================
 echo "    🌤️  Executing Multi-Agent Query with MCP Tool: Weather in Boston     "
 echo "=========================================================================="
 echo " Query  : \"$USER_QUERY\""
-echo " Route  : Planner Agent (8280) -> Domain Agent (8080) -> MCP Server (8000)"
+echo " Route  : Planner Agent (8280) -> Domain Agent (8180) -> MCP Server (8000)"
 echo " Config : kickstart/multi_agent_orchestration_kickstart/config_files/"
 echo "=========================================================================="
 echo ""

@@ -71,7 +71,7 @@ In this mode, Swarm coordinates specialized agents that dynamically collaborate 
 
 - **Planner Agent (Port 8280)**: Analyzes the user request and dynamically constructs an execution workflow.
 - **Executor Agent (Port 9580)**: Executes each step in the workflow graph with dependency resolution.
-- **Domain Agent (Port 8080)**: Specialist agent equipped with the **MCP Runtime** to execute tools (Weather, Customer, Wikipedia search, Scraping).
+- **Domain Agent (Port 8180)**: Specialist agent equipped with the **MCP Runtime** to execute tools (Weather, Customer, Wikipedia search, Scraping).
 - **MCP Server (Port 8000)**: Model Context Protocol SSE server providing live tools.
 - **Discovery (Port 4000) & Memory (Port 5000)**: Centralized agent registry and conversational context store.
 - **Evaluation Service (Port 7000)**: LLM-as-a-Judge self-correction and output verification.
@@ -94,7 +94,7 @@ cd swarm
 All configurations for Mode 1 are located in [`kickstart/multi_agent_orchestration_kickstart/config_files/`](kickstart/multi_agent_orchestration_kickstart/config_files).
 
 > [!NOTE]
-> **Port Allocation**: In Mode 1, the Basic Domain Agent listens on `Port 8080`. In Mode 2, the Gateway Server also defaults to `Port 8080`. The two modes are designed to run independently, or you can override the port with `--port` / `--bind-address`.
+> **Port Allocation**: In Mode 1, the Basic Domain Agent listens on `Port 8180` (with Planner on `8280`, Executor on `9580`, MCP Server on `8000`). In Mode 2, the Gateway Server listens on `Port 8080`. This clear separation allows both modes to run concurrently on the same machine without port conflicts.
 
 ---
 

@@ -255,7 +255,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     
     // Config for Specialist Agent
     let factory_agent_config = FactoryAgentConfig::builder()
-        .with_factory_agent_url("http://127.0.0.1:8080".to_string())
+        .with_factory_agent_url("http://127.0.0.1:8180".to_string())
         .with_factory_agent_type(AgentType::Specialist)
         .with_factory_agent_domains(AgentDomain::General)
         .with_factory_agent_name("Basic_Agent".to_string())

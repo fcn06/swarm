@@ -24,7 +24,7 @@ struct Args {
     #[clap(long, default_value = "127.0.0.1")]
     host: String,
     /// Configuration file path (TOML format)
-    #[clap(long, default_value = "8080")]
+    #[clap(long, default_value = "8180")]
     port: String,
     #[clap(long, default_value = "warn")]
     log_level: String,

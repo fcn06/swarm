@@ -30,7 +30,7 @@ struct Args {
     log_level: String,
     #[clap(long, default_value = "0.0.0.0:3000")]
     uri: String,
-    #[clap(long, default_value = "http://localhost:8080")]
+    #[clap(long, default_value = "http://localhost:8180")]
     a2a_uri: String,
 }
 

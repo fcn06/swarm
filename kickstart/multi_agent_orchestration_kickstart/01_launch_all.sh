@@ -111,29 +111,29 @@ pkill -f "launch_executor_agent" || true
 sleep 1
 
 echo "• [1/6] Starting Discovery Service (Port 4000)..."
-"$SWARM_SERVICES_ROOT/target/release/discovery_service" --log-level "warn" &
+setsid "$SWARM_SERVICES_ROOT/target/release/discovery_service" --log-level "warn" < /dev/null > /dev/null 2>&1 &
 sleep 2
 
 echo "• [2/6] Starting Memory Service (Port 5000)..."
-"$SWARM_SERVICES_ROOT/target/release/memory_service" --log-level "warn" &
+setsid "$SWARM_SERVICES_ROOT/target/release/memory_service" --log-level "warn" < /dev/null > /dev/null 2>&1 &
 sleep 2
 
 echo "• [3/6] Starting Evaluation Service (Port 7000)..."
-"$SWARM_SERVICES_ROOT/target/release/evaluation_service" --config-file "$WORKSPACE_ROOT/swarm_commons/configuration/agent_judge_config.toml" --log-level "warn" &
+setsid "$SWARM_SERVICES_ROOT/target/release/evaluation_service" --config-file "$WORKSPACE_ROOT/swarm_commons/configuration/agent_judge_config.toml" --log-level "warn" < /dev/null > /dev/null 2>&1 &
 sleep 2
 
 echo "• [4/6] Starting MCP Tools Server (Port 8000 with Weather, Customer, Scrape, Search)..."
-"$SWARM_ROOT/target/release/examples/main-server" --port 8000 --log-level "warn" all &
+setsid "$SWARM_ROOT/target/release/examples/main-server" --port 8000 --log-level "warn" all < /dev/null > /dev/null 2>&1 &
 sleep 3
 
-echo "• [5/6] Starting Basic Domain Agent with MCP Tools (Port 8080)..."
-"$SWARM_ROOT/target/release/basic_agent_launch" --config-file "kickstart/multi_agent_orchestration_kickstart/config_files/agent_basic_config.toml" --log-level "warn" &
+echo "• [5/6] Starting Basic Domain Agent with MCP Tools (Port 8180)..."
+setsid "$SWARM_ROOT/target/release/basic_agent_launch" --config-file "kickstart/multi_agent_orchestration_kickstart/config_files/agent_basic_config.toml" --log-level "warn" < /dev/null > /dev/null 2>&1 &
 sleep 4
 
 echo "• [6/6] Starting Planner & Executor Agents (Ports 8280 & 9580)..."
-"$SWARM_ROOT/target/release/launch_planner_agent" --config-file "kickstart/multi_agent_orchestration_kickstart/config_files/agent_planner_config.toml" --log-level "warn" &
+setsid "$SWARM_ROOT/target/release/launch_planner_agent" --config-file "kickstart/multi_agent_orchestration_kickstart/config_files/agent_planner_config.toml" --log-level "warn" < /dev/null > /dev/null 2>&1 &
 sleep 3
-"$SWARM_ROOT/target/release/launch_executor_agent" --config-file "kickstart/multi_agent_orchestration_kickstart/config_files/agent_executor_config.toml" --log-level "warn" &
+setsid "$SWARM_ROOT/target/release/launch_executor_agent" --config-file "kickstart/multi_agent_orchestration_kickstart/config_files/agent_executor_config.toml" --log-level "warn" < /dev/null > /dev/null 2>&1 &
 sleep 3
 
 echo $'\n'
@@ -144,7 +144,7 @@ echo " • Discovery Service:      http://127.0.0.1:4000/agents"
 echo " • Memory Service:         http://127.0.0.1:5000"
 echo " • Evaluation Service:     http://127.0.0.1:7000"
 echo " • MCP Tools Server:       http://127.0.0.1:8000/sse"
-echo " • Domain Agent (MCP):     http://127.0.0.1:8080"
+echo " • Domain Agent (MCP):     http://127.0.0.1:8180"
 echo " • Planner Orchestrator:   http://127.0.0.1:8280"
 echo " • Executor Agent:         http://127.0.0.1:9580"
 echo "=========================================================================="

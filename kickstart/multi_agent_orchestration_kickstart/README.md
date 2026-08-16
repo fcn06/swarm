@@ -31,7 +31,7 @@ swarm/kickstart/multi_agent_orchestration_kickstart/
 | **Discovery Service** | `4000` | In-memory registry |
 | **Memory Service** | `5000` | In-memory task store |
 | **MCP Tools Server** | `8000` | `main-server` with `weather`, `customer`, `scrape`, `search` |
-| **Basic Domain Agent** | `8080` | `config_files/agent_basic_config.toml` |
+| **Basic Domain Agent** | `8180` | `config_files/agent_basic_config.toml` |
 | **Planner Orchestrator** | `8280` | `config_files/agent_planner_config.toml` |
 | **Executor Agent** | `9580` | `config_files/agent_executor_config.toml` |
 

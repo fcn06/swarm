@@ -27,7 +27,7 @@ const A2A_TIMEOUT_SECONDS: u32 = 50;
 const MAX_RETRIES: u8 = 3;
 const TRIGGER_RETRY: u8 = 3;
 
-use llm_api::google_interactions::{GeminiInteractionRequest, Part as GeminiPart};
+use agent_models::agent_request::AgentRequest;
 
 #[derive(Clone)]
 pub struct PlannerAgent {
@@ -70,24 +70,15 @@ impl Agent for PlannerAgent {
         })
     }
 
-    async fn handle_request(&self, request: GeminiInteractionRequest, metadata: Option<Map<String, Value>>) -> Result<ExecutionResult> {
-        let mut user_query = request
-            .contents
-            .iter()
-            .flat_map(|c| c.parts.iter())
-            .filter_map(|p| match p {
-                GeminiPart::Text { text } => Some(text.clone()),
-                _ => None,
-            })
-            .collect::<Vec<_>>()
-            .join("\n");
+    async fn handle_request(&self, request: AgentRequest) -> Result<ExecutionResult> {
+        let mut user_query = request.user_query();
         let original_user_query = user_query.clone();
         let request_id = Uuid::new_v4().to_string();
-        let conversation_id = Uuid::new_v4().to_string();
+        let conversation_id = request.session_id.clone().unwrap_or_else(|| Uuid::new_v4().to_string());
 
         debug!("---PlannerAgent: Starting to handle user request -- Query: \'{}\'---", user_query);
 
-        let planning_strategy = self.determine_planning_strategy(&metadata)?;
+        let planning_strategy = self.determine_planning_strategy(&request.metadata)?;
 
         match planning_strategy {
             PlanningStrategy::FromFile(file_path) => {

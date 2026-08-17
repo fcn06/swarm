@@ -3,7 +3,7 @@ use std::any::Any;
 use async_trait::async_trait;
 use tracing::{debug, warn};
 
-use serde_json::{Map, Value, json};
+use serde_json::{Value, json};
 use uuid::Uuid;
 
 use configuration::AgentConfig;
@@ -17,7 +17,7 @@ use workflow_management::agent_communication::agent_invoker::AgentInvoker;
 use workflow_management::tasks::task_invoker::TaskInvoker;
 use workflow_management::tools::tool_invoker::ToolInvoker;
 use resource_invoker::A2AAgentInvoker;
-use llm_api::google_interactions::{GeminiInteractionRequest, Part as GeminiPart};
+use agent_models::agent_request::AgentRequest;
 
 // TODO: Move this to a separate file if it grows
 #[derive(Clone)]
@@ -92,21 +92,17 @@ impl Agent for ExecutorAgent {
 
     async fn handle_request(
         &self,
-        request: GeminiInteractionRequest,
-        _metadata: Option<Map<String, Value>>,
+        request: AgentRequest,
     ) -> anyhow::Result<ExecutionResult> {
-        let plan_json = request
-            .contents
-            .iter()
-            .flat_map(|c| c.parts.iter())
-            .filter_map(|p| match p {
-                GeminiPart::Text { text } => Some(text.clone()),
-                _ => None,
-            })
-            .collect::<Vec<_>>()
-            .join("\n");
-
+        let plan_json = request.user_query();
         let graph: Graph = serde_json::from_str(&plan_json)?;
+
+        let original_user_query = request.metadata
+            .as_ref()
+            .and_then(|m| m.get("original_user_query"))
+            .and_then(|v| v.as_str())
+            .unwrap_or("User query not available in executor")
+            .to_string();
 
         debug!("---ExecutorAgent: Starting to execute plan---");
         debug!("Graph Received: {:#?}", graph);
@@ -116,7 +112,7 @@ impl Agent for ExecutorAgent {
             self.workflow_invokers.task_invoker.clone(),
             self.workflow_invokers.agent_invoker.clone(),
             self.workflow_invokers.tool_invoker.clone(),
-            "User query not available in executor".to_string(), // TODO: Pass user query through
+            original_user_query,
         );
 
         match executor.execute_plan().await {

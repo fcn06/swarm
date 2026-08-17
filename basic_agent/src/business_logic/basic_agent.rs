@@ -9,12 +9,11 @@ use std::sync::Arc;
 
 use tracing::debug;
 
-use serde_json::Map;
 use serde_json::Value;
 
 use mcp_runtime::mcp_agent_logic::agent::McpAgent;
 use llm_api::chat::Message as LlmMessage;
-use llm_api::google_interactions::{GeminiInteractionRequest, Part};
+use agent_models::agent_request::AgentRequest;
 
 use agent_core::business_logic::agent::Agent;
 use agent_core::business_logic::services::{EvaluationService, MemoryService, DiscoveryService};
@@ -62,22 +61,12 @@ impl Agent for BasicAgent {
     /// Business logic for handling user request
     async fn handle_request(
         &self,
-        request: GeminiInteractionRequest,
-        _metadata: Option<Map<String, Value>>,
+        request: AgentRequest,
     ) -> anyhow::Result<ExecutionResult> {
         let request_id = uuid::Uuid::new_v4().to_string();
         let conversation_id = Uuid::new_v4().to_string();
 
-        let user_query = request
-            .contents
-            .iter()
-            .flat_map(|c| c.parts.iter())
-            .filter_map(|p| match p {
-                Part::Text { text } => Some(text.clone()),
-                _ => None,
-            })
-            .collect::<Vec<_>>()
-            .join("\n");
+        let user_query = request.user_query();
 
         let llm_msg = LlmMessage {
             role: "user".to_string(),

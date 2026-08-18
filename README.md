@@ -236,6 +236,30 @@ swarm/
 
 ---
 
+## 🔍 Behind the Scenes: Evaluation & Persistence (`evaluation_db.redb`)
+
+Curious about what `swarm/database/evaluation_db.redb` is for? 
+
+Swarm includes a built-in **LLM-as-a-Judge Evaluation Service** (Port 7000) backed by [`redb`](https://github.com/cberner/redb)—a pure-Rust, zero-copy, ACID embedded key-value store.
+
+### ⚙️ How It Works in Swarm
+
+* **Recording Evaluation Runs (`POST /log`)**:
+  Whenever an agent completes a task, its output is sent to the Judge Agent for verification. The evaluation service creates an `EvaluatedAgentData` record containing:
+  - **`agent_log`**: Agent ID, request ID, inputs, and execution output.
+  - **`evaluation`**: The Judge LLM's assessment, quality score, and validation feedback.
+  - **`timestamp`**: UTC timestamp of the evaluation.
+  
+  It commits this payload directly into `evaluation_db.redb` keyed by `request_id`.
+
+* **Auditing & Inspection (`GET /evaluations`)**:
+  Iterates through the database table to retrieve all historical evaluations across restarts, enabling observability, easy debugging of agent workflows, and model accuracy benchmarking over time.
+
+* **Model Fine-Tuning & Continuous Improvement**:
+  Because the store preserves prompt inputs, agent outputs, judge scores, and corrective critique, this dataset can be exported for **supervised fine-tuning (SFT)** or **reinforcement learning / preference alignment (DPO/RLHF)**—helping specialized models learn from past mistakes and improve domain-specific execution over time.
+
+---
+
 ## 🗺️ Roadmap & Contributing
 
 - [x] Multi-Agent dynamic workflow planning and execution.

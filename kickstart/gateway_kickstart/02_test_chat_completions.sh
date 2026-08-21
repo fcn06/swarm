@@ -15,7 +15,7 @@ cd "$SWARM_ROOT"
 
 PORT="${PORT:-8080}"
 USER_QUERY="${1:-}"
-MODEL="${2:-groq/llama-3.3-70b-versatile}"
+MODEL="${2:-openai/gpt-oss-20b}"
 
 echo "=========================================================================="
 echo "    🌐 Gateway Test: POST /v1/chat/completions                            "

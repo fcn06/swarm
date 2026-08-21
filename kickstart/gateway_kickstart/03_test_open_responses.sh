@@ -14,7 +14,7 @@ CONFIG_DIR="$SCRIPT_DIR/config_files"
 cd "$SWARM_ROOT"
 
 PORT="${PORT:-8080}"
-MODEL="${1:-groq/llama-3.3-70b-versatile}"
+MODEL="${1:-openai/gpt-oss-20b}"
 
 echo "=========================================================================="
 echo "    🌐 Gateway Test: POST /v1/responses (Multi-Turn Stateful Session)    "

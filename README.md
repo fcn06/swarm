@@ -83,7 +83,9 @@ cd swarm
 ./kickstart/gateway_kickstart/01_launch_gateway.sh
 ```
  
-Your application can then use the OpenAI-compatible endpoint:
+Your application can then use either the OpenAI-compatible endpoint or the Open Responses endpoint:
+ 
+**Chat Completions (`/v1/chat/completions`)**
  
 ```bash
 curl -X POST http://localhost:8080/v1/chat/completions \
@@ -96,7 +98,28 @@ curl -X POST http://localhost:8080/v1/chat/completions \
   }'
 ```
  
-Behind the same API, Swarm can route to:
+**Open Responses (`/v1/responses` — Stateful Multi-Turn)**
+
+```bash
+# Turn 1: Initial query (returns an "id", e.g. "resp_123...")
+curl -X POST http://localhost:8080/v1/responses \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openai/gpt-oss-20b",
+    "input": "My favorite city is Boston."
+  }'
+
+# Turn 2: Follow-up query linked with previous_response_id
+curl -X POST http://localhost:8080/v1/responses \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openai/gpt-oss-20b",
+    "previous_response_id": "resp_123...",
+    "input": "What is its most famous monument?"
+  }'
+```
+ 
+Behind the same gateway, Swarm can route to:
  
 | Provider | Type |
 |---|---|

@@ -4,76 +4,87 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue)](LICENSE)
 [![MCP](https://img.shields.io/badge/MCP-SSE%20%2B%20Streamable-purple)](https://modelcontextprotocol.io)
 
-> **Swarm is a Rust-native AI runtime that unifies model routing, agent orchestration, MCP tools, state, and evaluation — so teams do not have to operate separate gateway and agent stacks.**
-
+ 
+> **Swarm is a Rust-native AI runtime that unifies model routing, agent orchestration, MCP tools, state, and evaluation — so teams don't have to operate separate gateway and agent stacks.**
+ 
+---
+ 
+## Table of Contents
+ 
+- [Why Swarm?](#why-swarm)
+- [Quick Onboarding Scenario](#quick-onboarding-scenario)
+- [Key Capabilities](#key-capabilities)
+- [Project Direction](#project-direction)
+- [Documentation](#documentation)
+- [Repository Structure](#repository-structure)
+- [Contributing](#contributing)
+- [License](#license)
+---
+ 
 ## Why Swarm?
-
+ 
 AI applications often start with direct LLM calls, then gradually add provider routing, tools, memory, agents, and evaluation.
-
+ 
 That growth commonly produces two separate infrastructure layers:
-
-- an **LLM gateway** for model access and routing;
-- an **agent framework** for planning, tools, workflows, and state.
-
+ 
+- an **LLM gateway** for model access and routing
+- an **agent framework** for planning, tools, workflows, and state
 Swarm combines both around one Tokio-based runtime and shared protocol abstractions.
-
+ 
 ```text
 Application
-    |
-    v
-+----------------------+
-|        SWARM         |
-|----------------------|
-| Model Gateway        |
-| Agent Orchestration  |
-| MCP Tools            |
-| Shared State         |
-| Evaluation           |
-+----------+-----------+
-           |
-     +-----+------+
-     |            |
- Cloud Models   Local Models
- OpenAI         Ollama
- Gemini         vLLM
- Groq           llama.cpp
+    │
+    ▼
+┌───────────────────────┐
+│         SWARM         │
+├───────────────────────┤
+│ Model Gateway          │
+│ Agent Orchestration    │
+│ MCP Tools              │
+│ Shared State           │
+│ Evaluation             │
+└───────────┬────────────┘
+            │
+     ┌──────┴───────┐
+     │              │
+ Cloud Models    Local Models
+ OpenAI          Ollama
+ Gemini          vLLM
+ Groq            llama.cpp
 ```
-
+ 
 ### Key USP
-
+ 
 **Start as a model gateway. Grow into agent workflows without replacing your AI infrastructure.**
-
+ 
 Swarm is designed for progressive adoption:
-
+ 
 ```text
 LLM API
-  ↓
-Multi-provider Gateway
-  ↓
-Stateful Responses
-  ↓
-MCP Tools
-  ↓
-Agent Workflows
-  ↓
-Evaluation & Policy
+  → Multi-provider Gateway
+    → Stateful Responses
+      → MCP Tools
+        → Agent Workflows
+          → Evaluation & Policy
 ```
-
-## Quick onboarding scenario
-
+ 
+---
+ 
+## Quick Onboarding Scenario
+ 
 Imagine an application that currently calls OpenAI directly.
-
-### Step 1 — Put Swarm in front of the model
-
+ 
+### Step 1 — Put Swarm in Front of the Model
+ 
 Start the gateway:
-
+ 
 ```bash
 cd swarm
 ./kickstart/gateway_kickstart/01_launch_gateway.sh
 ```
-
+ 
 Your application can then use the OpenAI-compatible endpoint:
-
+ 
 ```bash
 curl -X POST http://localhost:8080/v1/chat/completions \
   -H "Content-Type: application/json" \
@@ -84,53 +95,43 @@ curl -X POST http://localhost:8080/v1/chat/completions \
     ]
   }'
 ```
-
+ 
 Behind the same API, Swarm can route to:
-
-- OpenAI
-- Google Gemini
-- Groq
-- Ollama
-- vLLM
-- llama.cpp
-- other OpenAI-compatible endpoints
-
-### Step 2 — Add agent execution when you need it
-
+ 
+| Provider | Type |
+|---|---|
+| OpenAI | Cloud |
+| Google Gemini | Cloud |
+| Groq | Cloud |
+| Ollama | Local |
+| vLLM | Local |
+| llama.cpp | Local |
+| Other OpenAI-compatible endpoints | Cloud / Local |
+ 
+### Step 2 — Add Agent Execution When You Need It
+ 
 Launch the orchestration stack:
-
+ 
 ```bash
 ./kickstart/multi_agent_orchestration_kickstart/01_launch_all.sh
 ```
-
+ 
 Run the example workflow:
-
+ 
 ```bash
 ./kickstart/multi_agent_orchestration_kickstart/02_test_weather_query.sh \
   "What is the current weather in Boston?"
 ```
-
+ 
 The request can now flow through:
-
+ 
 ```text
-User
- ↓
-Planner
- ↓
-Execution DAG
- ↓
-Executor
- ↓
-Domain Agent
- ↓
-MCP Tool
- ↓
-Evaluation
- ↓
-Response
+User → Planner → Execution DAG → Executor → Domain Agent → MCP Tool → Evaluation → Response
 ```
-
-The important part is that the gateway and agent runtime share the same architectural foundation.
+ 
+The important part: the gateway and agent runtime share the same architectural foundation.
+ 
+---
 
 ## Key capabilities
 

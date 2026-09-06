@@ -44,7 +44,7 @@ agent_examples=["What is the weather like in Boston?","What is address of custom
 #agent_model_id="gemini-2.0-flash"
 #agent_llm_url="https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
 # Use this if you use a model from Groq
-#agent_model_id="qwen/qwen3-32b"
+#agent_model_id="qwen/qwen3.8-27b"
 agent_model_id="openai/gpt-oss-20b"
 agent_llm_url="https://api.groq.com/openai/v1/chat/completions"
 # Use this if you use a local model run for example from llama.cpp on port 2000

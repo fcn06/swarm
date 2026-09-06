@@ -23,7 +23,7 @@ api_url = "https://api.groq.com/openai/v1/chat/completions"
 recommended_models = [
     "groq/llama-3.3-70b-versatile",
     "openai/gpt-oss-20b",
-    "qwen/qwen3-32b"
+    "qwen/qwen3.8-27b"
 ]
 
 [providers.google]
@@ -47,7 +47,7 @@ recommended_models = [
     "llama3.2:latest",
     "mistral:latest",
     "deepseek-r1:8b",
-    "qwen2.5:latest"
+    "qwen/qwen3.8-27b"
 ]
 
 [resilience]

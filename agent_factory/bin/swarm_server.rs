@@ -3,7 +3,7 @@ use clap::Parser;
 use tracing::info;
 
 use agent_core::server::gateway_server::{
-    GatewayBackend, GatewayConfigFile, GatewayServer, MultiModelGatewayBackend,
+    GatewayBackend, GatewayConfigFile, GatewayResilienceSection, GatewayServer, MultiModelGatewayBackend,
 };
 use agent_core::session::SessionStore;
 use configuration::setup_logging;
@@ -31,7 +31,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut bind_address = args.bind_address.clone();
     let mut log_level = args.log_level.clone();
 
-    let backend: Arc<dyn GatewayBackend> = if let Some(config_path) = &args.config_file {
+    let (backend, resilience_config): (Arc<dyn GatewayBackend>, Option<GatewayResilienceSection>) = if let Some(config_path) = &args.config_file {
         match std::fs::read_to_string(config_path) {
             Ok(content) => match toml::from_str::<GatewayConfigFile>(&content) {
                 Ok(config) => {

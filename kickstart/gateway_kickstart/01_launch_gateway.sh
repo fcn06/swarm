@@ -122,23 +122,35 @@ fi
 
 echo $'\n'
 echo "--------------------------------------------------------------------------"
-echo " 2. Building Gateway Server (Release Mode)"
+echo " 2. Building Standalone Gateway Server (Release Mode)"
 echo "--------------------------------------------------------------------------"
 
-cargo build --release --bin swarm_server
+SWARM_COMMONS_ROOT="$WORKSPACE_ROOT/swarm_commons"
+if [ -d "$SWARM_COMMONS_ROOT" ]; then
+    echo "• Compiling lightweight standalone swarm_gateway from swarm_commons..."
+    cd "$SWARM_COMMONS_ROOT"
+    cargo build --release -p agent_core --bin swarm_gateway
+    GATEWAY_BIN="$SWARM_COMMONS_ROOT/target/release/swarm_gateway"
+    cd "$SWARM_ROOT"
+else
+    echo "• Compiling swarm_server from local workspace..."
+    cargo build --release --bin swarm_server
+    GATEWAY_BIN="$SWARM_ROOT/target/release/swarm_server"
+fi
 
-echo "✔ Binary compiled successfully."
+echo "✔ Binary compiled successfully: $GATEWAY_BIN"
 
 echo $'\n'
 echo "--------------------------------------------------------------------------"
 echo " 3. Launching Gateway Server on $BIND_ADDRESS"
 echo "--------------------------------------------------------------------------"
 
-# Terminate any existing swarm_server process
-pkill -f "target/release/swarm_server" || true
+# Terminate any existing swarm_server or swarm_gateway process
+pkill -f "swarm_gateway" || true
+pkill -f "swarm_server" || true
 sleep 1
 
-setsid ./target/release/swarm_server --config-file "$CONFIG_FILE" --bind-address "$BIND_ADDRESS" --log-level "$LOG_LEVEL" < /dev/null > "$SWARM_ROOT/gateway.log" 2>&1 &
+setsid "$GATEWAY_BIN" --config-file "$CONFIG_FILE" --bind-address "$BIND_ADDRESS" --log-level "$LOG_LEVEL" < /dev/null > "$SWARM_ROOT/gateway.log" 2>&1 &
 GATEWAY_PID=$!
 sleep 2
 

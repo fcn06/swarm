@@ -49,3 +49,17 @@ recommended_models = [
     "deepseek-r1:8b",
     "qwen2.5:latest"
 ]
+
+[resilience]
+# Concurrency limit for inflight requests (prevents Tokio worker thread starvation)
+max_concurrent_requests = 512
+
+# Global request execution timeout in seconds (guards against hung upstream LLM connections)
+request_timeout_seconds = 60
+
+# Circuit breaker: trip provider offline if N consecutive errors occur
+circuit_breaker_failure_threshold = 5
+
+# Reset timeout: wait N seconds before testing a tripped provider (half-open probe)
+circuit_breaker_reset_seconds = 30
+

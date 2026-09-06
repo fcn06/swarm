@@ -48,33 +48,37 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         }
                     }
                     println!("✔ Loaded Gateway Configuration from: {}", config_path);
-                    Arc::new(MultiModelGatewayBackend::from_config(&config))
+                    (Arc::new(MultiModelGatewayBackend::from_config(&config)), config.resilience.clone())
                 }
                 Err(err) => {
                     eprintln!("⚠️ Failed to parse config file {}: {}. Using env defaults.", config_path, err);
-                    Arc::new(MultiModelGatewayBackend::from_env())
+                    (Arc::new(MultiModelGatewayBackend::from_env()), None)
                 }
             },
             Err(err) => {
                 eprintln!("⚠️ Failed to read config file {}: {}. Using env defaults.", config_path, err);
-                Arc::new(MultiModelGatewayBackend::from_env())
+                (Arc::new(MultiModelGatewayBackend::from_env()), None)
             }
         }
     } else {
-        Arc::new(MultiModelGatewayBackend::from_env())
+        (Arc::new(MultiModelGatewayBackend::from_env()), None)
     };
 
     setup_logging(&log_level);
     info!("Starting Swarm Gateway Server on {}", bind_address);
 
     let session_store = Arc::new(SessionStore::new());
-    let gateway_server = GatewayServer::new(session_store, backend);
+    let mut gateway_server = GatewayServer::new(session_store, backend);
+    if let Some(resilience) = resilience_config {
+        gateway_server = gateway_server.with_resilience(resilience);
+    }
 
     println!("╔════════════════════════════════════════════════════════════════╗");
     println!("║       🌐 fcn06/swarm Multi-Agent Gateway Server Running       ║");
     println!("╠════════════════════════════════════════════════════════════════╣");
     println!("║ • Open Responses Route:      POST http://{}/v1/responses      ║", bind_address);
     println!("║ • Chat Completions Route:    POST http://{}/v1/chat/completions║", bind_address);
+    println!("║ • Health Check Route:        GET  http://{}/health            ║", bind_address);
     println!("║ • In-Memory Session Storage: Active                            ║");
     if let Some(cfg) = &args.config_file {
         println!("║ • Config File:               {:<33} ║", cfg);

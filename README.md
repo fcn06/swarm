@@ -1,4 +1,4 @@
-# 🚀 Swarm — One Runtime from LLM Call to Agent Workflow 🦀
+# 🚀 Swarm — Standalone Model Gateway or Multi-Agent Planner in One Runtime 🦀
 
 [![Rust](https://img.shields.io/badge/Rust-1.80%2B-orange?logo=rust)](https://www.rust-lang.org)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue)](LICENSE)
@@ -6,7 +6,7 @@
 [![Binary Size](https://img.shields.io/badge/Gateway%20Binary-~12MB-success)](#deployment-patterns-one-codebase-two-deploy-patterns)
 [![Resilience](https://img.shields.io/badge/Resilience-Circuit%20Breaker%20%2B%20Throttling-brightgreen)](#enterprise-resilience--production-hardening)
 
-> **Swarm is a production-grade, Rust-native AI runtime that unifies model routing, agent orchestration, MCP tools, state, and evaluation — giving your team one cohesive stack from simple LLM proxying to complex multi-agent workflows.**
+> **Swarm is a production-grade, Rust-native AI runtime that lets you run either as an ultra-fast, resilient Model Gateway, an autonomous Multi-Agent Planner DAG, or both in a unified server — giving your team complete architectural freedom without managing separate stacks.**
 
 ---
 
@@ -325,4 +325,4 @@ Distributed under the [Apache License 2.0](LICENSE).
 
 ---
 
-> **Swarm — One runtime from LLM call to agent workflow.**
+> **Swarm — Resilient Model Gateway or Multi-Agent Planner in One Runtime.**

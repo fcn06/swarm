@@ -15,6 +15,7 @@
 - [Why Swarm?](#why-swarm)
 - [Deployment Patterns: One Codebase, Two Deploy Patterns](#deployment-patterns-one-codebase-two-deploy-patterns)
 - [Enterprise Resilience & Production Hardening](#enterprise-resilience--production-hardening)
+- [Context-Aware Intelligence (Memory, Facts & Identity)](#context-aware-intelligence-memory-facts--identity)
 - [Quick Onboarding Scenario](#quick-onboarding-scenario)
   - [Step 1 — Put Swarm in Front of Your Models](#step-1--put-swarm-in-front-of-your-models)
   - [Step 2 — Verify Health & Readiness](#step-2--verify-health--readiness)
@@ -121,6 +122,77 @@ circuit_breaker_failure_threshold = 5
 
 # Cooldown window: wait N seconds before testing provider recovery
 circuit_breaker_reset_seconds = 30
+```
+
+---
+
+## Context-Aware Intelligence (Memory, Facts & Identity)
+
+Production agents cannot rely on stateless, single-turn interactions. Swarm introduces a **Four-Tier Context Architecture** that enriches user prompts with conversational history, persistent factual knowledge, structured agent identity, and procedural tool definitions before reaching the LLM:
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│                   Context Assembly Pipeline                 │
+└──────────────────────────────┬──────────────────────────────┘
+                               │
+       ┌───────────────────────┼───────────────────────┐
+       ▼                       ▼                       ▼
+┌──────────────┐       ┌──────────────┐       ┌──────────────┐
+│  Tier 1:     │       │  Tier 2:     │       │  Tier 3:     │
+│ Conversational│      │  Persistent  │       │  Agent       │
+│ Memory       │       │  Facts       │       │  Identity    │
+│ (Sliding     │       │ (Categorized │       │ (Role, Goals,│
+│  Window)     │       │  Fact Store) │       │  Capabilities│
+└──────┬───────┘       └──────┬───────┘       └──────┬───────┘
+       │                      │                      │
+       └──────────────────────┼──────────────────────┘
+                              ▼
+           ┌─────────────────────────────────────┐
+           │        ContextProvider Trait        │
+           │  provide_context(&ContextRequest)   │
+           └──────────────────┬──────────────────┘
+                              ▼
+           ┌─────────────────────────────────────┐
+           │   [Base System Prompt]              │
+           │   [Identity & Capability Directives]│
+           │   [Relevant Known Facts]            │
+           │   [Sliding-Window Conversation]     │
+           │   [Current User Query]              │
+           └──────────────────┬──────────────────┘
+                              ▼
+                     LLM Execution Loop
+```
+
+### Four-Tier Context Architecture
+
+| Tier | Component | Description | Default Behavior |
+|---|---|---|---|
+| **Tier 1: Conversational Memory** | `HistoryContextProvider` | Retrieves previous turns from `MemoryService` using a sliding window. | Configurable `agent_mcp_history_length` (default: 10 when enabled) |
+| **Tier 2: Persistent Facts** | `SemanticMemoryContextProvider` | Matches query text against structured facts via `/facts` and `/facts/recall` endpoints. | Opt-in via `agent_mcp_enable_memory_recall = true` |
+| **Tier 3: Agent Identity** | `IdentityContextProvider` | Injects structured role, objectives, constraints, and capabilities into the system prompt. | Opt-in via `agent_mcp_enable_identity_context = true` |
+| **Tier 4: Procedural Skills** | MCP Tool Engine | Dynamically discovers and invokes external tools, APIs, and workflows. | Active via MCP runtime |
+
+### 100% Optional & Backward Compatible
+
+All context features are strictly opt-in:
+- **Zero Alterations to Existing Agents**: When disabled or unconfigured, agents run in their standard stateless mode with zero performance overhead.
+- **Runs Without Services**: Agents function identically whether or not `agent_memory_service` or `agent_discovery_service` are running in the cluster.
+
+### Enabling Context-Aware Features
+
+Configure context awareness in your agent's MCP runtime TOML configuration:
+
+```toml
+# --- Context-Aware Intelligence Settings ---
+
+# Number of past conversation turns to retrieve as sliding window (e.g., 10)
+agent_mcp_history_length = 10
+
+# Enable semantic fact recall from MemoryService matching user input
+agent_mcp_enable_memory_recall = true
+
+# Enable structured identity injection (role, objectives, constraints, capabilities)
+agent_mcp_enable_identity_context = true
 ```
 
 ---
@@ -240,6 +312,13 @@ User → Planner → Execution DAG → Executor → Domain Agent → MCP Tool �
 - Domain specialist agents connected via typed A2A contracts.
 - Centralized Agent Discovery and Shared Working Memory services.
 
+### 🧠 Context-Aware Intelligence
+- **Pluggable Context Engine**: Extensible `ContextProvider` pipeline assembling conversation history, persistent facts, and agent identity before LLM execution.
+- **Sliding-Window Compaction**: Request-scoped conversation memory retrieval (`HistoryContextProvider`) with configurable turn limits.
+- **Semantic Fact Recall**: Substring and category fact indexing (`SemanticMemoryContextProvider`) connecting agents to shared memory.
+- **Structured Identity Injection**: Automatic prompt structuring for agent role, objectives, constraints, and capabilities (`IdentityContextProvider`).
+- **Fully Opt-In**: Operates smoothly without discovery or memory services; zero breaking changes for existing stateless deployments.
+
 ### 🔌 Native MCP (Model Context Protocol)
 - Full MCP client and server protocol support.
 - Standard SSE and Streamable HTTP transports.
@@ -300,6 +379,7 @@ swarm/
 │   └── multi_agent_orchestration_kickstart/   # Full agent cluster kickstarts
 ├── agent_factory/                             # Unified swarm_server binary & builder
 ├── basic_agent/                               # Base agent scaffolding & traits
+├── mcp_runtime/                               # MCP execution engine & context providers
 ├── planner_agent/                             # DAG planning engine
 ├── executor_agent/                            # Dynamic task execution worker
 ├── workflow_management/                       # State and workflow transitions

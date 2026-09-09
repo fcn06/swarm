@@ -13,6 +13,9 @@ crate-type = ["rlib"]
 [dependencies]
 llm_api = { workspace = true }
 configuration = { workspace = true }
+agent_core = { workspace = true }
+agent_models = { workspace = true }
+async-trait = { workspace = true }
 
 rmcp = { workspace = true }
 

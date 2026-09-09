@@ -11,6 +11,8 @@ use llm_api::tools::Tool;
 use configuration::McpRuntimeConfig;
 use crate::mcp_client::mcp_client::{execute_tool_call_v2, get_tools_list_v2, initialize_mcp_client_v2};
 use crate::mcp_tools::tools::define_all_tools;
+use agent_core::business_logic::context_provider::{ContextProvider, ContextRequest};
+use agent_core::business_logic::services::MemoryService;
 
 /// Represents the discrete states of the agent's execution loop.
 ///
@@ -36,6 +38,8 @@ pub struct McpAgentRunContext {
     pub state: AgentState,
     pub messages: Vec<Message>,
     pub llm_all_tool: Vec<Tool>,
+    pub session_id: Option<String>,
+    pub metadata: Option<std::collections::HashMap<String, String>>,
 }
 
 /// The `McpAgent` struct encapsulates the configuration and static components for the MCP agent.
@@ -46,6 +50,8 @@ pub struct McpAgent {
     pub mcp_client: Arc<McpClient>,
     agent_mcp_config: McpRuntimeConfig,
     tool_cache: Arc<std::sync::RwLock<std::collections::HashMap<String, Vec<Tool>>>>,
+    pub memory_service: Option<Arc<dyn MemoryService>>,
+    pub context_providers: Vec<Arc<dyn ContextProvider>>,
 }
 
 impl McpAgent {
@@ -99,7 +105,24 @@ impl McpAgent {
             mcp_client,
             agent_mcp_config,
             tool_cache,
+            memory_service: None,
+            context_providers: Vec::new(),
         })
+    }
+
+    pub fn with_memory_service(mut self, memory_service: Arc<dyn MemoryService>) -> Self {
+        self.memory_service = Some(memory_service);
+        self
+    }
+
+    pub fn with_context_provider(mut self, provider: Arc<dyn ContextProvider>) -> Self {
+        self.context_providers.push(provider);
+        self
+    }
+
+    pub fn with_context_providers(mut self, providers: Vec<Arc<dyn ContextProvider>>) -> Self {
+        self.context_providers.extend(providers);
+        self
     }
 
     pub fn get_available_tools(&self) -> Vec<Tool> {
@@ -624,6 +647,77 @@ impl McpAgent {
             state: AgentState::Thinking,
             messages,
             llm_all_tool,
+            session_id: None,
+            metadata: None,
+        };
+
+        self.execute_loop(&mut ctx).await
+    }
+
+    pub async fn run_agent_with_context(
+        &self,
+        user_message: Message,
+        session_id: Option<String>,
+        metadata: Option<std::collections::HashMap<String, String>>,
+        system_prompt_override: Option<String>,
+    ) -> anyhow::Result<Option<Message>> {
+        if self.context_providers.is_empty() {
+            return self.run_agent_internal_with_system_prompt(user_message, system_prompt_override).await;
+        }
+
+        let user_text = user_message.content.clone().unwrap_or_default();
+        let context_req = ContextRequest {
+            session_id: session_id.clone(),
+            agent_name: None,
+            current_input: user_text,
+            metadata: metadata.clone().unwrap_or_default(),
+        };
+
+        let mut context_messages = Vec::new();
+        for provider in &self.context_providers {
+            match provider.provide_context(&context_req).await {
+                Ok(msgs) => {
+                    info!("📥 ContextProvider '{}' provided {} message(s)", provider.name(), msgs.len());
+                    context_messages.extend(msgs);
+                }
+                Err(e) => {
+                    warn!("⚠️ ContextProvider '{}' failed: {}", provider.name(), e);
+                }
+            }
+        }
+
+        let base_system = system_prompt_override
+            .unwrap_or_else(|| self.agent_mcp_config.agent_mcp_system_prompt.clone());
+
+        let mut system_messages = vec![Message {
+            role: "system".to_string(),
+            content: Some(base_system),
+            tool_call_id: None,
+            tool_calls: None,
+        }];
+        let mut history_messages = Vec::new();
+
+        for msg in context_messages {
+            if msg.role == "system" {
+                system_messages.push(msg);
+            } else {
+                history_messages.push(msg);
+            }
+        }
+
+        let mut messages = system_messages;
+        messages.extend(history_messages);
+        messages.push(user_message);
+
+        let session_key = session_id.as_deref().unwrap_or("");
+        let llm_all_tool = self.get_tools_for_session(session_key).await;
+
+        let mut ctx = McpAgentRunContext {
+            state: AgentState::Thinking,
+            messages,
+            llm_all_tool,
+            session_id,
+            metadata,
         };
 
         self.execute_loop(&mut ctx).await

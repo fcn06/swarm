@@ -239,6 +239,9 @@ impl AgentFactory {
                 agent_mcp_nats_url: None,
                 agent_mcp_nats_dispatch_subject: None,
                 agent_mcp_enable_evaluation: None,
+                agent_mcp_history_length: None,
+                agent_mcp_enable_memory_recall: None,
+                agent_mcp_enable_identity_context: None,
             }
         )
 
